@@ -1,0 +1,63 @@
+.nav {
+
+  z-index: 100;
+
+  background-color: @white;
+  height: 45px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  -webkit-box-shadow: 0 2px 5px 2px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0 2px 5px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px 2px rgba(0, 0, 0, 0.1);
+
+  a {
+    text-decoration: none;
+    color: @white; //TODO
+    display: block; //TODO
+  }
+
+  .brand {
+    float: left;
+    //padding: 22px;
+    color: @white;
+    height: 45px;
+    font-size: 2.5rem;
+    font-weight: 100;
+
+    background: @blue; /* Old browsers */
+    background: -moz-linear-gradient(left, @blue 0%, @blue-light 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(left, @blue 0%, @blue-light 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to right, @blue 0%, @blue-light 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#2cb3cb', endColorstr='#2ee2d3', GradientType=1);
+
+    width: 180px;
+    line-height: 45px;
+    text-align: center;
+  }
+
+  .user {
+    float: left;
+    line-height: 45px;
+    //width: 180px;;
+    margin: 0 20px 0 0;
+    text-align: center;
+    .image {
+      float: left;
+      img {
+        border-radius: 50%;
+        height: 35px;
+        width: 35px;
+        margin: 0 8px;
+      }
+    }
+    .name {
+      color: @grey;
+      float: left;
+    }
+
+  }
+
+}

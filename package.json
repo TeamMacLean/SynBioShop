@@ -1,0 +1,36 @@
+{
+  "name": "synbioshop",
+  "version": "1.0.0",
+  "description": "TSL SynBio Shop",
+  "main": "server.js",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "ejs": "^2.4.1",
+    "express": "^4.13.4",
+    "express-session": "^1.13.0",
+    "less-middleware": "^2.1.0",
+    "passport": "^0.3.2",
+    "passport-ldapauth": "^0.5.0",
+    "rethinkdbdash": "^2.2.20",
+    "session-rethinkdb": "^2.0.0",
+    "socket.io": "^1.4.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synbioshop/notgeefu.git"
+  },
+  "keywords": [
+    "synbio",
+    "tsl"
+  ],
+  "author": "Martin Page",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wookoouk/synbioshop/issues"
+  },
+  "homepage": "https://github.com/wookoouk/synbioshop#readme"
+}

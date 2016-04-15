@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!--<link rel="icon" href="/favicon.ico">-->
+
+    <title>SynBio Shop</title>
+
+    <link href="/components/normalize-css/normalize.css" rel="stylesheet">
+    <link href="/components/elegant-icons/css/style.css" rel="stylesheet">
+    <link href="/style/style.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+
+<nav class="nav">
+    <div class="brand">
+        <a href="/">
+            <span>SynBio Shop</span>
+        </a>
+    </div>
+    <div class="pull-right">
+        <% if(locals.signedInUser){ %>
+        <div class="user">
+            <a href="/whoami">
+                <div class="image">
+                    <img src="https://s.gravatar.com/avatar/6e7c5501261e6e5b806a14336da15e78?s=80&r=g">
+                </div>
+                <div class="name">
+                    <span><%- locals.signedInUser.name %></span>
+                </div>
+            </a>
+        </div>
+        <% } else { %>
+        <a href="/signin">Sign in</a>
+        <% } %>
+    </div>
+</nav>
+
+</div>

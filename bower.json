@@ -1,0 +1,26 @@
+{
+  "name": "notgeefu",
+  "description": "not geefu",
+  "main": "server.js",
+  "authors": [
+    "Martin Page"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "not",
+    "geefu"
+  ],
+  "homepage": "https://github.com/wookoouk/notgeefu",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "normalize-css": "^4.1.0",
+    "elegant-icons": "*"
+  }
+}
