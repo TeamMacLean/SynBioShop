@@ -1,16 +1,37 @@
 .tile {
-  padding: 10px;
+  //padding: 10px;
   text-align: center;
-  background-color: @blue;
+  background-color: #fff;
   display: block;
-  color: @white;
   border-radius: 4px;
   margin-bottom: 8px;
-  font-weight: 100;
-  font-size: 3rem;
-  &:hover {
-    background-color: darken(@blue, 2%);
-    //background-color: @blue-light;
+  font-weight: 200;
+  //font-size: 3rem;
+  color: @font-color;
+  border: 1px solid @white-dark;
+  //&:hover {
+  //  background-color: darken(@blue, 2%);
+  //background-color: @blue-light;
+  //}
+
+  .tile-block {
+    padding: 10px;
+  }
+  .tile-title {
+    margin-bottom: .75rem;
+  }
+
+  .tile-img-top {
+    border-radius: 4px 4px 0 0;
+    width: 100%;
+  }
+
+  .tile-button-bottom {
+    width: 100%;
+    border-radius: 0 0 4px 4px;
+    padding: 8px;
+    font-size: 1.2rem;
+    line-height: 1.2rem;
   }
 
 }

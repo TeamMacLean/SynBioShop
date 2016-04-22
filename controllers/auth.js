@@ -2,6 +2,9 @@
 
 var Auth = {};
 var passport = require('passport');
+var gravatar = require('gravatar');
+var renderError = require('../lib/renderError');
+var config = require('../config.json');
 
 /**
  * render site index
@@ -36,12 +39,16 @@ Auth.signInPost = function (req, res, next) {
       if (info && info.message) {
         message += ', ' + info.message;
       }
-      return res.render('error', {error: message});
+      return renderError(message, res);
+      //return res.render('error', {error: message});
     }
     req.logIn(user, function (err) {
       if (err) {
         return next(err);
       }
+
+      req.user.iconURL = gravatar.url(req.user.mail) || config.defaultUserIcon;
+
       //take them to the page they wanted before signing in :)
       if (req.session.returnTo) {
         return res.redirect(req.session.returnTo);

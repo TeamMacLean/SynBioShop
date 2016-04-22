@@ -1,0 +1,18 @@
+<% include ./head %>
+
+<div class="container">
+    <div class="narrow-center">
+        <h2 class="center">Sign in to continue</h2>
+
+        <form method="post" action="/signin">
+            <input class="wide" type="text" id="username" name="username" placeholder="Username" required
+                   autofocus>
+            <input class="wide" type="password" id="password" name="password" placeholder="Password" required>
+            <button class="wide" type="submit">
+                Sign in
+            </button>
+        </form>
+    </div>
+</div>
+
+<% include ./foot %>

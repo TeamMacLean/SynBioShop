@@ -1,0 +1,27 @@
+<% include ../head.ejs %>
+
+
+<div class="nav-left cu">
+    <ul>
+
+        <% dbs.map(function(db){ %>
+        <li><a href="#"><%- db.name %></a></li>
+        <% }) %>
+
+        <!--<li><a href="#">Golden Gate Acceptor Plasmids</a></li>-->
+        <!--<li><a href="#">Standard Parts for Plants</a></li>-->
+        <!--<li><a href="#">Complete Transcriptional Units</a></li>-->
+        <!--<li><a href="#">RNA-guided Cas9-mediated Genome Engineering Parts</a></li>-->
+        <!--<li><a href="#">Polycistronic Expression</a></li>-->
+        <!--<li><a href="#">User Cloning</a></li>-->
+        <!--<li><a href="#">Viral Replicons</a></li>-->
+    </ul>
+</div>
+<div class="sidebar-push">
+    <div class="container">
+        <!--<h1>TODO</h1>-->
+    </div>
+</div>
+
+
+<% include ../foot.ejs %>

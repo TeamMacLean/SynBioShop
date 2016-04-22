@@ -1,0 +1,75 @@
+<% include ../head.ejs %>
+
+<div class="container">
+
+    <h2>Databases</h2>
+
+
+    <div id="appRoot"></div>
+
+    <script>
+        "use strict";
+
+        var items = JSON.parse('<%- JSON.stringify(dbs) %>');
+
+        var dbList = React.createClass({
+            displayName: "dbList",
+
+            render: function render() {
+                return React.createElement(
+                        "div",
+                        null,
+                        React.createElement("input", {id: "addDB", type: "text"}),
+                        React.createElement(
+                                "button",
+                                {id: "addDBButton"},
+                                "Add"
+                        ),
+                        React.createElement(
+                                "ul",
+                                {id: "dbList"},
+                                items.map(function (item) {
+                                    return React.createElement(
+                                            "li",
+                                            {key: item.id},
+                                            item.name
+                                    );
+                                })
+                        )
+                );
+            }
+        });
+
+        ReactDOM.render(React.createElement(dbList), document.getElementById('appRoot'));
+
+        $(function () {
+
+            $('#addDBButton').on('click', function () {
+                var text = $('#addDB').val();
+
+                if (text.length > 0) {
+                    socket.emit('addDB', text);
+                } else {
+                    animate($('#addDBButton'), 'shake');
+                }
+
+            });
+
+            socket.on('addedDB', function (addedDB) {
+                $('#dbList').prepend('<li>' + addedDB.name + '</li>');
+            })
+
+        });
+    </script>
+
+    <!--<ul id="dbList">-->
+    <!--<% dbs.map(function(db){ %>-->
+    <!--<li><%- db.name %> <span data-icon="&#xe019;"></span></li>-->
+    <!--<% }) %>-->
+    <!--</ul>-->
+
+
+</div>
+
+
+<% include ../foot.ejs %>

@@ -1,4 +1,14 @@
+.nav-shadow {
+  -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0 2px 5px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px 2px rgba(0, 0, 0, 0.1);
+}
+
 .nav {
+
+  a {
+    color: @font-color;
+  }
 
   z-index: 100;
 
@@ -9,13 +19,10 @@
   left: 0;
   right: 0;
 
-  -webkit-box-shadow: 0 2px 5px 2px rgba(0, 0, 0, 0.1);
-  -moz-box-shadow: 0 2px 5px 2px rgba(0, 0, 0, 0.1);
-  box-shadow: 0 2px 5px 2px rgba(0, 0, 0, 0.1);
+  .nav-shadow();
 
   a {
     text-decoration: none;
-    color: @white; //TODO
     display: block; //TODO
   }
 
@@ -24,8 +31,11 @@
     //padding: 22px;
     color: @white;
     height: 45px;
-    font-size: 2.5rem;
-    font-weight: 100;
+    font-size: 1.5rem;
+    font-weight: 200;
+    a {
+      color: @white
+    }
 
     background: @blue; /* Old browsers */
     background: -moz-linear-gradient(left, @blue 0%, @blue-light 100%); /* FF3.6-15 */
@@ -54,10 +64,94 @@
       }
     }
     .name {
-      color: @grey;
+      color: @font-color;
       float: left;
     }
 
   }
 
+  .hidden {
+    display: none;
+  }
+
+  .user-menu {
+    .nav-shadow();
+    //border-bottom: 1px solid grey;
+    //border-left: 1px solid grey;
+    //border-right: 1px solid grey;
+    background-color: @white;
+    color: @white-dark;
+    //position: relative;
+    //top: 0;
+    margin-top:2px;
+    float: left;
+    width: 100%;
+    a {
+      color: @font-color;
+      line-height: 32px;
+    }
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      li {
+        list-style: none;
+        &:hover{
+          background-color: @white-dark;
+        }
+      }
+    }
+  }
+
+}
+
+.nav-left {
+  //text-transform: uppercase;
+  float: left;
+  width: 180px;
+  height: 100%;
+  color: #fff;
+  background-color: #495062;
+
+  position: absolute;
+  left: 0;
+  top: 45px;
+
+  a {
+    display: block;
+    color: #BFCCE5;
+    &:hover {
+      color: @white;
+    }
+  }
+  ul, li {
+    list-style: none;
+  }
+  ul {
+    padding: 0;
+    li {
+      color: #BFCCE5;
+      padding: 8px 20px;
+      border-left: 2px solid #495062;
+      &.active {
+        color: #fff;
+        border-left: 2px solid @blue;
+      }
+      .icon {
+        float: left;
+        margin-right: 16px;
+        font-size: 2rem;
+        line-height: 2rem;
+      }
+      .name {
+        text-transform: uppercase;
+        font-weight: 300;
+      }
+    }
+  }
+
+}
+
+.sidebar-push {
+  margin-left: 180px;
 }

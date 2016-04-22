@@ -1,6 +1,8 @@
 {
   "port": "1337",
   "secret": "cats",
+  "dbName": "synbioshop",
+  "defaultUserIcon": "/img/default_icon.jpg",
   "ldap": {
     "url": "ldap://localhost:389",
     "bindDn": "root",
@@ -8,17 +10,7 @@
     "searchBase": "ou=example.org",
     "searchFilter": "(sAMAccountName={{username}})"
   },
-  "email": {
-    "host": "",
-    "port": "25",
-    "from": "sender@address",
-    "galaxyAdmin": [
-      "admin1@address",
-      "admin2@address"
-    ]
-  },
   "admins": [
-    "username",
-    "username2"
+    "pagem"
   ]
 }
