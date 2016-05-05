@@ -1,7 +1,7 @@
 .nav-shadow {
   -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.1);
-  -moz-box-shadow: 0 2px 5px 2px rgba(0, 0, 0, 0.1);
-  box-shadow: 0 2px 5px 2px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.1);
 }
 
 .nav {
@@ -74,6 +74,21 @@
     display: none;
   }
 
+  .cart {
+    float: left;
+    height: 45px;
+    line-height: 45px;
+    span.icon {
+      font-size: 1.5rem;
+      span.badge {
+        //font-size:2rem;
+        position: relative;
+        left: -10px;
+        top: -10px;
+      }
+    }
+  }
+
   .user-menu {
     .nav-shadow();
     //border-bottom: 1px solid grey;
@@ -83,9 +98,14 @@
     color: @white-dark;
     //position: relative;
     //top: 0;
-    margin-top:2px;
+    //margin-top: 2px;
     float: left;
-    width: 100%;
+    /* width: 100%; */
+    position: absolute;
+    top: 45px;
+    right: 0;
+    padding: 16px;
+
     a {
       color: @font-color;
       line-height: 32px;
@@ -96,7 +116,7 @@
       padding: 0;
       li {
         list-style: none;
-        &:hover{
+        &:hover {
           background-color: @white-dark;
         }
       }
@@ -115,7 +135,13 @@
 
   position: absolute;
   left: 0;
-  top: 45px;
+  top: 0;
+  padding-top: 45px;
+
+  overflow: hidden;
+  display: inline-block;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   a {
     display: block;
@@ -154,4 +180,21 @@
 
 .sidebar-push {
   margin-left: 180px;
+}
+
+@media (max-width: @breakpoint) {
+  .user .name {
+    display: none;
+  }
+
+  //.search {
+  //  display: none;
+  //}
+  //
+  //.new {
+  //  position: fixed;
+  //  bottom: 25px;
+  //  right: 30px;
+  //  border-radius: 50%;
+  //}
 }

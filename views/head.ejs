@@ -18,6 +18,8 @@
     <script src="/components/react/react.min.js"></script>
     <script src="/components/react/react-dom.min.js"></script>
 
+    <script src="/components/jquery/dist/jquery.min.js"></script>
+
 </head>
 
 <body>
@@ -30,6 +32,16 @@
         </a>
     </div>
     <div class="pull-right">
+
+        <div class="cart">
+            <!--<a href="/cart">-->
+            <span class="icon" data-icon="&#xe015;">
+                <span class="badge">0</span>
+            </span>
+            <!--</a>-->
+        </div>
+
+
         <div class="user">
             <% if(locals.signedInUser){ %>
 
@@ -43,10 +55,6 @@
             </a>
             <div class="user-menu hidden">
                 <ul>
-                    <li>
-                        <a href="/signout">Sign out</a>
-                    </li>
-
                     <% if(locals.signedInUser.isAdmin){ %>
                     <li>
                         <a href="/premade/admin">Pre Made admin </a>
@@ -55,7 +63,9 @@
                         <a href="/custom/admin">Custom Made admin </a>
                     </li>
                     <% } %>
-
+                    <li>
+                        <a href="/signout">Sign out</a>
+                    </li>
                 </ul>
             </div>
 

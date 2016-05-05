@@ -1,6 +1,6 @@
-var thinky = require('../lib/thinky.js');
+const thinky = require('../lib/thinky.js');
 
-var titles = [
+const titles = [
   'Golden Gate Acceptor Plasmids',
   'Standard Parts for Plants',
   'Complete Transcriptional Units',
@@ -11,9 +11,9 @@ var titles = [
 ];
 
 
-var typeModels = {};
+const typeModels = {};
 
-titles.map(function (title) {
+titles.map(title => {
   //typeModels[title] = thinky.createModel(title, {
     //processed: type.boolean().required(),
     //id: type.string(),

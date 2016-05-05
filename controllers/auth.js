@@ -1,32 +1,30 @@
-"use strict";
-
-var Auth = {};
-var passport = require('passport');
-var gravatar = require('gravatar');
-var renderError = require('../lib/renderError');
-var config = require('../config.json');
+const Auth = {};
+const passport = require('passport');
+const gravatar = require('gravatar');
+const renderError = require('../lib/renderError');
+const config = require('../config.json');
 
 /**
  * render site index
  * @param req {request}
  * @param res {response}
  */
-Auth.index = function (req, res) {
+Auth.index = (req, res) => {
   res.render('index');
 };
 
-Auth.signIn = function (req, res) {
+Auth.signIn = (req, res) => {
   res.render('signin');
 };
 
-Auth.signOut = function (req, res) {
+Auth.signOut = (req, res) => {
   req.logout();
   res.redirect('/');
 };
 
-Auth.signInPost = function (req, res, next) {
+Auth.signInPost = (req, res, next) => {
 
-  passport.authenticate('ldapauth', function (err, user, info) {
+  passport.authenticate('ldapauth', (err, user, info) => {
     if (err) {
       console.error(err);
       return next(err);
@@ -35,14 +33,14 @@ Auth.signInPost = function (req, res, next) {
       console.log(info);
     }
     if (!user) {
-      var message = 'No such user';
+      let message = 'No such user';
       if (info && info.message) {
-        message += ', ' + info.message;
+        message += `, ${info.message}`;
       }
       return renderError(message, res);
       //return res.render('error', {error: message});
     }
-    req.logIn(user, function (err) {
+    req.logIn(user, err => {
       if (err) {
         return next(err);
       }

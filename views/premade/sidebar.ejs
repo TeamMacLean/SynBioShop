@@ -1,0 +1,8 @@
+<div class="nav-left">
+    <ul>
+
+        <% dbs.map(function(db){ %>
+        <li><a href="/premade/<%- db.safeName %>"><%- db.name %></a></li>
+        <% }) %>
+    </ul>
+</div>

@@ -1,25 +1,23 @@
 $(function () {
-  initUserMenu();
+    initUserMenu();
 });
 
 function initUserMenu() {
-  var user = $('.user');
+    var user = $('.user');
 
-  user.on('mouseenter', function () {
-    console.log('enter');
-    $('.user-menu').removeClass('hidden');
+    user.on('mouseenter', function () {
+        $('.user-menu').removeClass('hidden');
 
-  });
-  user.on('mouseleave', function () {
-    console.log('leave');
-    $('.user-menu').addClass('hidden');
-  });
+    });
+    user.on('mouseleave', function () {
+        $('.user-menu').addClass('hidden');
+    });
 }
 
 $(function () {
-  socket.on('error', function (err) {
-    console.error(err);
-  })
+    socket.on('error', function (err) {
+        console.error(err);
+    })
 });
 
 //$(function () {
@@ -42,12 +40,12 @@ $(function () {
 //});
 
 function animate(el, name) {
-  el.on(
-    "transitionend MSTransitionEnd webkitTransitionEnd oTransitionEnd",
-    function () {
-      $(this).removeClass(name + ' animated');
-    }
-  );
-  el.addClass(name + ' animated');
+    el.on(
+        "transitionend MSTransitionEnd webkitTransitionEnd oTransitionEnd",
+        function () {
+            $(this).removeClass(name + ' animated');
+        }
+    );
+    el.addClass(name + ' animated');
 
 }

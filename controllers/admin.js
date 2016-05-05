@@ -1,1 +1,1 @@
-var admin = {};
+const admin = {};
