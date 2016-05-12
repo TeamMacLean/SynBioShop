@@ -1,17 +1,33 @@
-<% include ./head %>
+<% include ./head-no-nav.ejs %>
 
 <div class="container">
     <div class="narrow-center">
-        <h2 class="center">Sign in to continue</h2>
+        <div class="login-box">
+            <div class="login-header">
+                <img src="/img/logo.png">
+                <a href="/">SynBio</a>
+            </div>
+            <div class="login-body">
+                <p class="center">Sign in to continue</p>
 
-        <form method="post" action="/signin">
-            <input class="wide" type="text" id="username" name="username" placeholder="Username" required
-                   autofocus>
-            <input class="wide" type="password" id="password" name="password" placeholder="Password" required>
-            <button class="wide primary" type="submit">
-                Sign in
-            </button>
-        </form>
+                <form method="post" action="/signin">
+                    <div class="form-group has-feedback">
+                        <input class="wide has-icon" type="text" id="username" name="username" placeholder="Username"
+                               required
+                               autofocus>
+                        <span class="icon_mail_alt input-icon"></span>
+                    </div>
+                    <div class="form-group has-feedback">
+                        <input class="wide has-icon" type="password" id="password" name="password"
+                               placeholder="Password" required>
+                        <span class="icon_lock_alt input-icon"></span>
+                    </div>
+                    <button class="wide primary" type="submit">
+                        Sign in
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 

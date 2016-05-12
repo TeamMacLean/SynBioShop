@@ -10,51 +10,51 @@ const config = require('../config.json');
  * @param res {response}
  */
 Auth.index = (req, res) => {
-  res.render('index');
+    res.render('index');
 };
 
 Auth.signIn = (req, res) => {
-  res.render('signin');
+    res.render('signin');
 };
 
 Auth.signOut = (req, res) => {
-  req.logout();
-  res.redirect('/');
+    req.logout();
+    res.redirect('/');
 };
 
 Auth.signInPost = (req, res, next) => {
 
-  passport.authenticate('ldapauth', (err, user, info) => {
-    if (err) {
-      console.error(err);
-      return next(err);
-    }
-    if (info) {
-      console.log(info);
-    }
-    if (!user) {
-      let message = 'No such user';
-      if (info && info.message) {
-        message += `, ${info.message}`;
-      }
-      return renderError(message, res);
-      //return res.render('error', {error: message});
-    }
-    req.logIn(user, err => {
-      if (err) {
-        return next(err);
-      }
+    passport.authenticate('ldapauth', (err, user, info) => {
+        if (err) {
+            console.error(err);
+            return next(err);
+        }
+        if (info) {
+            console.log(info);
+        }
+        if (!user) {
+            let message = 'No such user';
+            if (info && info.message) {
+                message += `, ${info.message}`;
+            }
+            return renderError(message, res);
+            //return res.render('error', {error: message});
+        }
+        req.logIn(user, err => {
+            if (err) {
+                return next(err);
+            }
 
-      req.user.iconURL = gravatar.url(req.user.mail) || config.defaultUserIcon;
+            req.user.iconURL = gravatar.url(req.user.mail) || config.defaultUserIcon;
 
-      //take them to the page they wanted before signing in :)
-      if (req.session.returnTo) {
-        return res.redirect(req.session.returnTo);
-      } else {
-        return res.redirect('/groups');
-      }
-    });
-  })(req, res, next);
+            //take them to the page they wanted before signing in :)
+            if (req.session.returnTo) {
+                return res.redirect(req.session.returnTo);
+            } else {
+                return res.redirect('/');
+            }
+        });
+    })(req, res, next);
 };
 
 
