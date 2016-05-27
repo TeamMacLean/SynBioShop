@@ -61,6 +61,8 @@ app.use((req, res, next) => {
         }).error(function (err) {
             return next(null, req, res);
         })
+    } else {
+        next();
     }
 
 });
