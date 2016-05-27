@@ -1,9 +1,9 @@
-var app = require('./app');
-var log = require('./lib/log');
-var config = require('./config.json');
+const app = require('./app');
+const log = require('./lib/log');
+const config = require('./config.json');
 
-var port = process.env.PORT || config.port;
+const port = process.env.PORT || config.port;
 
-app.listen(port, '0.0.0.0', function () {
+app.listen(port, '0.0.0.0', () => {
   log.success('Listening on port', port);
 });

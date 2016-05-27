@@ -1,45 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <!--<link rel="icon" href="/favicon.ico">-->
-
-    <title>SynBio Shop</title>
-
-    <link href="/components/elegant-icons/css/style.css" rel="stylesheet">
-    <link href="/components/animate.css/animate.min.css" rel="stylesheet">
-    <link href="/style/style.min.css" rel="stylesheet">
-
-    <script src="/components/react/react.min.js"></script>
-    <script src="/components/react/react-dom.min.js"></script>
-
-    <script src="/components/jquery/dist/jquery.min.js"></script>
-
-</head>
-
-<body>
+<% include ./head-no-nav.ejs %>
 
 <nav class="nav">
     <div class="brand">
         <a href="/">
-            <span>SynBio Shop</span>
+            <span>SynBio</span>
         </a>
     </div>
     <div class="pull-right">
 
         <% if(locals.signedInUser){ %>
-        <div class="cart">
-            <!--<a href="/cart">-->
-            <span class="icon" data-icon="&#xe015;">
-                <span class="badge">0</span>
-            </span>
-            <!--</a>-->
-        </div>
+        <a href="/cart" class="cart">
+            <span class="icon" data-icon="&#xe015;"></span>
+            <span class="count"><%- locals.signedInUser.cart.items.length || 0 %> item(s)</span>
+        </a>
         <% } %>
 
         <div class="user">
@@ -55,14 +28,6 @@
             </a>
             <div class="user-menu hidden">
                 <ul>
-                    <% if(locals.signedInUser.isAdmin){ %>
-                    <li>
-                        <a href="/premade/admin">Pre Made admin </a>
-                    </li>
-                    <li>
-                        <a href="/custom/admin">Custom Made admin </a>
-                    </li>
-                    <% } %>
                     <li>
                         <a href="/signout">Sign out</a>
                     </li>

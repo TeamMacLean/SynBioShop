@@ -1,5 +1,4 @@
 .nav {
-
   a {
     color: @font-color;
   }
@@ -21,22 +20,22 @@
   }
 
   .brand {
+    //font-family: @header-font;
     float: left;
-    //padding: 22px;
     color: @white;
     height: 45px;
     font-size: 1.5rem;
-    //font-weight: 200;
-    font-weight: 300;
+    font-weight: 600;
     a {
       color: @white
     }
 
     background: @blue; /* Old browsers */
-    background: -moz-linear-gradient(left, @blue 0%, @blue-light 100%); /* FF3.6-15 */
-    background: -webkit-linear-gradient(left, @blue 0%, @blue-light 100%); /* Chrome10-25,Safari5.1-6 */
-    background: linear-gradient(to right, @blue 0%, @blue-light 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#2cb3cb', endColorstr='#2ee2d3', GradientType=1);
+    //background: -moz-linear-gradient(left, @blue 0%, @blue-light 100%); /* FF3.6-15 */
+    //background: -webkit-linear-gradient(left, @blue 0%, @blue-light 100%); /* Chrome10-25,Safari5.1-6 */
+    //background: linear-gradient(to right, @blue 0%, @blue-light 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    //filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#2cb3cb', endColorstr='#2ee2d3', GradientType=1);
+    //background-color: @font-color;
 
     width: 180px;
     line-height: 45px;
@@ -75,22 +74,28 @@
     line-height: 45px;
     span.icon {
       font-size: 1.5rem;
-      span.badge {
-        //font-size:2rem;
-        position: relative;
-        left: -10px;
-        top: -10px;
-      }
+      float: left;
+      margin-right: 5px;
+    }
+    span.count {
+      font-size: 1rem;
+      float: left;
+      //font-size:2rem;
+      //position: relative;
+      //left: -10px;
+      //top: -10px;
     }
   }
 
   .user-menu {
     .pillow;
+    width: 150px;
+    margin-right: 20px;
     //border-bottom: 1px solid grey;
     //border-left: 1px solid grey;
     //border-right: 1px solid grey;
     background-color: @white;
-    color: @white-dark;
+    color: @font-color;
     //position: relative;
     //top: 0;
     //margin-top: 2px;
@@ -111,9 +116,10 @@
       padding: 0;
       li {
         list-style: none;
-        padding:0 8px;
+        padding: 0 8px;
         &:hover {
           background-color: @white-dark;
+
         }
       }
     }
@@ -125,14 +131,14 @@
   //text-transform: uppercase;
   float: left;
   width: 180px;
-  height: 100%;
+  min-height: 100%;
   color: #fff;
   background-color: #495062;
 
   position: absolute;
   left: 0;
   top: 0;
-  padding-top: 45px;
+  padding-top: 44px;
 
   overflow: hidden;
   display: inline-block;
@@ -150,8 +156,10 @@
     list-style: none;
   }
   ul {
+    margin: 12px 0;
     padding: 0;
     li {
+
       color: #BFCCE5;
       padding: 8px 20px;
       border-left: 2px solid #495062;
@@ -160,10 +168,10 @@
         border-left: 2px solid @blue;
       }
       .icon {
-        float: left;
-        margin-right: 16px;
-        font-size: 2rem;
-        line-height: 2rem;
+        margin-right: 8px;
+        font-size: 1rem;
+        line-height: 1rem;
+        vertical-align: middle;
       }
       .name {
         text-transform: uppercase;
@@ -183,6 +191,14 @@
     display: none;
   }
 
+  //.nav-left, .nav .brand {
+  //  width: 100px;
+  //}
+  //
+  //.nav-left [data-icon] {
+  //  /* Styles */
+  //  display: none;
+  //}
   //.search {
   //  display: none;
   //}

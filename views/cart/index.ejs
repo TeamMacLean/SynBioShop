@@ -1,0 +1,35 @@
+<% include ../head.ejs %>
+
+<div class="container">
+    <% if(typeof itemsInCart != 'undefined'){ %>
+    <h2>Shopping Basket</h2>
+    <% if(itemsInCart.length > 0){ %>
+
+    <table class="responsive">
+        <thead>
+        <tr>
+            <th>Item</th>
+            <th></th>
+        </tr>
+
+        </thead>
+        <tbody>
+        <% itemsInCart.map(function(item){ %>
+        <tr>
+            <td><%- item.id %></td>
+            <td><a href="/cart/remove/<%- item.id %>" class="button danger icon"><span data-icon="&#xe019;"></span></a>
+            </td>
+        </tr>
+        <% }); %>
+        </tbody>
+    </table>
+    <% } else { %>
+    <h2>Your Shopping Basket is empty.</h2>
+    <% } %>
+    <% } else { %>
+    <h2>Your Shopping Basket is empty.</h2>
+    <% } %>
+
+</div>
+
+<% include ../foot.ejs %>

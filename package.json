@@ -11,7 +11,7 @@
     "express-session": "^1.13.0",
     "gravatar": "^1.5.2",
     "less-middleware": "^2.1.0",
-    "multer": "^1.1.0",
+    "multer": "^0.1.8",
     "passport": "^0.3.2",
     "passport-ldapauth": "^0.5.0",
     "session-rethinkdb": "^2.0.0",

@@ -1,0 +1,28 @@
+<% include ../head.ejs %>
+
+<div class="container">
+
+    <div class="form-group">
+        <a href="/docs" class="button">Back</a>
+    </div>
+
+    <h2 class="center"><%- document.title %></h2>
+    <div><%- document.content %></div>
+
+    <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+    <div class="row">
+        <div class="col12">
+            <a href="/docs/edit/<%- document.id %>" class="button primary">Edit</a>
+
+            <% if(document.disabled){ %>
+            <a href="/docs/enable/<%- document.id %>" class="button success">Enable</a>
+            <% } else { %>
+            <a href="/docs/disable/<%- document.id %>" class="button danger">Disable</a>
+            <% } %>
+
+        </div>
+    </div>
+    <% } %>
+
+</div>
+<% include ../foot.ejs %>

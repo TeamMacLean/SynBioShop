@@ -4,6 +4,7 @@ const gravatar = require('gravatar');
 const renderError = require('../lib/renderError');
 const config = require('../config.json');
 
+const LOG = require('../lib/log');
 /**
  * render site index
  * @param req {request}
@@ -26,11 +27,11 @@ Auth.signInPost = (req, res, next) => {
 
     passport.authenticate('ldapauth', (err, user, info) => {
         if (err) {
-            console.error(err);
+            LOG.error(err);
             return next(err);
         }
         if (info) {
-            console.log(info);
+            LOG.log(info);
         }
         if (!user) {
             let message = 'No such user';

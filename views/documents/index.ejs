@@ -1,0 +1,35 @@
+<% include ../head.ejs %>
+
+<div class="container">
+
+    <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+    <!--<div class="row">-->
+    <!--<div class="col12">-->
+    <div class="form-group">
+        <a href="/docs/new" class="button primary">New</a>
+    </div>
+    <!--</div>-->
+    <!--</div>-->
+    <% } %>
+
+    <% documents.map(function(doc){ %>
+
+    <% if(!doc.disabled){ %>
+    <div class="row">
+        <div class="col12">
+            <a href="/docs/<%- doc.id %>"><h4><%- doc.title %></h4></a>
+        </div>
+    </div>
+    <% } else { %>
+    <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+    <div class="row">
+        <div class="col12">
+            <a href="/docs/<%- doc.id %>"><h4><%- doc.title %> <span class="badge">Disabled</span></h4></a>
+        </div>
+    </div>
+    <% } %>
+    <% } %>
+    <% }); %>
+
+</div>
+<% include ../foot.ejs %>

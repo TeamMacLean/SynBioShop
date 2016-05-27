@@ -1,8 +1,22 @@
 <% include head %>
 <div class="container">
 
-    <!--<h3><a href="#" onclick="goBack()"><i class="fa fa-chevron-left"></i> Back</a></h3>-->
-    <h2 class="center"><%- error %></h2>
+    <h1 class="center big">Error</h1>
+
+    <% if(typeof error != 'undefined'){ %>
+    <div class="well code error">
+        <span><%- error %></span>
+    </div>
+    <a href="mailto:bioinformatics@tsl.ac.uk?subject=I found a bug with the Syn Bio site&body=<%- encodeURI(error) %>"
+       class="button primary center">Report
+        this
+        bug</a>
+    <% } else { %>
+    <p class="center">Something happened... Something bad...</p>
+    <% } %>
+
+
+
 </div>
 
 <% include foot %>

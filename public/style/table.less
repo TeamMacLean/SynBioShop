@@ -1,0 +1,54 @@
+table {
+  width: 100%;
+}
+
+th,
+td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid @grey;
+}
+
+th:first-child,
+td:first-child {
+  padding-left: 0;
+}
+
+th:last-child,
+td:last-child {
+  padding-right: 0;
+}
+
+@media (max-width: @breakpoint) {
+
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+
+  thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    display: none;
+  }
+
+  td {
+    border-bottom: none;
+  }
+
+  table .button {
+    width: 100%;
+  }
+
+  tr {
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+    padding: 8px;
+  }
+
+  th:first-child, td:first-child {
+    padding: 12px 15px;
+  }
+
+}

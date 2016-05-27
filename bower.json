@@ -24,6 +24,7 @@
     "elegant-icons": "*",
     "jquery": "^2.2.3",
     "animate.css": "^3.5.1",
-    "react": "^15.0.1"
+    "react": "^15.0.1",
+    "tinymce": "tinymce-dist#^4.3.12"
   }
 }

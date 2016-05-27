@@ -3,6 +3,7 @@
   "secret": "cats",
   "dbName": "synbioshop",
   "defaultUserIcon": "/img/default_icon.jpg",
+  "tmpDir": "/tmp",
   "ldap": {
     "url": "ldap://localhost:389",
     "bindDn": "root",

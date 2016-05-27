@@ -1,0 +1,27 @@
+<% include ../head.ejs %>
+
+<div class="container">
+
+    <form method="post" action="/premade/new">
+
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" class="wide">
+        </div>
+        <div class="form-group">
+            <label for="type">Type</label>
+            <select id="type" name="type" class="wide">
+                <% types.map(function(type){ %>
+                <option value="<%- type.type %>"><%- type.typeName %></option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="form-group">
+            <button type="submit">Save</button>
+        </div>
+    </form>
+
+</div>
+
+
+<% include ../foot.ejs %>

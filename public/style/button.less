@@ -8,10 +8,12 @@ input[type="button"] {
   line-height: @input-height;
   outline: 0;
 
+  color: @font-color;
+
   display: inline-block;
   padding: 0 1rem;
   font-size: 1rem;
-  font-weight: 400;
+  font-weight: 600;
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
@@ -32,6 +34,28 @@ input[type="button"] {
   //  outline: 0;
   //}
 
+  &:hover {
+    background-color: darken(@white, 4%);
+  }
+
+  &.success {
+    color: @white;
+    background-color: @success;
+    border: none;
+    &:hover {
+      background-color: darken(@success, 4%);
+    }
+  }
+
+  &.danger {
+    color: @white;
+    background-color: @red;
+    border: none;
+    &:hover {
+      background-color: darken(@red, 4%);
+    }
+  }
+
   &.primary {
     color: @white;
     background-color: @blue;
@@ -41,4 +65,22 @@ input[type="button"] {
     }
   }
 
+  &.center {
+    //display: block;
+    //margin-left: auto;
+    //margin-right: auto;
+    margin: 0 auto;
+    display: table;
+  }
+
+  &.icon {
+    padding: 0 4px;
+    width: @input-height;
+    font-size: 1.5rem;
+  }
+
+}
+
+::-webkit-file-upload-button {
+  .button;
 }

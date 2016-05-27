@@ -3,18 +3,24 @@
 //@font-color: #3d4351;
 @font-color: #3a3f51;
 @white: #fff;
-@white-dark: #e5e5e5;
-@blue: #2cb3cb;
-@blue-light: #2ee2d3;
+@white-dark: #f0f0f0;
+@blue: #3DA2FF;
 @background: #F0F3FA;
-@grey: #dde6e9;
-
+@grey: #cdd6d9;
+@grey-dark: darken(@grey, 20%);
 @red: #ED5565;
+@green: #48CFAD;
+@danger: @red;
+@success: @green;
+
+@link-color: @blue;
 
 //variables
 @container-width: 980px;
 @breakpoint: 750px;
 @input-height: 35px;
+
+@base-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
 
 .pillow {
   -webkit-box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.1);
@@ -23,10 +29,15 @@
 }
 
 @import "base";
+@import "img";
 @import "grid";
 @import "type";
 @import "form";
 @import "nav";
 @import "tile";
 @import "button";
+@import "well";
+@import "code";
 @import "badge";
+@import "canvas";
+@import "table";

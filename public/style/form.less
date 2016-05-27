@@ -1,4 +1,8 @@
 
+label{
+  display: block;
+}
+
 fieldset {
   border: none;
   margin: 0;
@@ -51,7 +55,7 @@ input[type="password"] {
   line-height: @input-height;
   text-align: center;
   pointer-events: none;
-  //color: @grey;
+  color: @grey-dark;
 }
 
 textarea, select {
@@ -82,8 +86,8 @@ textarea, select {
   border-top-right-radius: 3px;
   border-top-left-radius: 3px;
   color: @white;
-  background-color: #3a3f51;
-  border-color: #3a3f51;
+  background-color: @font-color;
+  border-color: @font-color;
   text-align: center;
   font-size: 2rem;
   a {
@@ -113,40 +117,6 @@ textarea, select {
   }
 }
 
-//.fancy-form .icon {
-//  background: #F3F4F8;
-//
-//  width: 40px;
-//  text-align: center;
-//  vertical-align: middle;
-//  height: 40px;
-//
-//  -webkit-border-top-left-radius: 4px;
-//  -webkit-border-bottom-left-radius: 4px;
-//  -moz-border-radius-topleft: 4px;
-//  -moz-border-radius-bottomleft: 4px;
-//  border-top-left-radius: 4px;
-//  border-bottom-left-radius: 4px;
-//
-//  position: absolute;
-//  color: @blue;
-//  border: 1px solid #c3c9d1;
-//  font-size: 20px;
-//  padding: 8px 0;
-//}
-//
-//.fancy-form input[type="text"], .fancy-form input[type="password"] {
-//  padding-left: 50px;
-//  margin-bottom: 8px;
-//
-//  font-size: 1rem;
-//  line-height: 1rem;
-//}
-//
-//.fancy-form input {
-//  //width: 100%;
-//  height: 40px;
-//}
 
 input:-webkit-autofill {
   -webkit-box-shadow: 0 0 0px 1000px @white inset;

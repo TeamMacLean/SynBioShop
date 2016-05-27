@@ -1,0 +1,12 @@
+<% include ../head.ejs %>
+
+<div class="container">
+
+    <div class="center">
+        <h3>Are you sure you want to disable "<%- document.title %>"?</h3>
+        <a href="/docs/disable/<%- document.id %>/confirm" class="button danger">Yes</a>
+        <a href="/docs/<%- document.id %>" class="button primary">No</a>
+    </div>
+
+</div>
+<% include ../foot.ejs %>

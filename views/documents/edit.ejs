@@ -1,0 +1,43 @@
+<% include ../head.ejs %>
+
+<div class="container">
+
+    <form method="post" action="/docs/new">
+        <% if(typeof document != 'undefined'){ %>
+        <input type="hidden" name="id" value="<%- document.id %>">
+        <% } %>
+
+        <div class="form-group">
+            <label for="title">Title</label>
+            <% if(typeof document != 'undefined'){ %>
+            <input id="title" name="title" class="wide" type="text" value="<%- document.title %>">
+            <% } else { %>
+            <input id="title" name="title" class="wide" type="text">
+            <% } %>
+        </div>
+        <div class="form-group">
+            <label for="tinymce">Content</label>
+            <% if(typeof document != 'undefined'){ %>
+            <textarea id="tinymce" class="wide" name="content"><%- document.content %></textarea>
+            <% } else { %>
+            <textarea id="tinymce" class="wide" name="content"></textarea>
+            <% } %>
+
+        </div>
+        <div class="form-group">
+            <button type="submit">Save</button>
+        </div>
+    </form>
+
+</div>
+
+<script src="/components/tinymce/tinymce.min.js"></script>
+<script src="/components/tinymce/themes/modern/theme.min.js"></script>
+
+<script>
+    tinymce.baseURL = "/components/tinymce/";
+    tinymce.init({
+        height: 300,
+        selector: '#tinymce'
+    });</script>
+<% include ../foot.ejs %>

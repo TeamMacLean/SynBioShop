@@ -3,6 +3,45 @@
 
 <div class="sidebar-push">
     <div class="container">
+
+        <div class="form-group">
+            <a href="/premade/<%- db.id %>/add" class="button primary">Add</a>
+        </div>
+
+        <h2 class="center"><%- db.name %></h2>
+
+        <% console.log(items); %>
+
+        <% if(items.length){ %>
+        <table class="responsive">
+            <thead>
+            <tr>
+                <% headings.map(function(t){ %>
+                <th><%- t %></th>
+                <% }); %>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+
+            <% items.map(function(t){ %>
+            <tr>
+                <% t.items.map(function(tt){ %>
+                <td>
+                    <%- tt %>
+                </td>
+                <% }) %>
+                <td><a href="/cart/add/<%- t.id %>" class="button primary icon"><span data-icon="&#x4c;"></span></a>
+                </td>
+            </tr>
+
+            <% }) %>
+            </tbody>
+        </table>
+        <% } else { %>
+        <p class="center">None available currently</p>
+        <% } %>
+
     </div>
 </div>
 
