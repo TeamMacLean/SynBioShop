@@ -25,9 +25,9 @@ input[type="button"] {
   border-radius: 4px;
   border: 1px solid @grey;
 
-  -webkit-transition: background-color ease-in-out .15s, border-color ease-in-out .15s;
-  -o-transition: background-color ease-in-out .15s, border-color ease-in-out .15s;
-  transition: background-color ease-in-out .15s, border-color ease-in-out .15s;
+  -webkit-transition: background-color ease-in-out .15s, border-color ease-in-out .15s, color ease-in-out .15s;
+  -o-transition: background-color ease-in-out .15s, border-color ease-in-out .15s, color ease-in-out .15s;
+  transition: background-color ease-in-out .15s, border-color ease-in-out .15s, color ease-in-out .15s;
 
   //&:focus {
   //  border: 1px solid @blue;
@@ -42,8 +42,14 @@ input[type="button"] {
     color: @white;
     background-color: @success;
     border: none;
+    &.outline {
+      border: @success 1px solid;
+      background: none;
+      color: @success;
+    }
     &:hover {
       background-color: darken(@success, 4%);
+      color: @white;
     }
   }
 
@@ -51,8 +57,14 @@ input[type="button"] {
     color: @white;
     background-color: @red;
     border: none;
+    &.outline {
+      border: @red 1px solid;
+      color: @red;
+      background: none;
+    }
     &:hover {
       background-color: darken(@red, 4%);
+      color: @white;
     }
   }
 
@@ -60,8 +72,14 @@ input[type="button"] {
     color: @white;
     background-color: @blue;
     border: none;
+    &.outline {
+      border: @blue 1px solid;
+      color: @blue;
+      background: none;
+    }
     &:hover {
       background-color: darken(@blue, 4%);
+      color: @white;
     }
   }
 
@@ -83,4 +101,9 @@ input[type="button"] {
 
 ::-webkit-file-upload-button {
   .button;
+}
+
+.button.icon.remove-from-cart {
+  font-size: 22px;
+  vertical-align: middle;
 }

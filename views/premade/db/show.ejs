@@ -1,0 +1,24 @@
+<% include ../../head.ejs %>
+<% include ./../sidebar.ejs %>
+
+<div class="sidebar-push">
+    <div class="container">
+
+        <div class="form-group">
+            <a href="/premade/<%- db.id %>/new" class="button primary">New Category</a>
+            <a href="/premade/<%- db.id %>/delete" class="button danger">Delete Datebase</a>
+        </div>
+
+        <h2 class="center"><%- db.name %></h2>
+
+        <% db.categories.map(function (category) { %>
+
+        <h3><a href="/premade/<%- db.id %>/<%- category.id %>"><%- category.name %></a></h3>
+
+        <% }) %>
+
+    </div>
+</div>
+
+
+<% include ../../foot.ejs %>

@@ -57,7 +57,7 @@ ShoppingCart.ensureAdd = (username, typeID) => new Promise((good, bad) => {
             carts[0].items = carts[0].items.concat(typeID);
             carts[0].save().then(saved => {
                 return good(saved);
-            }).error(err => bad(err));
+            }).catch(err => bad(err));
         } else {
             if (carts.length > 1) {
                 return bad(new Error('more than one cart found for that user'));
@@ -68,12 +68,12 @@ ShoppingCart.ensureAdd = (username, typeID) => new Promise((good, bad) => {
                 });
                 cart.save().then(saved => {
                     return good(saved)
-                }).error(err => {
+                }).catch(err => {
                     return bad(err);
                 })
             }
         }
-    }).error(err => {
+    }).catch(err => {
         return bad(err);
     });
 

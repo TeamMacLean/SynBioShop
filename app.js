@@ -56,15 +56,17 @@ app.use((req, res, next) => {
         Cart.filter({username: res.locals.signedInUser.username}).run().then(function (carts) {
             if (carts.length == 1) {
                 res.locals.signedInUser.cart = carts[0];
+            } else {
+                res.locals.signedInUser.cart = {};
+                res.locals.signedInUser.cart.items = [];
             }
             return next(null, req, res);
         }).error(function (err) {
-            return next(null, req, res);
+            return next(err, req, res);
         })
     } else {
         next();
     }
-
 });
 
 util.setupPassport();

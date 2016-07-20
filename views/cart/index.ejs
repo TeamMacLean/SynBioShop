@@ -1,33 +1,40 @@
 <% include ../head.ejs %>
 
 <div class="container">
+    <h2 class="center">Shopping Basket</h2>
     <% if(typeof itemsInCart != 'undefined'){ %>
-    <h2>Shopping Basket</h2>
     <% if(itemsInCart.length > 0){ %>
 
-    <table class="responsive">
+    <table class="cart">
         <thead>
         <tr>
             <th>Item</th>
-            <th></th>
+            <th class="center">Quantity</th>
+            <th class="center">Action</th>
         </tr>
 
         </thead>
         <tbody>
         <% itemsInCart.map(function(item){ %>
         <tr>
-            <td><%- item.id %></td>
-            <td><a href="/cart/remove/<%- item.id %>" class="button danger icon"><span data-icon="&#xe019;"></span></a>
+            <td><a href="#"><%- item.id %></a></td>
+            <td class="center">X</td>
+            <td class="center"><a href="/cart/remove/<%- item.id %>"
+                                  class="button danger outline icon remove-from-cart"><span
+                            data-icon="&#xe019;"></span></a>
             </td>
         </tr>
         <% }); %>
         </tbody>
     </table>
+    <div class="pull-right">
+        <a href="/placeorder" class="button success">Place Order</a>
+    </div>
     <% } else { %>
-    <h2>Your Shopping Basket is empty.</h2>
+    <h3 class="center">Your Shopping Basket is empty.</h3>
     <% } %>
     <% } else { %>
-    <h2>Your Shopping Basket is empty.</h2>
+    <h3 class="center">Your Shopping Basket is empty.</h3>
     <% } %>
 
 </div>

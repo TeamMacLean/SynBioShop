@@ -5,6 +5,7 @@ const Util = require('./lib/util');
 
 const docs = require('./controllers/documents');
 const premade = require('./controllers/premade');
+const custom = require('./controllers/custom');
 const Auth = require('./controllers/auth');
 
 const shoppingCart = require('./controllers/shoppingCart');
@@ -14,28 +15,39 @@ router.route('/')
 
 //DOCS
 router.route('/docs')
-// .all(isAuthenticated)
     .get(docs.index);
 router.route('/docs/new')
     .all(isAuthenticated)
     .all(isAdmin)
-    .get(docs.new)
-    .post(docs.save);
-router.route('/docs/:id')
-    .get(docs.show);
-router.route('/docs/edit/:id')
+    .get(docs.subject.new)
+    .post(docs.subject.save);
+router.route('/docs/:subjectID')
+    .get(docs.subject.show);
+router.route('/docs/:subjectID/new')
     .all(isAuthenticated)
     .all(isAdmin)
-    .get(docs.edit)
-    .post(docs.save);
-router.route('/docs/disable/:id')
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(docs.disable);
-router.route('/docs/enable/:id')
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(docs.enable);
+    .get(docs.document.new)
+    .post(docs.document.save);
+router.route('/docs/:subjectID/:itemID')
+    .get(docs.document.show);
+
+router.route('/docs/:subjectID/:itemID/edit')
+    .get(docs.document.edit)
+    .post(docs.document.save);
+
+// router.route('/docs/edit/:id')
+//     .all(isAuthenticated)
+//     .all(isAdmin)
+//     .get(docs.edit)
+//     .post(docs.save);
+// router.route('/docs/disable/:id')
+//     .all(isAuthenticated)
+//     .all(isAdmin)
+//     .get(docs.disable);
+// router.route('/docs/enable/:id')
+//     .all(isAuthenticated)
+//     .all(isAdmin)
+//     .get(docs.enable);
 
 //PREMADE
 router.route('/premade')
@@ -43,15 +55,33 @@ router.route('/premade')
     .get(premade.index);
 router.route('/premade/new')
     .all(isAuthenticated)
-    .get(premade.new)
-    .post(premade.newPost);
+    .all(isAdmin)
+    .get(premade.db.new)
+    .post(premade.db.newPost);
 router.route('/premade/:id')
     .all(isAuthenticated)
-    .get(premade.show);
-router.route('/premade/:id/add')
+    .get(premade.db.show);
+router.route('/premade/:id/new')
     .all(isAuthenticated)
-    .get(premade.add)
-    .post(premade.addPost);
+    .all(isAdmin)
+    .get(premade.category.new)
+    .post(premade.category.newPost);
+
+router.route('/premade/:id/:categoryID')
+    .all(isAuthenticated)
+    .get(premade.category.show);
+
+router.route('/premade/:id/:categoryID/new')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.item.new)
+    .post(premade.item.newPost);
+
+
+//CUSTOM
+router.route('/custom')
+    .all(isAuthenticated)
+    .get(custom.index);
 
 //CART
 router.route('/cart')

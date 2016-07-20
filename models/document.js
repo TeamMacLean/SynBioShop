@@ -6,8 +6,8 @@ const util = require('../lib/util');
 
 const Document = thinky.createModel('Document', {
     id: type.string(),
+    subjectID: type.string(),
     title: type.string().required(),
-    // safeName: type.string().required(),
     content: type.string().required(),
     createdAt: type.date().default(r.now()),
     editedAt: type.date(),

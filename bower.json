@@ -1,5 +1,6 @@
 {
   "name": "notgeefu",
+  "version":"1.2.3",
   "description": "not geefu",
   "main": "server.js",
   "authors": [

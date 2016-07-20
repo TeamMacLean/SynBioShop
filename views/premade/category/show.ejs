@@ -1,16 +1,14 @@
-<% include ../head.ejs %>
-<% include ./sidebar.ejs %>
-
+<% include ../../head.ejs %>
+<% include ./../sidebar.ejs %>
 <div class="sidebar-push">
     <div class="container">
 
         <div class="form-group">
-            <a href="/premade/<%- db.id %>/add" class="button primary">Add</a>
+            <a href="/premade/<%- db.id %>/<%- category.id %>/new" class="button primary">New Item</a>
+            <a href="/premade/<%- db.id %>/<%- category.id %>/delete" class="button danger">Delete Category</a>
         </div>
 
-        <h2 class="center"><%- db.name %></h2>
-
-        <% console.log(items); %>
+        <h2 class="center"><%- category.name %></h2>
 
         <% if(items.length){ %>
         <table class="responsive">
@@ -32,6 +30,7 @@
                 </td>
                 <% }) %>
                 <td><a href="/cart/add/<%- t.id %>" class="button primary icon"><span data-icon="&#x4c;"></span></a>
+                    <a href="#" class="button danger icon"><span data-icon="&#xe019;"></span></a>
                 </td>
             </tr>
 
@@ -46,4 +45,4 @@
 </div>
 
 
-<% include ../foot.ejs %>
+<% include ../../foot.ejs %>

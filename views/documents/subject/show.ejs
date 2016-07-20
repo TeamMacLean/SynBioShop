@@ -1,0 +1,19 @@
+<% include ../../head.ejs %>
+
+<div class="container">
+
+    <h2><%- subject.name %></h2>
+
+    <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+    <div class="form-group">
+        <a href="/docs/<%- subject.id %>/new" class="button primary">Add Document</a>
+    </div>
+    <% } %>
+
+    <% subject.documents.map(function(document){ %>
+    <h3><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></h3>
+    <% }); %>
+
+</div>
+
+<% include ../../foot.ejs %>

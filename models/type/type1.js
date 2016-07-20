@@ -13,7 +13,8 @@ Type1.type = 1;
 Type1.typeName = 'Code/Sequence, Inside Overhangs, Outside overhangs, Description, Resistance';
 Type1.model = thinky.createModel('Type1', {
     id: type.string(),
-    dbID: type.string(),
+    dbID: type.string().required(),
+    categoryID: type.string().required(),
     codeSequence: type.string(),
     insideOverhangs: type.string(),
     outsideOverhangs: type.string(),

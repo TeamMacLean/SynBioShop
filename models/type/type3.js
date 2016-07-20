@@ -4,7 +4,8 @@ const Type3 = {};
 
 Type3.model = thinky.createModel('Type3', {
     id: type.string(),
-    dbID: type.string(),
+    dbID: type.string().required(),
+    categoryID: type.string().required(),
     nameName: type.string(),
     download: type.string()
 });
@@ -16,3 +17,4 @@ Type3.type = 3;
 Type3.typeName = 'Name, Download';
 
 module.exports = Type3;
+

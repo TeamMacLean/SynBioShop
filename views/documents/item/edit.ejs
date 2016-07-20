@@ -1,8 +1,8 @@
-<% include ../head.ejs %>
+<% include ../../head.ejs %>
 
 <div class="container">
 
-    <form method="post" action="/docs/new">
+    <form method="post" action="/docs/<%- subject.id %>/new">
         <% if(typeof document != 'undefined'){ %>
         <input type="hidden" name="id" value="<%- document.id %>">
         <% } %>
@@ -40,4 +40,4 @@
         height: 300,
         selector: '#tinymce'
     });</script>
-<% include ../foot.ejs %>
+<% include ../../foot.ejs %>

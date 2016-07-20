@@ -1,13 +1,12 @@
-<% include ../head.ejs %>
-<% include ./sidebar.ejs %>
+<% include ../../head.ejs %>
+<% include ./../sidebar.ejs %>
 
 <div class="sidebar-push">
     <div class="container">
 
-        <form method="post" action="/premade/<%- db.id %>/add" enctype='multipart/form-data'>
+        <h2>New Item for <%- category.name %></h2>
 
-            <input type="hidden" value="<%- type.type %>" name="type">
-            <input type="hidden" value="<%- db.id %>" name="dbID">
+        <form method="post" action="/premade/<%- db.id %>/<%- category.id %>/new" enctype='multipart/form-data'>
 
             <% type.fields.map(function(field){ %>
 
@@ -27,4 +26,4 @@
 </div>
 
 
-<% include ../foot.ejs %>
+<% include ../../foot.ejs %>
