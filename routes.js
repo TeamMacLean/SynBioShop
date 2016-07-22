@@ -7,7 +7,6 @@ const docs = require('./controllers/documents');
 const premade = require('./controllers/premade');
 const custom = require('./controllers/custom');
 const Auth = require('./controllers/auth');
-
 const shoppingCart = require('./controllers/shoppingCart');
 
 router.route('/')
@@ -100,7 +99,6 @@ router.route('/cart/add/:typeID')
     .get(shoppingCart.add);
 
 //image upload for docs
-
 router.route('/imageupload')
     .all(isAuthenticated)
     .all(isAdmin)
