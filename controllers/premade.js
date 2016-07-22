@@ -23,8 +23,8 @@ function getDbs() {
     });
 }
 
-premade.index = (req, res, next) => {
-    getDbs().then((dbs)=> {
+premade.index = (req, res) => {
+    DB.getJoin({categories: true}).then((dbs)=> {
         return res.render('premade/index', {dbs});
     }).catch(err => renderError(err, res));
 };

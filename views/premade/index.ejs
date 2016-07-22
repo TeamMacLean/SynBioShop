@@ -6,7 +6,18 @@
     <div class="container">
 
         <h2>Pre Made</h2>
-        <p>This page needs some content, ideas?</p>
+
+        <% dbs.map(function(db){ %>
+
+        <h3><a href="/premade/<%- db.id %>"><%- db.name %></a></h3>
+
+        <ul>
+            <% db.categories.map(function(category){ %>
+            <li><a href="/premade/<%- db.id %>/<%- category.id %>"><%- category.name %></a></li>
+            <% }); %>
+        </ul>
+        <% }); %>
+
     </div>
 </div>
 
