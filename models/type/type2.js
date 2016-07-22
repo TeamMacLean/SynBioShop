@@ -4,12 +4,13 @@ const Type2 = {};
 
 Type2.model = thinky.createModel('Type2', {
     id: type.string(),
+    name: type.string().required(),
     dbID: type.string().required(),
     categoryID: type.string().required(),
-    code: type.string(),
-    description: type.string(),
-    speciesOfOrigin: type.string(),
-    whoMadeIt: type.string()
+    code: type.string().required(),
+    description: type.string().required(),
+    speciesOfOrigin: type.string().required(),
+    whoMadeIt: type.string().required()
 });
 Type2.fields = [
     {type: 'text', name: 'code', text: 'Code'},
@@ -19,5 +20,6 @@ Type2.fields = [
 ];
 Type2.type = 2;
 Type2.typeName = 'Code, Description, Species of Origin, Who Made it';
+
 
 module.exports = Type2;

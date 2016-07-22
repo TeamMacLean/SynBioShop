@@ -1,43 +1,55 @@
 <% include ../../head.ejs %>
+<% include ../sidebar.ejs %>
 
-<div class="container">
+<div class="sidebar-push">
+    <div class="container">
 
-    <form method="post" action="/docs/<%- subject.id %>/new">
-        <% if(typeof document != 'undefined'){ %>
-        <input type="hidden" name="id" value="<%- document.id %>">
-        <% } %>
-
-        <div class="form-group">
-            <label for="title">Title</label>
+        <form method="post" action="/docs/<%- subject.id %>/new">
             <% if(typeof document != 'undefined'){ %>
-            <input id="title" name="title" class="wide" type="text" value="<%- document.title %>">
-            <% } else { %>
-            <input id="title" name="title" class="wide" type="text">
-            <% } %>
-        </div>
-        <div class="form-group">
-            <label for="tinymce">Content</label>
-            <% if(typeof document != 'undefined'){ %>
-            <textarea id="tinymce" class="wide" name="content"><%- document.content %></textarea>
-            <% } else { %>
-            <textarea id="tinymce" class="wide" name="content"></textarea>
+            <input type="hidden" name="id" value="<%- document.id %>" required>
             <% } %>
 
-        </div>
-        <div class="form-group">
-            <button type="submit">Save</button>
-        </div>
-    </form>
+            <div class="form-group">
+                <label for="title">Title</label>
+                <% if(typeof document != 'undefined'){ %>
+                <input id="title" name="title" class="wide" type="text" value="<%- document.title %>" required
+                <% } else { %>
+                <input id="title" name="title" class="wide" type="text" required>
+                <% } %>
+            </div>
+            <div class="form-group">
+                <label for="tinymce">Content</label>
+                <% if(typeof document != 'undefined'){ %>
+                <textarea id="tinymce" class="wide" name="content"><%- document.content %></textarea>
+                <% } else { %>
+                <textarea id="tinymce" class="wide" name="content"></textarea>
+                <% } %>
 
+            </div>
+            <div class="form-group">
+                <button type="submit" class="success">Save</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script src="/components/tinymce/tinymce.min.js"></script>
 <script src="/components/tinymce/themes/modern/theme.min.js"></script>
 
+<script src="/components/tinymce/plugins/image/plugin.min.js"></script>
+<script src="/components/tinymce/plugins/imagetools/plugin.min.js"></script>
+
 <script>
     tinymce.baseURL = "/components/tinymce/";
     tinymce.init({
-        height: 300,
-        selector: '#tinymce'
+        height: 500,
+        plugins: 'image imagetools',
+        selector: '#tinymce',
+//        automatic_uploads: true,
+//        file_browser_callback_types: 'image',
+//        file_browser_callback: function(callback, value, meta) {
+//        },
+        images_upload_url: '/imageupload',
+        images_upload_base_path: '/doc_images'
     });</script>
 <% include ../../foot.ejs %>

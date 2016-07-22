@@ -31,3 +31,6 @@ const Document = thinky.createModel('Document', {
 // });
 
 module.exports = Document;
+
+const Subject = require('./subject');
+Document.belongsTo(Subject, 'subject', 'subjectID', 'id');

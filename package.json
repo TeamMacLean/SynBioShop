@@ -12,6 +12,8 @@
     "gravatar": "^1.5.2",
     "less-middleware": "^2.1.0",
     "multer": "^0.1.8",
+    "nodemailer": "^2.5.0",
+    "nodemailer-smtp-transport": "^2.6.0",
     "passport": "^0.3.2",
     "passport-ldapauth": "^0.5.0",
     "session-rethinkdb": "^2.0.0",

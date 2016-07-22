@@ -13,17 +13,18 @@ Type1.type = 1;
 Type1.typeName = 'Code/Sequence, Inside Overhangs, Outside overhangs, Description, Resistance';
 Type1.model = thinky.createModel('Type1', {
     id: type.string(),
+    name: type.string().required(),
     dbID: type.string().required(),
     categoryID: type.string().required(),
-    codeSequence: type.string(),
-    insideOverhangs: type.string(),
-    outsideOverhangs: type.string(),
-    description: type.string(),
-    resistance: type.string()
+    codeSequence: type.string().required(),
+    insideOverhangs: type.string().required(),
+    outsideOverhangs: type.string().required(),
+    description: type.string().required(),
+    resistance: type.string().required()
 });
 
 
-Type1.model.defineStatic('fields', () => Type1.fields);
+// Type1.model.defineStatic('fields', () => Type1.fields);
 
 
 module.exports = Type1;

@@ -4,10 +4,16 @@
 <div class="sidebar-push">
     <div class="container">
 
-        <div class="form-group">
-            <a href="/premade/<%- db.id %>/new" class="button primary">New Category</a>
-            <a href="/premade/<%- db.id %>/delete" class="button danger">Delete Datebase</a>
+        <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+        <div class="tile pad">
+            <h4>Admin</h4>
+            <div class="form-group">
+                <a href="/premade/<%- db.id %>/new" class="button primary">New Category</a>
+                <a href="/premade/<%- db.id %>/delete" class="button danger">Delete Datebase</a>
+            </div>
         </div>
+        <% } %>
+
 
         <h2 class="center"><%- db.name %></h2>
 

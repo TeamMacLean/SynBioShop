@@ -5,14 +5,16 @@
         <div class="tile pad">
             <h4>Admin</h4>
             <div class="form-group">
-                <li><a href="/premade/new" class="button primary">New</a></li>
+                <li><a href="/docs/new" class="button primary">New</a></li>
             </div>
         </div>
         <% } %>
+
         <li><a href="#">Show All</a></li>
-        <% dbs.map(function(db){ %>
-        <li><a href="/premade/<%- db.id %>"><span class="icon" data-icon="&#xe07b;"></span><span
-                        class="name"><%- db.name %></span></a></li>
+
+        <% subjects.map(function(subject){ %>
+        <li><a href="/docs/<%- subject.id %>"><span class="icon" data-icon="&#xe07b;"></span><span
+                        class="name"><%- subject.name %></span></a></li>
         <% }) %>
     </ul>
 </div>

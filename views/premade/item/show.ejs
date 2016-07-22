@@ -1,0 +1,30 @@
+<% include ../../head.ejs %>
+<% include ./../sidebar.ejs %>
+<div class="sidebar-push">
+    <div class="container">
+
+        <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+        <div class="tile pad">
+            <h4>Admin</h4>
+            <div class="form-group">
+                <a href="#" class="button danger">Delete Item</a>
+            </div>
+        </div>
+        <% } %>
+
+
+        <h2><%- item.name %></h2>
+
+        <% headings.map(function(heading, i){ %>
+        <p><span class="bold"><%- heading %>:</span> <%- values[i] %></p>
+        <% }); %>
+
+        <!--<div class="pull-right">-->
+        <a href="#" class="button primary outline icon"><span
+                    data-icon="&#xe004;"></span></a>
+        <a href="/cart/add/<%- item.id %>" class="button success outline icon"><span
+                    data-icon="&#x4c;"></span></a>
+        <!--</div>-->
+    </div>
+</div>
+<% include ../../foot.ejs %>

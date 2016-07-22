@@ -11,6 +11,11 @@
     "searchBase": "ou=example.org",
     "searchFilter": "(sAMAccountName={{username}})"
   },
+  "email": {
+    "host": "",
+    "port": "25",
+    "from": "sender@address"
+  },
   "admins": [
     "pagem"
   ]

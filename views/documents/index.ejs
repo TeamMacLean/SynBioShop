@@ -1,31 +1,11 @@
 <% include ../head.ejs %>
+<% include ./sidebar.ejs %>
 
-<div class="container">
+<div class="sidebar-push">
+    <div class="container">
 
-    <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-    <div class="form-group">
-        <a href="/docs/new" class="button primary">New Subject</a>
+        <h2>Documents</h2>
+        <p>This page needs some content, ideas?</p>
     </div>
-    <% } %>
-
-    <% subjects.map(function(subject){ %>
-
-    <% if(!subject.disabled){ %>
-    <div class="row">
-        <div class="col12">
-            <a href="/docs/<%- subject.id %>"><h4><%- subject.name %></h4></a>
-        </div>
-    </div>
-    <% } else { %>
-    <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-    <div class="row">
-        <div class="col12">
-            <a href="/docs/<%- subject.id %>"><h4><%- subject.name %> <span class="badge">Disabled</span></h4></a>
-        </div>
-    </div>
-    <% } %>
-    <% } %>
-    <% }); %>
-
 </div>
 <% include ../foot.ejs %>

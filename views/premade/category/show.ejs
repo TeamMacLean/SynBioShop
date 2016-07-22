@@ -3,35 +3,47 @@
 <div class="sidebar-push">
     <div class="container">
 
-        <div class="form-group">
-            <a href="/premade/<%- db.id %>/<%- category.id %>/new" class="button primary">New Item</a>
-            <a href="/premade/<%- db.id %>/<%- category.id %>/delete" class="button danger">Delete Category</a>
+        <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+        <div class="tile pad">
+            <h4>Admin</h4>
+            <div class="form-group">
+                <a href="/premade/<%- db.id %>/<%- category.id %>/new" class="button primary">New Item</a>
+                <a href="/premade/<%- db.id %>/<%- category.id %>/delete" class="button danger">Delete Category</a>
+            </div>
         </div>
+        <% } %>
 
         <h2 class="center"><%- category.name %></h2>
 
-        <% if(items.length){ %>
+        <% if(headings.length && items.length){ %>
         <table class="responsive">
             <thead>
             <tr>
+                <th>Name</th>
                 <% headings.map(function(t){ %>
                 <th><%- t %></th>
                 <% }); %>
-                <th></th>
+                <th class="center">Download</th>
+                <th class="center">Add to cart</th>
+
             </tr>
             </thead>
             <tbody>
 
             <% items.map(function(t){ %>
             <tr>
+                <td><a href="/premade/<%- db.id %>/<%- category.id %>/<%- t.id %>"><%- t.name %></a></td>
                 <% t.items.map(function(tt){ %>
                 <td>
                     <%- tt %>
                 </td>
                 <% }) %>
-                <td><a href="/cart/add/<%- t.id %>" class="button primary icon"><span data-icon="&#x4c;"></span></a>
-                    <a href="#" class="button danger icon"><span data-icon="&#xe019;"></span></a>
-                </td>
+                <td class="center"><a href="#" class="button primary outline icon"><span
+                                data-icon="&#xe004;"></span></a></td>
+                <td class="center"><a href="/cart/add/<%- t.id %>" class="button success outline icon"><span
+                                data-icon="&#x4c;"></span></a></td>
+                <!--<a href="#" class="button danger outline icon"><span data-icon="&#xe019;"></span></a>-->
+
             </tr>
 
             <% }) %>

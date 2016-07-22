@@ -1,19 +1,25 @@
 <% include ../../head.ejs %>
+<% include ../sidebar.ejs %>
 
-<div class="container">
+<div class="sidebar-push">
+    <div class="container">
 
-    <h2><%- subject.name %></h2>
+        <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+        <div class="tile pad">
+            <h4>Admin</h4>
+            <div class="form-group">
+                <a href="/docs/<%- subject.id %>/new" class="button primary">Add Document</a>
+                <a href="#" class="button danger">Delete Subject</a>
+            </div>
+        </div>
+        <% } %>
 
-    <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-    <div class="form-group">
-        <a href="/docs/<%- subject.id %>/new" class="button primary">Add Document</a>
+        <h2><%- subject.name %></h2>
+
+        <% subject.documents.map(function(document){ %>
+        <h3><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></h3>
+        <% }); %>
+
     </div>
-    <% } %>
-
-    <% subject.documents.map(function(document){ %>
-    <h3><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></h3>
-    <% }); %>
-
 </div>
-
 <% include ../../foot.ejs %>

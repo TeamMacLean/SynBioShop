@@ -1,28 +1,29 @@
 <% include ../../head.ejs %>
+<% include ../sidebar.ejs %>
 
-<div class="container">
+<div class="sidebar-push">
+    <div class="container">
 
-    <div class="form-group">
-        <a href="/docs" class="button">Back</a>
-    </div>
+        <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+        <div class="tile pad">
+            <h4>Admin</h4>
+            <div class="form-group">
+                <a href="/docs/<%- document.subject.id %>/<%- document.id %>/edit" class="button primary">Edit Document</a>
 
-    <h2 class="center"><%- document.title %></h2>
-    <div><%- document.content %></div>
-
-    <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-    <div class="row">
-        <div class="col12">
-            <a href="/docs/<%-subject.id%>/<%- document.id %>/edit" class="button primary">Edit</a>
-
-            <% if(document.disabled){ %>
-            <a href="/docs/<%-subject.id%>/<%- document.id %>/enable" class="button success">Enable</a>
-            <% } else { %>
-            <a href="/docs/<%-subject.id%>/<%- document.id %>/disable" class="button danger">Disable</a>
-            <% } %>
-
+                <% if(document.disabled){ %>
+                <a href="/docs/<%- document.subject.id %>/<%- document.id %>/enable" class="button success">Enable Document</a>
+                <% } else { %>
+                <a href="/docs/<%- document.subject.id %>/<%- document.id %>/disable" class="button danger">Disable Document</a>
+                <% } %>
+            </div>
         </div>
-    </div>
-    <% } %>
+        <% } %>
 
+        <h2 class="center"><%- document.title %></h2>
+        <div><%- document.content %></div>
+
+
+
+    </div>
 </div>
 <% include ../../foot.ejs %>

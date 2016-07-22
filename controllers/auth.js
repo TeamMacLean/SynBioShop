@@ -30,9 +30,9 @@ Auth.signInPost = (req, res, next) => {
             LOG.error(err);
             return next(err);
         }
-        if (info) {
-            LOG.log(info);
-        }
+        // if (info) {
+        //     LOG.log(info);
+        // }
         if (!user) {
             let message = 'No such user';
             if (info && info.message) {

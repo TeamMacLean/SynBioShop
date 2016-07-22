@@ -12,9 +12,6 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const Cart = require('./models/cart');
 
-const socketController = require('./controllers/socket');
-socketController(io);
-
 const util = require('./lib/util.js');
 const routes = require('./routes');
 app.set('views', path.join(__dirname, 'views'));
@@ -53,7 +50,7 @@ app.use((req, res, next) => {
         if (req.user.iconURL) {
             res.locals.signedInUser.iconURL = req.user.iconURL;
         }
-        Cart.filter({username: res.locals.signedInUser.username}).run().then(function (carts) {
+        Cart.filter({username: res.locals.signedInUser.username}).getJoin({items: true}).then(function (carts) {
             if (carts.length == 1) {
                 res.locals.signedInUser.cart = carts[0];
             } else {

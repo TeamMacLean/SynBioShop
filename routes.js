@@ -77,6 +77,10 @@ router.route('/premade/:id/:categoryID/new')
     .get(premade.item.new)
     .post(premade.item.newPost);
 
+router.route('/premade/:id/:categoryID/:itemID')
+    .all(isAuthenticated)
+    .get(premade.item.show);
+
 
 //CUSTOM
 router.route('/custom')
@@ -88,8 +92,19 @@ router.route('/cart')
     .all(isAuthenticated)
     .get(shoppingCart.index);
 
+router.route('/cart/order')
+    .all(isAuthenticated)
+    .get(shoppingCart.placeOrder);
+
 router.route('/cart/add/:typeID')
     .get(shoppingCart.add);
+
+//image upload for docs
+
+router.route('/imageupload')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .post(docs.uploadImage);
 
 //AUTH
 
@@ -104,6 +119,7 @@ router.route('*')
     .get((req, res) => {
         res.render('404');
     });
+
 
 
 function isAuthenticated(req, res, next) {
