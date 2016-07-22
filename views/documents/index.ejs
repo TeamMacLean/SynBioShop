@@ -5,7 +5,20 @@
     <div class="container">
 
         <h2>Documents</h2>
-        <p>This page needs some content, ideas?</p>
+
+        <% subjects.map(function(subject){ %>
+
+        <h3><a href="/docs/<%- subject.id %>"><%- subject.name %></a></h3>
+
+        <ul>
+            <% subject.documents.map(function(document){ %>
+
+            <li><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></li>
+
+            <% }); %>
+        </ul>
+        <% }); %>
+
     </div>
 </div>
 <% include ../foot.ejs %>

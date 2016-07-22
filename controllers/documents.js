@@ -1,6 +1,5 @@
 const Document = require('../models/document');
 const renderError = require('../lib/renderError');
-const Log = require('../lib/log');
 
 const Subject = require('../models/subject');
 
@@ -21,7 +20,7 @@ function getSubjects() {
 }
 
 docs.index = (req, res) => {
-    getSubjects().then((subjects)=> {
+    Subject.getJoin({documents: true}).then(subjects => {
         return res.render('documents/index', {subjects});
     }).catch(err => renderError(err, res));
 };
