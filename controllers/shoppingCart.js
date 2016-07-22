@@ -85,7 +85,7 @@ ShoppingCart.add = (req, res, next) => {
 };
 
 ShoppingCart.ensureCart = (username, join) => new Promise((good, bad) => {
-    join = join | {};
+    join = join || {};
     Cart.filter({username}).getJoin(join).then(carts => {
         if (carts.length < 1) {
             new Cart({

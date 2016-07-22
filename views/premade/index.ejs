@@ -5,11 +5,12 @@
 <div class="sidebar-push">
     <div class="container">
 
-        <h2>Pre Made</h2>
+        <h2 class="center">Pre Made</h2>
 
         <% dbs.map(function(db){ %>
 
-        <h3><a href="/premade/<%- db.id %>"><%- db.name %></a></h3>
+        <h3><a href="
+        /premade/<%- db.id %>"><%- db.name %></a></h3>
 
         <ul>
             <% db.categories.map(function(category){ %>

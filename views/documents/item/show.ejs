@@ -8,20 +8,23 @@
         <div class="tile pad">
             <h4>Admin</h4>
             <div class="form-group">
-                <a href="/docs/<%- document.subject.id %>/<%- document.id %>/edit" class="button primary">Edit Document</a>
+                <a href="/docs/<%- document.subject.id %>/<%- document.id %>/edit" class="button primary">Edit
+                    Document</a>
 
                 <% if(document.disabled){ %>
-                <a href="/docs/<%- document.subject.id %>/<%- document.id %>/enable" class="button success">Enable Document</a>
+                <a href="/docs/<%- document.subject.id %>/<%- document.id %>/enable" class="button success">Enable
+                    Document</a>
                 <% } else { %>
-                <a href="/docs/<%- document.subject.id %>/<%- document.id %>/disable" class="button danger">Disable Document</a>
+                <a href="/docs/<%- document.subject.id %>/<%- document.id %>/disable" class="button danger">Disable
+                    Document</a>
                 <% } %>
             </div>
         </div>
         <% } %>
 
         <h2 class="center"><%- document.title %></h2>
+        <br>
         <div><%- document.content %></div>
-
 
 
     </div>

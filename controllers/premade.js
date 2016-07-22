@@ -154,7 +154,7 @@ premade.item.newPost = (req, res, next) => {
         });
         const newType = type.model(obj);
         newType.name = req.body.name;
-        newType.quantity = req.body.quantity | CartItem.QUANTITY_OPTIONS.normal;
+        newType.quantity = req.body.quantity || CartItem.QUANTITY_OPTIONS.normal;
         newType.file = 'TODO';
         newType.save().then(savedType => res.redirect(`/premade/${dbID}/${categoryID}`)).catch(err => renderError(err, res))
     }).catch(err => renderError(err, res));
