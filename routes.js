@@ -8,6 +8,7 @@ const premade = require('./controllers/premade');
 const custom = require('./controllers/custom');
 const Auth = require('./controllers/auth');
 const shoppingCart = require('./controllers/shoppingCart');
+const orders = require('./controllers/orders');
 
 router.route('/')
     .get((req, res) => res.render('index'));
@@ -91,21 +92,33 @@ router.route('/cart')
     .all(isAuthenticated)
     .get(shoppingCart.index);
 
+router.route('/cart/update')
+    .all(isAuthenticated)
+    .post(shoppingCart.update);
+
 router.route('/cart/order')
     .all(isAuthenticated)
     .get(shoppingCart.placeOrder);
 
+router.route('/cart/remove/:cartItemID')
+    .all(isAuthenticated)
+    .get(shoppingCart.remove);
+
 router.route('/cart/add/:typeID')
     .get(shoppingCart.add);
 
-//image upload for docs
+router.route('/order/:id')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(orders.show);
+
+//IMAGE UPLOAD
 router.route('/imageupload')
     .all(isAuthenticated)
     .all(isAdmin)
     .post(docs.uploadImage);
 
 //AUTH
-
 router.route('/signin')
     .get(Auth.signIn)
     .post(Auth.signInPost);
@@ -117,7 +130,6 @@ router.route('*')
     .get((req, res) => {
         res.render('404');
     });
-
 
 
 function isAuthenticated(req, res, next) {

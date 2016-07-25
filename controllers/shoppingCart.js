@@ -2,18 +2,21 @@ const renderError = require('../lib/renderError');
 const Type = require('../models/type');
 const Cart = require('../models/cart');
 const CartItem = require('../models/cartItem');
+const Order = require('../models/order');
 const Log = require('../lib/log');
 const ShoppingCart = {};
+const async = require('async');
+const Email = require('../lib/email');
+const Flash = require('../lib/flash');
 
-/**
- * render site index
- * @param req {request}
- * @param res {response}
- */
 ShoppingCart.index = (req, res) => {
-    Cart.filter({username: req.user.username}).getJoin({items: true}).then(function (carts) {
-        if (carts.length == 1) {
-            const cart = carts[0];
+    ShoppingCart.ensureCart(req.user.username, {items: true})
+        .then((cart)=> {
+
+            if (!cart.items) {
+                cart.items = [];
+            }
+
             const promises = cart.items.map(function (item) {
 
                 return new Promise((resolve, reject)=> {
@@ -36,10 +39,7 @@ ShoppingCart.index = (req, res) => {
                 return renderError(err, res);
             });
 
-        } else {
-            return renderError('found multiple carts for user ' + req.user.username, res);
-        }
-    }).error(function (err) {
+        }).catch(function (err) {
         return renderError(err, res);
     });
 };
@@ -53,13 +53,13 @@ ShoppingCart.add = (req, res, next) => {
     Type.getByID(typeID).then((types) => {
         if (types.length == 1) {
             ShoppingCart.ensureCart(req.user.username, {items: true}).then((cart)=> {
-                console.log('THI CART', cart);
                 cart.contains(typeID)
                     .then((alreadyInCart)=> {
                         if (alreadyInCart) {
                             return res.render('cart/exists');
                         } else {
                             ShoppingCart.ensureAdd(req.user.username, types[0].id).then(() => {
+                                Flash.success(req, 'Added to cart');
                                 return res.redirect('/cart');
                             }).catch((err) => {
                                 return renderError(err, res);
@@ -114,46 +114,80 @@ ShoppingCart.ensureAdd = (username, typeID) => new Promise((good, bad) => {
     });
 });
 
-ShoppingCart.placeOrder = (req, res, next) => {
-    return res.redirect('');
-};
-
-
-// Cart.filter({username}).run().then(carts => {
-//     if (carts.length == 1) {
-//         const foundCart = carts[0];
-//         new CartItem({cartID: foundCart.id, typeID: typeID})
-//             .save().then(savedCartItem => {
-//             foundCart.items = [savedCartItem];
-//             return good(foundCart);
-//         }).catch(err => {
-//             return bad(err);
-//         });
-//     } else {
-//         if (carts.length > 1) {
-//             return bad(new Error('more than one cart found for that user'));
-//         } else {
-//             new Cart({
-//                 username
-//             }).save().then(savedCart => {
-//                 new CartItem({cartID: savedCart.id, typeID: typeID})
-//                     .save().then(savedCartItem => {
-//                     savedCart.items = [savedCartItem];
-//                     return good(savedCart);
-//                 }).catch(err => {
-//                     return bad(err);
-//                 });
-//             }).catch(err => {
-//                 return bad(err);
-//             })
-//         }
-//     }
-// }).catch(err => {
-//     return bad(err);
-// });
-
 ShoppingCart.update = (req, res) => {
 
+    var items = req.body.item;
+
+
+    if (items && !Array.isArray(items)) {
+        items = [items]
+    }
+
+    async.each(items, (itemID, cb)=> {
+        CartItem.get(itemID).then((item)=> {
+            item.largeScale = !!req.body['largeScale-' + itemID];
+            item.save().then(()=> {
+                return cb();
+            }).catch(err => {
+                return cb(err);
+            });
+        }).catch(err => {
+            return cb(err);
+        });
+    }, (err)=> {
+        if (err) {
+            return renderError(err, res);
+        } else {
+            Flash.success(req, 'Cart updated');
+            return res.redirect('/cart');
+        }
+    });
+};
+
+ShoppingCart.remove = (req, res, next) => {
+    return res.redirect('/');
+};
+
+ShoppingCart.placeOrder = (req, res) => {
+    const username = req.user.username;
+    ShoppingCart.ensureCart(username, {items: true}).then((cart)=> {
+        new Order({username: username}).save().then((savedOrder)=> {
+            var saving = [];
+
+            cart.items.map(function (item) {
+                item.orderID = savedOrder.id;
+                saving.push(item.save());
+            });
+
+            Promise.all(saving).then(()=> {
+                savedOrder.getTypes().then((orderWithTypes)=> {
+                    console.log('passing to email', orderWithTypes);
+                    Email.newOrder('New Order', 'there has been a new order', orderWithTypes, req.user).then(()=> {
+                        cart.empty().then(()=> {
+                            Flash.success(req, 'Order successfully placed');
+                            return res.redirect('/cart');
+                        }).catch((err)=> {
+                            return renderError(err, res);
+                        })
+                    }).catch((err)=> {
+                        return renderError(err, res);
+                    });
+                }).catch((err)=> {
+                    return renderError(err, res);
+                });
+
+            }).catch((err)=> {
+                return renderError(err, res);
+            });
+
+        }).catch((err)=> {
+            return renderError(err, res);
+        });
+
+
+    }).catch((err)=> {
+        return renderError(err, res);
+    });
 };
 
 

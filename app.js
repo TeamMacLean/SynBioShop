@@ -11,6 +11,7 @@ const cookieParser = require('cookie-parser');
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const Cart = require('./models/cart');
+const flash = require('express-flash');
 
 const util = require('./lib/util.js');
 const routes = require('./routes');
@@ -22,6 +23,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
+app.use(flash());
 app.use(multer({
     dest: config.tmpDir
 }));
@@ -65,6 +67,14 @@ app.use((req, res, next) => {
         next();
     }
 });
+
+//FLASH TEST
+// app.use(function (req, res, next) {
+//     req.flash('success_messages', 'success test');
+//     req.flash('info_messages', 'info test');
+//     req.flash('error_messages', 'error test');
+//     next();
+// });
 
 util.setupPassport();
 

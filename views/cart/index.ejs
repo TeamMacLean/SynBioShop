@@ -5,34 +5,44 @@
     <% if(typeof cart != 'undefined'){ %>
     <% if(cart.items.length > 0){ %>
 
-    <table class="cart">
-        <thead>
-        <tr>
-            <th>Item</th>
-            <th class="center">Large Scale</th>
-            <th class="center">Action</th>
-        </tr>
+    <p>5mL will be provided unless 'Large Scale' is selected.</p>
 
-        </thead>
-        <tbody>
-        <% cart.items.map(function(item){ %>
-        <tr>
-            <td><a href="#"><%- item.type.name %></a></td>
-            <td class="center">
-                <input name="large-scale" type="checkbox">
-            </td>
-            <td class="center"><a href="/cart/remove/<%- item.id %>"
-                                  class="button danger outline icon remove-from-cart"><span
-                            data-icon="&#xe019;"></span></a>
-            </td>
-        </tr>
-        <% }); %>
-        </tbody>
-    </table>
-    <div class="pull-right">
-        <a href="#" class="button primary">Update Cart</a>
-        <a href="/placeorder" class="button success">Place Order</a>
-    </div>
+    <form method="post" action="/cart/update">
+        <table class="cart">
+            <thead>
+            <tr>
+                <th>Item</th>
+                <th class="center">Large Scale</th>
+                <th class="center">Action</th>
+            </tr>
+
+            </thead>
+            <tbody>
+            <% cart.items.map(function(item){ %>
+            <input type="hidden" name="item" value="<%- item.id %>">
+            <tr>
+                <td><a href="/db/category/item"><%- item.type.name %></a></td>
+                <td class="center">
+                    <input type='checkbox' value="<%- item.largeScale %>"
+                            <% if(item.largeScale){ %>
+                           checked
+                            <% } %>
+                           name='largeScale-<%- item.id %>'>
+                </td>
+                <td class="center"><a href="/cart/remove/<%- item.id %>"
+                                      class="button danger outline icon remove-from-cart"><span
+                                data-icon="&#xe019;"></span></a>
+                </td>
+            </tr>
+            <% }); %>
+            </tbody>
+        </table>
+
+        <div class="pull-right">
+            <input type="submit" class="button primary" value="Update Cart">
+            <a href="/cart/order" class="button success">Place Order</a>
+        </div>
+    </form>
     <% } else { %>
     <h3 class="center">Your Shopping Basket is empty.</h3>
     <% } %>

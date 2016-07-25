@@ -7,9 +7,9 @@ const docs = {};
 docs.subject = {};
 docs.document = {};
 
-function getSubjects() {
+function getSubjects(joiner) {
     return new Promise((resolve, reject) => {
-        Subject.run().then(subjects => {
+        Subject.getJoin(joiner).then(subjects => {
             subjects.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             resolve(subjects);
         })
@@ -70,14 +70,18 @@ docs.document.save = (req, res) => {
     const id = req.body.id;
     const content = req.body.content;
 
-    Subject.get(subjectID).then(subject => {
+    Subject.get(subjectID).getJoin({documents: true}).then(subject => {
             if (id) {
                 Document.get(id).then((document)=> {
-                    // document.disabled = false;
+                    document.title = req.body.title;
+                    document.content = req.body.content;
                     document.save().then(()=> {
                         document.subject = subject;
-                        getSubjects().then((subjects)=> {
-                            return res.render('documents/show', {document, subjects});
+                        getSubjects({documents: true}).then((subjects)=> {
+                            subject.documents.map(function (document) {
+                                console.log(document);
+                            });
+                            return res.render('documents/subject/show', {document, subjects, subject});
                         }).catch((err) => renderError(err, res));
                     })
                         .catch((error)=> {

@@ -1,5 +1,6 @@
 $(function () {
     initUserMenu();
+    initFlashButtons();
 });
 
 function initUserMenu() {
@@ -14,12 +15,14 @@ function initUserMenu() {
     });
 }
 
-$(function () {
-    socket.on('error', function (err) {
-        console.error(err);
-    })
-});
-
+function initFlashButtons() {
+    $('*[data-close="true"]').on('click', function () {
+        var self = $(this).parent().parent();
+        self.slideToggle("fast", function () {
+            self.remove();
+        });
+    });
+}
 //$(function () {
 //
 //  $('#addDBButton').on('click', function () {

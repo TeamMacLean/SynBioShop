@@ -14,7 +14,8 @@
   "email": {
     "host": "",
     "port": "25",
-    "from": "sender@address"
+    "from": "sender@address",
+    "emailDomain": "@nbi.ac.uk"
   },
   "admins": [
     "pagem"

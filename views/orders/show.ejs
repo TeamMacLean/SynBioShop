@@ -1,0 +1,18 @@
+<% include ../head.ejs %>
+
+<div class="container">
+
+    <h2>Order</h2>
+
+    <p>User: <%- order.username %></p>
+    <p>Complete: <%- order.complete %></p>
+
+    <% order.items.map(function(item){ %>
+
+    <p>Large Scale: <%- item.largeScale %></p>
+
+    <% }) %>
+
+</div>
+
+<% include ../foot.ejs %>

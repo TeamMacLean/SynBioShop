@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta name="viewport" content="width=device-width"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>New Order</title>
+</head>
+
+<body>
+
+<h1 class="center">New SynBio Order</h1>
+<p class="center">Placed by <a href="mailto:<%- locals.user.mail %>"><%- locals.user.name %></a></p>
+
+<h2 class="center">Order Details</h2>
+<table class="cart">
+    <thead>
+    <tr>
+        <th>Item</th>
+        <th class="center">Large Scale</th>
+    </tr>
+
+    </thead>
+    <tbody>
+    <% locals.order.items.map(function(item){ %>
+    <tr>
+        <td><%- item.type.name %></td>
+        <td class="center">
+            <%- item.largeScale %>
+        </td>
+    </tr>
+    <% }); %>
+    </tbody>
+</table>
+<a href="<%- baseURL %>/order/<%- locals.order.id %>" class="center">View order on site</a>
+</body>
+</html>
