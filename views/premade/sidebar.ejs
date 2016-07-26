@@ -1,18 +1,20 @@
 <div class="nav-left">
-    <ul>
 
-        <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-        <div class="tile pad">
-            <h4>Admin</h4>
-            <div class="form-group">
-                <li><a href="/premade/new" class="button primary">New</a></li>
-            </div>
-        </div>
-        <% } %>
-        <li><a href="/premade">Show All</a></li>
-        <% dbs.map(function(db){ %>
-        <li><a href="/premade/<%- db.id %>"><span class="icon" data-icon="&#xe07b;"></span><span
+    <h2>Premade</h2>
+
+    <ul>
+        <li><a href="/premade" class="name"><span class="icon arrow_carrot-right"></span>Show All</a></li>
+        <% dbs.sort().map(function(db){ %>
+        <li><a href="/premade/<%- db.id %>"><span class="icon arrow_carrot-right"></span><span
                         class="name"><%- db.name %></span></a></li>
         <% }) %>
     </ul>
+    <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+    <div class="tile pad">
+        <h4>Admin</h4>
+        <div class="form-group">
+            <li><a href="/premade/new" class="button primary">New</a></li>
+        </div>
+    </div>
+    <% } %>
 </div>

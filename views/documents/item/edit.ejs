@@ -36,15 +36,19 @@
 <script src="/components/tinymce/tinymce.min.js"></script>
 <script src="/components/tinymce/themes/modern/theme.min.js"></script>
 
-<script src="/components/tinymce/plugins/image/plugin.min.js"></script>
-<script src="/components/tinymce/plugins/imagetools/plugin.min.js"></script>
+
+<% var plugins = 'image imagetools autolink' %>
+<% plugins.split(' ').map(function(plugin){ %>
+<script src="/components/tinymce/plugins/<%- plugin %>/plugin.min.js"></script>
+<% }) %>
 
 <script>
     tinymce.baseURL = "/components/tinymce/";
     tinymce.init({
         height: 500,
-        plugins: 'image imagetools',
+        plugins: "<%- plugins %>",
         selector: '#tinymce',
+        extended_valid_elements: "iframe[src|frameborder|style|scrolling|class|width|height|name|align]",
 //        automatic_uploads: true,
 //        file_browser_callback_types: 'image',
 //        file_browser_callback: function(callback, value, meta) {
