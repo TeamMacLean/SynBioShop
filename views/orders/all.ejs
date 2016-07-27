@@ -1,0 +1,34 @@
+<% include ../head.ejs %>
+
+<div class="container">
+
+    <h2 class="center">Orders</h2>
+
+
+    <h3 class="center">Open</h3>
+    <div class="row">
+        <% if(orders.open.length == 0){ %>
+        <p class="center">None, Well done!</p>
+        <% } %>
+        <% orders.open.map(function(order){ %>
+        <div class="col4 auto-clear">
+            <% include ./_one.ejs %>
+        </div>
+        <% }); %>
+    </div>
+
+    <h3 class="center">Closed</h3>
+    <div class="row">
+        <% if(orders.closed.length == 0){ %>
+        <p class="center">None</p>
+        <% } %>
+        <% orders.closed.map(function(order){ %>
+        <div class="col4">
+            <% include ./_one.ejs %>
+        </div>
+        <% }); %>
+    </div>
+
+</div>
+
+<% include ../foot.ejs %>

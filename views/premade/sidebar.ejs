@@ -3,10 +3,17 @@
     <h2>Premade</h2>
 
     <ul>
-        <li><a href="/premade" class="name"><span class="icon arrow_carrot-right"></span>Show All</a></li>
+        <li>
+            <span class="icon arrow_carrot-right"></span>
+            <a href="/premade" class="name">Show All</a>
+        </li>
         <% dbs.sort().map(function(db){ %>
-        <li><a href="/premade/<%- db.id %>"><span class="icon arrow_carrot-right"></span><span
-                        class="name"><%- db.name %></span></a></li>
+        <li>
+            <span class="icon arrow_carrot-right"></span>
+            <a href="/premade/<%- db.id %>">
+                <span class="name"><%- db.name %></span>
+            </a>
+        </li>
         <% }) %>
     </ul>
     <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>

@@ -8,15 +8,24 @@
 
         <% subjects.map(function(subject){ %>
 
-        <h3><a href="/docs/<%- subject.id %>"><%- subject.name %></a></h3>
+        <h3>
+            <%- subject.name %>
+        </h3>
 
-        <ul>
-            <% subject.documents.map(function(document){ %>
+        <% subject.documents.map(function(document){ %>
+        <li><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></li>
+        <% }); %>
 
-            <li><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></li>
+        <% subject.subjects.map(function(subSubject){ %>
+        <h3><a href="/docs/<%- subSubject.id %>"><%- subSubject.name %></a></h3>
 
-            <% }); %>
-        </ul>
+        <% subSubject.documents.map(function(document){ %>
+
+        <h4><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></h4>
+
+        <% }); %>
+        <% }); %>
+        <br>
         <% }); %>
 
     </div>

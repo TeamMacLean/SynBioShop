@@ -3,12 +3,18 @@
     <h2>Documentation</h2>
 
     <ul>
-
-        <li><a href="/docs" class="name"><span class="icon arrow_carrot-right" ></span>Show All</a></li>
+        <li>
+            <span class="icon arrow_carrot-right"></span>
+            <a href="/docs" class="name">Show All</a>
+        </li>
 
         <% subjects.sort().map(function(subject){ %>
-        <li><a href="/docs/<%- subject.id %>"><span class="icon arrow_carrot-right"></span><span
-                        class="name"><%- subject.name %></span></a></li>
+        <li>
+            <span class="icon arrow_carrot-right"></span>
+            <a href="/docs/<%- subject.id %>">
+                <span class="name"><%- subject.name %></span>
+            </a>
+        </li>
         <% }) %>
     </ul>
 

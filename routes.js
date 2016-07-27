@@ -28,6 +28,11 @@ router.route('/docs/:subjectID/new')
     .all(isAdmin)
     .get(docs.document.new)
     .post(docs.document.save);
+router.route('/docs/:subjectID/addsubject')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(docs.subject.new)
+    .post(docs.subject.save);
 router.route('/docs/:subjectID/:itemID')
     .get(docs.document.show);
 
@@ -107,16 +112,36 @@ router.route('/cart/remove/:cartItemID')
 router.route('/cart/add/:typeID')
     .get(shoppingCart.add);
 
+//IMAGE UPLOAD
+router.route('/imageupload')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(Auth.uploadImage)
+    .post(Auth.uploadImagePost);
+
+//ORDERS
+
+router.route('/orders')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(orders.showAll);
+
 router.route('/order/:id')
     .all(isAuthenticated)
     .all(isAdmin)
     .get(orders.show);
 
-//IMAGE UPLOAD
-router.route('/imageupload')
+router.route('/order/:id/complete')
     .all(isAuthenticated)
     .all(isAdmin)
-    .post(docs.uploadImage);
+    .get(orders.markAsComplete);
+
+
+router.route('/order/:id/incomplete')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(orders.markAsInComplete);
+
 
 //AUTH
 router.route('/signin')
@@ -128,6 +153,7 @@ router.route('/signout')
 
 router.route('*')
     .get((req, res) => {
+        console.log('404', req.url);
         res.render('404');
     });
 

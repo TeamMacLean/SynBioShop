@@ -9,16 +9,28 @@
             <h4>Admin</h4>
             <div class="form-group">
                 <a href="/docs/<%- subject.id %>/new" class="button primary">Add Document</a>
+                <a href="/docs/<%- subject.id %>/addsubject" class="button primary">Add Sub-Subject</a>
                 <!--<a href="#" class="button danger">Delete Subject</a>-->
             </div>
         </div>
         <% } %>
 
-        <h2><%- subject.name %></h2>
+        <h2 class="center"><%- subject.name %></h2>
 
         <% subject.documents.map(function(document){ %>
-        <h3><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></h3>
+        <li><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></li>
         <% }); %>
+
+        <% subject.subjects.map(function(subSubject){ %>
+        <h3><a href="/docs/<%- subSubject.id %>"><%- subSubject.name %></a></h3>
+
+        <% subSubject.documents.map(function(document){ %>
+
+        <h4><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></h4>
+
+        <% }); %>
+        <% }); %>
+
 
     </div>
 </div>

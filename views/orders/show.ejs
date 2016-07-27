@@ -13,6 +13,20 @@
 
     <% }) %>
 
+    <% if(!order.complete){ %>
+    <a href="/order/<%- order.id %>/complete" class="button primary confirm">Mark as complete</a>
+    <% } else { %>
+    <a href="/order/<%- order.id %>/incomplete" class="button primary confirm">Mark as incomplete</a>
+    <% } %>
+
 </div>
+
+<script>
+    $(function () {
+        $('.confirm').click(function () {
+            return window.confirm("Are you sure?");
+        });
+    });
+</script>
 
 <% include ../foot.ejs %>

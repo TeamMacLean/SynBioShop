@@ -37,10 +37,14 @@
 <script src="/components/tinymce/themes/modern/theme.min.js"></script>
 
 
-<% var plugins = 'image imagetools autolink' %>
+<% var plugins = 'image imagetools autolink hr link' %>
 <% plugins.split(' ').map(function(plugin){ %>
 <script src="/components/tinymce/plugins/<%- plugin %>/plugin.min.js"></script>
 <% }) %>
+
+<script src="/js/upload.js"></script>
+
+<% plugins += ' imageupload' %>
 
 <script>
     tinymce.baseURL = "/components/tinymce/";
@@ -49,11 +53,12 @@
         plugins: "<%- plugins %>",
         selector: '#tinymce',
         extended_valid_elements: "iframe[src|frameborder|style|scrolling|class|width|height|name|align]",
+        relative_urls: false,
 //        automatic_uploads: true,
 //        file_browser_callback_types: 'image',
 //        file_browser_callback: function(callback, value, meta) {
 //        },
-        images_upload_url: '/imageupload',
+//        images_upload_url: '/imageupload',
         images_upload_base_path: '/doc_images'
     });</script>
 <% include ../../foot.ejs %>

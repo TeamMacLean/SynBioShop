@@ -3,6 +3,9 @@ const passport = require('passport');
 const gravatar = require('gravatar');
 const renderError = require('../lib/renderError');
 const config = require('../config.json');
+const fs = require('fs');
+const path = require('path');
+var uuid = require('node-uuid');
 
 const LOG = require('../lib/log');
 /**
@@ -56,6 +59,23 @@ Auth.signInPost = (req, res, next) => {
             }
         });
     })(req, res, next);
+};
+
+Auth.uploadImage = (req, res, next) => {
+    return res.render('upload/dialog');
+};
+
+Auth.uploadImagePost = (req, res, next) => {
+
+    const newName = uuid.v1();
+    const file = req.files.userfile;
+    console.log(file);
+    const newPath = path.join(config.imageUploadRoot, newName) + '.' + file.extension;
+    fs.rename(file.path, newPath);
+
+    return res.json(newPath);
+
+
 };
 
 

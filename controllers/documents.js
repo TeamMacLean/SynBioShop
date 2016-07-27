@@ -2,25 +2,20 @@ const Document = require('../models/document');
 const renderError = require('../lib/renderError');
 
 const Subject = require('../models/subject');
+const r = require('../lib/thinky').r;
 
 const docs = {};
 docs.subject = {};
 docs.document = {};
 
-function getSubjects(joiner) {
-    return new Promise((resolve, reject) => {
-        Subject.getJoin(joiner).then(subjects => {
-            subjects.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            resolve(subjects);
-        })
-            .error(err => {
-                reject(err);
-            });
-    });
+function getTopLevelSubjects() {
+    return Subject.filter((s)=> {
+        return s.hasFields('subjectID').not()
+    })
 }
 
 docs.index = (req, res) => {
-    Subject.getJoin({documents: true}).then(subjects => {
+    getTopLevelSubjects().getJoin({documents: true, subjects: {documents: true}}).then(subjects => {
         return res.render('documents/index', {subjects});
     }).catch(err => renderError(err, res));
 };
@@ -28,15 +23,17 @@ docs.index = (req, res) => {
 
 //NEW LAYOUT
 docs.subject.new = (req, res) => {
-    getSubjects().then((subjects)=> {
-        return res.render('documents/subject/new', {subjects});
+
+    const parentSubjectID = req.params.subjectID;
+    getTopLevelSubjects().then((subjects)=> {
+        return res.render('documents/subject/new', {parentSubjectID, subjects});
     }).catch(err => renderError(err, res));
 };
 
 docs.subject.show = (req, res) => {
     const subjectID = req.params.subjectID;
-    Subject.get(subjectID).getJoin({documents: true}).then((subject) => {
-        getSubjects().then((subjects)=> {
+    Subject.get(subjectID).getJoin({documents: true, subjects: {documents: true}}).then((subject) => {
+        getTopLevelSubjects().then((subjects)=> {
             return res.render('documents/subject/show', {subject, subjects});
         }).catch(err => renderError(err, res));
     }).catch((err) => renderError(err, res));
@@ -44,7 +41,14 @@ docs.subject.show = (req, res) => {
 
 docs.subject.save = (req, res) => {
     const name = req.body.name;
-    new Subject({name: name}).save().then((savedSubject) => {
+    const parentSubjectID = req.body.parentSubjectID;
+    const newSubject = new Subject({name: name});
+
+    if (parentSubjectID) {
+        newSubject.subjectID = parentSubjectID;
+    }
+
+    newSubject.save().then((savedSubject) => {
         return res.redirect('/docs/' + savedSubject.id);
     }).catch((err) => renderError(err, res));
 };
@@ -57,7 +61,7 @@ docs.document.show = (req, res) => {
         if (document.subject.id != subjectID) {
             return renderError('subjectID does not match what was found', res)
         }
-        getSubjects().then((subjects)=> {
+        getTopLevelSubjects().then((subjects)=> {
             return res.render('documents/item/show', {document, subjects});
         }).catch((err) => renderError(err, res));
     }).catch((err)=> renderError(err, res));
@@ -77,7 +81,7 @@ docs.document.save = (req, res) => {
                     document.content = req.body.content;
                     document.save().then(()=> {
                         document.subject = subject;
-                        getSubjects({documents: true}).then((subjects)=> {
+                        getTopLevelSubjects({documents: true}).then((subjects)=> {
                             subject.documents.map(function (document) {
                                 console.log(document);
                             });
@@ -98,7 +102,7 @@ docs.document.save = (req, res) => {
                 });
                 doc.save().then((saved)=> {
                     saved.subject = subject;
-                    getSubjects().then((subjects)=> {
+                    getTopLevelSubjects().then((subjects)=> {
                         return res.render('documents/item/show', {document: saved, subjects});
                     }).catch((err) => renderError(err, res));
                 }).catch((error)=> renderError(error, res));
@@ -112,7 +116,7 @@ docs.document.new = (req, res) => {
     const subjectID = req.params.subjectID;
 
     Subject.get(subjectID).then((subject)=> {
-        getSubjects().then((subjects)=> {
+        getTopLevelSubjects().then((subjects)=> {
             return res.render('documents/item/edit', {subject, subjects});
         }).catch((err) => renderError(err, res));
     }).catch((error)=> renderError(error, res));
@@ -125,7 +129,7 @@ docs.document.edit = (req, res) => {
 
     Subject.get(subjectID).then((subject)=> {
         Document.get(itemID).then((document)=> {
-            getSubjects().then((subjects)=> {
+            getTopLevelSubjects().then((subjects)=> {
                 return res.render('documents/item/edit', {subject, document, subjects});
             }).catch((err) => renderError(err, res));
         }).catch((err)=> renderError(err, res));
@@ -161,13 +165,5 @@ docs.document.edit = (req, res) => {
 //         return renderError(error, res);
 //     });
 // };
-
-docs.uploadImage = (req, res, next)=> {
-
-    fs.ensu
-
-    console.log(req.body);
-
-};
 
 module.exports = docs;

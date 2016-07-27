@@ -1,12 +1,18 @@
 const thinky = require('../lib/thinky');
 const type = thinky.type;
+const r = thinky.r;
+const moment = require('moment');
 
 
 const Order = thinky.createModel('Order', {
     id: type.string(),
     username: type.string().required(),
-    complete: type.boolean().required().default(false)
+    complete: type.boolean().required().default(false),
+    createdAt: type.date().default(r.now()),
+    completedAt: type.date()
 });
+
+Order.define('humanDate', moment(this.date).calendar());
 
 Order.define('getTypes', function () {
 
