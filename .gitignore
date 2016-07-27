@@ -1,6 +1,7 @@
 node_modules
 .idea
 public/components
+public/style/*.css
 public/doc_images/*
 config.json
 log/*
