@@ -149,7 +149,12 @@ router.route('/signin')
     .post(Auth.signInPost);
 
 router.route('/signout')
+    .all(isAuthenticated)
     .get(Auth.signOut);
+
+router.route('/whoamoi')
+    .all(isAuthenticated)
+    .get(Auth.whoami);
 
 router.route('*')
     .get((req, res) => {

@@ -17,26 +17,50 @@
 
         <% subjects.map(function(subject){ %>
 
-        <h3>
-            <%- subject.name %>
-        </h3>
+        <div class="dragg">
+            <div class="draggInner">
+                <h3>
+                    <%- subject.name %>
+                </h3>
 
-        <% subject.documents.map(function(document){ %>
-        <li><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></li>
-        <% }); %>
+                <% subject.documents.map(function(document){ %>
+                <div class="dragg">
+                    <div class="draggInner">
+                        <li><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></li>
+                    </div>
+                </div>
+                <% }); %>
 
-        <% subject.subjects.map(function(subSubject){ %>
-        <h3><a href="/docs/<%- subSubject.id %>"><%- subSubject.name %></a></h3>
+                <% subject.subjects.map(function(subSubject){ %>
+                <div class="dragg">
+                    <div class="draggInner">
+                        <h3><a href="/docs/<%- subSubject.id %>"><%- subSubject.name %></a></h3>
 
-        <% subSubject.documents.map(function(document){ %>
-
-        <h4><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></h4>
-
-        <% }); %>
-        <% }); %>
-        <br>
-        <% }); %>
-
+                        <% subSubject.documents.map(function(document){ %>
+                        <div class="dragg">
+                            <div class="draggInner">
+                                <li><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></li>
+                            </div>
+                        </div>
+                        <% }); %>
+                    </div>
+                </div>
+                <% }); %>
+                <br>
+                <% }); %>
+            </div>
+        </div>
     </div>
 </div>
+
+<link href="/components/dragula.js/dist/dragula.min.css" rel="stylesheet">
+<script src="/components/dragula.js/dist/dragula.min.js"></script>
+<script>
+    var drake = dragula({
+        isContainer: function isContainer(el) {
+            return el.classList.contains('dragg');
+        }
+    });
+</script>
+
 <% include ../foot.ejs %>

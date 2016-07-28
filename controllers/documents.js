@@ -10,7 +10,7 @@ docs.document = {};
 
 function getTopLevelSubjects() {
     return Subject.filter((s)=> {
-        return s.hasFields('subjectID').not()
+        return s('subjectID').eq('').or(s.hasFields('subjectID').not());
     })
 }
 
