@@ -1,5 +1,7 @@
 const renderError = require('../lib/renderError');
 const Order = require('../models/order');
+const Email = require('../lib/email');
+const Flash = require('../lib/flash');
 
 const orders = {};
 
@@ -46,18 +48,24 @@ orders.markAsComplete = (req, res) => {
 
     const orderID = req.params.id;
     Order.get(orderID)
+        .getJoin({items: true})
         .then((order)=> {
-            order.complete = true;
-            order.save()
-                .then(()=> {
-                    return res.redirect('/order/' + orderID);
-                })
+            order.getTypes().then((orderWithTypes)=> {
+                orderWithTypes.complete = true;
+                orderWithTypes.save()
+                    .then(()=> {
+                        Email.orderReady(orderWithTypes).then(()=> {
+                            Flash.success(req, 'Completion email sent to user');
+                            return res.redirect('/order/' + orderID);
+                        }).catch((err)=> renderError(err, res));
+                    })
+                    .catch((err)=>renderError(err, res));
+            })
                 .catch((err)=>renderError(err, res));
-        })
-        .catch((err)=>renderError(err, res));
+        }).catch((err)=> renderError(err, res));
 };
 
-orders.markAsInComplete = (req, res) => {
+orders.markAsIncomplete = (req, res) => {
 
     const orderID = req.params.id;
 

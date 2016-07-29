@@ -162,7 +162,7 @@ ShoppingCart.placeOrder = (req, res) => {
             Promise.all(saving).then(()=> {
                 savedOrder.getTypes().then((orderWithTypes)=> {
                     console.log('passing to email', orderWithTypes);
-                    Email.newOrder('New Order', 'there has been a new order', orderWithTypes, req.user).then(()=> {
+                    Email.newOrder(orderWithTypes, req.user).then(()=> {
                         cart.empty().then(()=> {
                             Flash.success(req, 'Order successfully placed');
                             return res.redirect('/cart');

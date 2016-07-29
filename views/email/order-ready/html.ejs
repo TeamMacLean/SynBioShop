@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta name="viewport" content="width=device-width"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>SynBio Order Ready</title>
+</head>
+
+<body>
+
+<img class="center" src="<%- baseURL %>/img/logo.png" style="max-width: 80px; margin-bottom:20px;">
+
+<h1 class="center">SynBio Order Ready</h1>
+<p class="center">Your order is now ready to collect from SynBio.</p>
+
+<h2 class="center">Order Details</h2>
+<table class="cart">
+    <thead>
+    <tr>
+        <th>Item</th>
+        <th class="center">Large Scale</th>
+    </tr>
+
+    </thead>
+    <tbody>
+    <% locals.order.items.map(function(item){ %>
+    <tr>
+        <td><%- item.type.name %></td>
+        <td class="center">
+            <%- item.largeScale %>
+        </td>
+    </tr>
+    <% }); %>
+    </tbody>
+</table>
+</body>
+</html>

@@ -140,7 +140,7 @@ router.route('/order/:id/complete')
 router.route('/order/:id/incomplete')
     .all(isAuthenticated)
     .all(isAdmin)
-    .get(orders.markAsInComplete);
+    .get(orders.markAsIncomplete);
 
 
 //AUTH
