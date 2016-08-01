@@ -16,11 +16,19 @@ const search = function (io) {
 
             var searches = [];
 
-            searches = searches.concat(Type.filterAll('name', text));
+            searches = searches.concat(
+                Type.filterAll('name', text)
+            );
+            searches = searches.concat(
 
-            searches = searches.concat(Document.filter(function (doc) {
-                return doc('name').match(text);
-            }));
+            );
+
+            searches = searches.concat(
+                Document.filter(function (doc) {
+                    return doc('name').match(text);
+                })
+            );
+
 
             Promise.all(searches).then((results)=> {
                 const flat = [].concat.apply([], results);

@@ -71,11 +71,16 @@
         })
 
         socket.on('results', function (results) {
-            resultsDiv.removeClass('hidden');
-            resultsDiv.empty();
-            results.map(function (result) {
-                resultsDiv.append('<i>' + result.name + '</i>');
-            });
+
+            if (results.length > 0) {
+                resultsDiv.removeClass('hidden');
+                resultsDiv.empty();
+                results.map(function (result) {
+                    resultsDiv.append('<i>' + result.name + '</i>');
+                });
+            }
+
+
         })
 
         function sendSearch(text) {
