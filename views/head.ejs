@@ -8,6 +8,16 @@
     </div>
     <div class="pull-right">
 
+        <div class="search">
+            <input id="seach-input" type="text" placeholder="Search">
+        </div>
+
+        <div id="search-results" class="search-results hidden">
+            <ul>
+
+            </ul>
+        </div>
+
         <% if(locals.signedInUser){ %>
         <a href="/cart" class="nav-cart">
             <span class="icon" data-icon="&#xe015;"></span>
@@ -42,3 +52,36 @@
         </div>
     </div>
 </nav>
+
+<script>
+    $(function () {
+
+        var resultsDiv = $('#search-results').removeClass('hidden');
+
+        $('#seach-input').on('input', function () {
+            var text = $(this).val();
+
+            if (text.length > 0) {
+                sendSearch(text);
+            } else {
+                resultsDiv.empty();
+            }
+
+        })
+
+        socket.on('results', function (results) {
+
+            resultsDiv.empty();
+
+            results.map(function (result) {
+                resultsDiv.append('<i>' + result.name + '</i>');
+            });
+
+        })
+
+        function sendSearch(text) {
+            socket.emit('search', text);
+        }
+    })
+
+</script>

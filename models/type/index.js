@@ -12,6 +12,14 @@ types.getByTypeNumber = id => {
     return types.TYPES.filter(t => t.type == id)[0];
 };
 
+types.filterAll = (key, filter) => {
+    return types.TYPES.map((type)=> {
+        return type.model.filter(function (doc) {
+            return doc(key).match(filter);
+        });
+    });
+};
+
 function filterBy(key, filter) {
     var searcher = {};
     searcher[key] = filter;

@@ -10,6 +10,7 @@ const passport = require('passport');
 const cookieParser = require('cookie-parser');
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+require('./controllers/search')(io);
 const Cart = require('./models/cart');
 const flash = require('express-flash');
 
@@ -77,7 +78,6 @@ app.use((req, res, next) => {
 // });
 
 util.setupPassport();
-
 
 app.use('/', routes);
 
