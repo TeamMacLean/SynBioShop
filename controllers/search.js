@@ -19,13 +19,10 @@ const search = function (io) {
             searches = searches.concat(
                 Type.filterAll('name', text)
             );
-            searches = searches.concat(
-
-            );
 
             searches = searches.concat(
                 Document.filter(function (doc) {
-                    return doc('name').match(text);
+                    return doc('title').match(text);
                 })
             );
 
