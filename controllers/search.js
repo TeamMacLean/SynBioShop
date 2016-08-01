@@ -6,7 +6,6 @@ const search = function (io) {
     const clients = [];
 
     io.on('connection', function (socket) {
-        var currentSearch = {};
         clients[socket.id] = socket;
 
         socket.on('disconnect', function () {
@@ -22,7 +21,6 @@ const search = function (io) {
             searches = searches.concat(Document.filter(function (doc) {
                 return doc('name').match(text);
             }));
-
 
             Promise.all(searches).then((results)=> {
                 const flat = [].concat.apply([], results);

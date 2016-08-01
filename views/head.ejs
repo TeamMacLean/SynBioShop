@@ -56,7 +56,7 @@
 <script>
     $(function () {
 
-        var resultsDiv = $('#search-results').removeClass('hidden');
+        var resultsDiv = $('#search-results');
 
         $('#seach-input').on('input', function () {
             var text = $(this).val();
@@ -64,19 +64,18 @@
             if (text.length > 0) {
                 sendSearch(text);
             } else {
+                resultsDiv.addClass('hidden');
                 resultsDiv.empty();
             }
 
         })
 
         socket.on('results', function (results) {
-
+            resultsDiv.removeClass('hidden');
             resultsDiv.empty();
-
             results.map(function (result) {
                 resultsDiv.append('<i>' + result.name + '</i>');
             });
-
         })
 
         function sendSearch(text) {
