@@ -14,25 +14,68 @@ const search = function (io) {
 
         socket.on('search', function (text) {
 
-            var searches = [];
+            // var searches = [];
 
-            searches = searches.concat(
-                Type.filterAll('name', text)
+            const results = [];
+
+            // example:
+            // [
+            //   {heading: 'heading',
+            //   results: [
+            //     {name:'name', link: 'link'}
+            //   ]
+            //   }
+            // ]
+
+
+            const typePromise = new Promise((good, bad)=> {
+                    Promise.all(Type.filterAll('name', text))
+                        .then((types)=> {
+                            if (types) {
+                                const flat = [].concat.apply([], types);
+                                if (flat.length) {
+                                    const items = [];
+                                    flat.map((t)=> {
+                                        items.push({name: t.name, link: '/premade/' + t.id});
+                                    });
+                                    results.push({heading: 'Premade', items})
+                                }
+                            }
+                            good(results);
+                        })
+                        .catch((err)=> {
+                            bad(err);
+                        });
+                }
             );
 
-            searches = searches.concat(
-                Document.filter(function (doc) {
-                    return doc('title').match(text);
-                })
-            );
+            Document.filter(function (doc) {
+                return doc('(?i)title').match(text);
+            }).then((documents)=> {
 
-
-            Promise.all(searches).then((results)=> {
-                const flat = [].concat.apply([], results);
-                socket.emit('results', flat);
             }).catch((err)=> {
-                socket.emit('error', err);
+                console.error(err);
             });
+
+
+            // searches = searches.concat(
+            //     Type.filterAll('name', text)
+            // );
+            //
+            // searches = searches.concat(
+            //     Document.filter(function (doc) {
+            //         return doc('title').match(text);
+            //     })
+            // );
+
+            //
+            // Promise.all(searches).then((results)=> {
+            //     const flat = [].concat.apply([], results);
+            //     socket.emit('results', flat);
+            // }).catch((err)=> {
+            //     socket.emit('error', err);
+            // });
+
 
         })
 

@@ -72,11 +72,17 @@
 
         socket.on('results', function (results) {
 
+            console.log('results', results);
+
             if (results.length > 0) {
                 resultsDiv.removeClass('hidden');
                 resultsDiv.empty();
                 results.map(function (result) {
-                    resultsDiv.append('<i>' + result.name + '</i>');
+                    resultsDiv.append('<i> <h5>' + result.heading + '</h5></i>');
+
+                    result.items.map(function (item) {
+                        resultsDiv.append('<i><a href="' + item.link + '"><span data-icon="&#x35;"/>' + item.name + '</a></i>');
+                    });
                 });
             }
 
