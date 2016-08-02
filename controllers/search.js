@@ -16,13 +16,14 @@ const search = function (io) {
 
             const typePromise = new Promise((good, bad)=> {
                     const results = [];
-                    Promise.all(Type.filterAll('name', "(?i)" + text))
-                        .then((types)=> {
-                            if (types) {
-                                const flat = [].concat.apply([], types);
-                                if (flat.length) {
+
+                    Promise.all([Type.filterAll('name', "(?i)" + text), Type.filterAll('description', "(?i)" + text)])
+                        .then((nonFlat)=> {
+                            if (nonFlat) {
+                                const types = [].concat.apply([], nonFlat);
+                                if (types.length) {
                                     const items = [];
-                                    flat.map((t)=> {
+                                    types.map((t)=> {
                                         items.push({name: t.name, link: '/premade/item/' + t.id});
                                     });
                                     results.push({heading: 'Premade', items})
@@ -59,6 +60,7 @@ const search = function (io) {
                 const flat = [].concat.apply([], results);
                 socket.emit('results', flat);
             }).catch((err)=> {
+                console.error('err', err);
                 socket.emit('error', err);
             });
 

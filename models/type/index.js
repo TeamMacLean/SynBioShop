@@ -13,12 +13,21 @@ types.getByTypeNumber = id => {
 };
 
 types.filterAll = (key, filter) => {
-    return types.TYPES.map((type)=> {
-        return type.model.filter(function (doc) {
-            return doc(key).match(filter);
+    return new Promise((good, bad)=> {
+        return Promise.all(
+            types.TYPES.map((type)=> {
+                return type.model.filter(function (doc) {
+                    return doc(key).match(filter);
+                });
+            })).then((nonFlat)=> {
+            const flat = [].concat.apply([], nonFlat);
+            return good(flat);
+        }).catch((err)=> {
+            return bad(err)
         });
     });
 };
+
 
 function filterBy(key, filter) {
     var searcher = {};
