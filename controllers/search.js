@@ -23,7 +23,7 @@ const search = function (io) {
                                 if (flat.length) {
                                     const items = [];
                                     flat.map((t)=> {
-                                        items.push({name: t.name, link: '/premade/' + t.id});
+                                        items.push({name: t.name, link: '/premade/item/' + t.id});
                                     });
                                     results.push({heading: 'Premade', items})
                                 }
@@ -44,7 +44,7 @@ const search = function (io) {
                     if (documents.length > 0) {
                         const items = [];
                         documents.map((doc)=> {
-                            items.push({name: doc.title, link: '/doc/' + doc.id});
+                            items.push({name: doc.title, link: '/doc/item/' + doc.id});
                         });
                         results.push({heading: 'Documents', items})
                     }

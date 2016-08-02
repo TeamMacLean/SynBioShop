@@ -94,8 +94,8 @@ premade.category.show = (req, res, next) => {
     const categoryID = req.params.categoryID;
 
     Category.get(categoryID).getJoin({db: true}).then((category)=> {
+
         Type.getByCategory(categoryID).then(types => {
-            console.log(category);
             const type = Type.getByTypeNumber(category.db.type);
             const headings = [];
             const items = [];
@@ -166,7 +166,7 @@ premade.item.show = (req, res, next) => {
         .then((typesFound) => {
 
             if (typesFound.length < 1) {
-                return next();
+                return next('no items found with id ' + itemID);
             }
 
             const item = typesFound[0];
