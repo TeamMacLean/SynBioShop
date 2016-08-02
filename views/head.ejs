@@ -6,7 +6,7 @@
             <span>SynBio</span>
         </a>
     </div>
-    <div class="pull-right">
+    <div class="pull-right nav-top-right">
         <% if(locals.signedInUser){ %>
         <div class="search">
             <input id="seach-input" type="text" placeholder="Search">
@@ -21,7 +21,7 @@
 
         <a href="/cart" class="nav-cart">
             <span class="icon" data-icon="&#xe015;"></span>
-            <span class="count"><%- locals.signedInUser.cart.items.length %> item(s)</span>
+            <span class="count"><%- locals.signedInUser.cart.items.length %></span>
         </a>
         <% } %>
 
