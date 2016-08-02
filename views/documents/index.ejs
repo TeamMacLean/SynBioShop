@@ -26,7 +26,7 @@
                 <% subject.documents.map(function(document){ %>
                 <div class="dragg">
                     <div class="draggInner">
-                        <li><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></li>
+                        <li><a href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
                     </div>
                 </div>
                 <% }); %>
@@ -39,7 +39,7 @@
                         <% subSubject.documents.map(function(document){ %>
                         <div class="dragg">
                             <div class="draggInner">
-                                <li><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></li>
+                                <li><a href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
                             </div>
                         </div>
                         <% }); %>

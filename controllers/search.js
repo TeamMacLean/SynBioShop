@@ -44,7 +44,7 @@ const search = function (io) {
                     if (documents.length > 0) {
                         const items = [];
                         documents.map((doc)=> {
-                            items.push({name: doc.title, link: '/doc/item/' + doc.id});
+                            items.push({name: doc.title, link: '/docs/item/' + doc.id});
                         });
                         results.push({heading: 'Documents', items})
                     }
