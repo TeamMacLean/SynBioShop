@@ -17,12 +17,10 @@
         <h2 class="center">Pre Made</h2>
 
         <% dbs.map(function(db){ %>
-
         <h5><%- db.name %></h5>
-
         <ul>
             <% db.categories.map(function(category){ %>
-            <li><a href="/premade/<%- db.id %>/<%- category.id %>"><%- category.name %></a></li>
+            <li><a href="/premade/category/<%- category.id %>"><%- category.name %></a></li>
             <% }); %>
         </ul>
         <% }); %>

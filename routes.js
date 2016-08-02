@@ -33,10 +33,10 @@ router.route('/docs/:subjectID/addsubject')
     .all(isAdmin)
     .get(docs.subject.new)
     .post(docs.subject.save);
-router.route('/docs/:subjectID/:itemID')
+router.route('/docs/item/:itemID')
     .get(docs.document.show);
 
-router.route('/docs/:subjectID/:itemID/edit')
+router.route('/docs/item/:itemID/edit')
     .get(docs.document.edit)
     .post(docs.document.save);
 
@@ -72,17 +72,17 @@ router.route('/premade/:id/new')
     .get(premade.category.new)
     .post(premade.category.newPost);
 
-router.route('/premade/:id/:categoryID')
+router.route('/premade/category/:categoryID')
     .all(isAuthenticated)
     .get(premade.category.show);
 
-router.route('/premade/:id/:categoryID/new')
+router.route('/premade/category/:categoryID/new')
     .all(isAuthenticated)
     .all(isAdmin)
     .get(premade.item.new)
     .post(premade.item.newPost);
 
-router.route('/premade/:id/:categoryID/:itemID')
+router.route('/premade/item/:itemID')
     .all(isAuthenticated)
     .get(premade.item.show);
 

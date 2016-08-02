@@ -90,35 +90,34 @@ premade.category.newPost = (req, res, next) => {
 
 premade.category.show = (req, res, next) => {
 
-    const dbID = req.params.id;
+    // const dbID = req.params.id;
     const categoryID = req.params.categoryID;
 
-    Category.get(categoryID).then((category)=> {
-        DB.get(dbID).run().then(db => {
-            Type.getByCategory(categoryID).then(types => {
-                const type = Type.getByTypeNumber(db.type);
-                const headings = [];
-                const items = [];
+    Category.get(categoryID).getJoin({db: true}).then((category)=> {
+        Type.getByCategory(categoryID).then(types => {
+            console.log(category);
+            const type = Type.getByTypeNumber(category.db.type);
+            const headings = [];
+            const items = [];
 
-                type.fields.map(t => {
-                    headings.push(t.text);
-                });
+            type.fields.map(t => {
+                headings.push(t.text);
+            });
 
-                types.map(t => {
-                    const x = {items: [], id: t.id, name: t.name};
-                    type.fields.map(tt => {
-                        if (t[tt.name]) {
-                            x.items.push(t[tt.name])
-                        }
-                    });
-                    if (x.items.length > 0) {
-                        items.push(x);
+            types.map(t => {
+                const x = {items: [], id: t.id, name: t.name};
+                type.fields.map(tt => {
+                    if (t[tt.name]) {
+                        x.items.push(t[tt.name])
                     }
                 });
-                getDbs().then((dbs)=> {
-                    return res.render('premade/category/show', {db, dbs, headings, items, category});
-                }).catch((err)=>renderError(err, res));
-            }).catch(err => renderError(err, res));
+                if (x.items.length > 0) {
+                    items.push(x);
+                }
+            });
+            getDbs().then((dbs)=> {
+                return res.render('premade/category/show', {db: category.db, dbs, headings, items, category});
+            }).catch((err)=>renderError(err, res));
         }).catch(err => renderError(err, res));
     }).catch(err => renderError(err, res));
 };
@@ -161,36 +160,36 @@ premade.item.newPost = (req, res, next) => {
 };
 
 premade.item.show = (req, res, next) => {
-    const dbID = req.params.id;
-    const categoryID = req.params.categoryID;
     const itemID = req.params.itemID;
 
-    DB.get(dbID).run().then(db => {
-        Type.getByID(itemID)
-            .then((typesFound) => {
+    Type.getByID(itemID)
+        .then((typesFound) => {
 
-                const item = typesFound[0];
+            if (typesFound.length < 1) {
+                return next();
+            }
 
-                const type = Type.getByTypeNumber(db.type);
-                const headings = [];
-                const values = [];
+            const item = typesFound[0];
 
-                type.fields.map(t => {
-                    headings.push(t.text);
-                });
+            const type = Type.getByTypeNumber(item.db.type);
+            const headings = [];
+            const values = [];
 
-                type.fields.map(tt => {
-                    if (item[tt.name]) {
-                        values.push(item[tt.name])
-                    }
-                });
+            type.fields.map(t => {
+                headings.push(t.text);
+            });
+
+            type.fields.map(tt => {
+                if (item[tt.name]) {
+                    values.push(item[tt.name])
+                }
+            });
 
 
-                getDbs().then((dbs)=> {
-                    return res.render('premade/item/show', {headings, values, dbs, item});
-                }).catch(err => renderError(err, res));
-            }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+            getDbs().then((dbs)=> {
+                return res.render('premade/item/show', {headings, values, dbs, item});
+            }).catch(err => renderError(err, res));
+        }).catch((err)=>renderError(err, res));
 };
 
 // premade.delete = (req, res, next) => {

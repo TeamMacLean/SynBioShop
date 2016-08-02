@@ -17,4 +17,4 @@ const Category = thinky.createModel('Category', {
 module.exports = Category;
 
 const DB = require('./db');
-Category.belongsTo(DB, 'db', 'db', 'dbID');
+Category.belongsTo(DB, 'db', 'dbID', 'id');

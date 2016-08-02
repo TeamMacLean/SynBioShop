@@ -14,22 +14,9 @@ const search = function (io) {
 
         socket.on('search', function (text) {
 
-            // var searches = [];
-
-            const results = [];
-
-            // example:
-            // [
-            //   {heading: 'heading',
-            //   results: [
-            //     {name:'name', link: 'link'}
-            //   ]
-            //   }
-            // ]
-
-
             const typePromise = new Promise((good, bad)=> {
-                    Promise.all(Type.filterAll('name', text))
+                    const results = [];
+                    Promise.all(Type.filterAll('name', "(?i)" + text))
                         .then((types)=> {
                             if (types) {
                                 const flat = [].concat.apply([], types);
@@ -49,32 +36,31 @@ const search = function (io) {
                 }
             );
 
-            Document.filter(function (doc) {
-                return doc('(?i)title').match(text);
-            }).then((documents)=> {
-
-            }).catch((err)=> {
-                console.error(err);
+            const documentPromise = new Promise((good, bad)=> {
+                const results = [];
+                Document.filter(function (doc) {
+                    return doc('title').match("(?i)" + text);
+                }).then((documents)=> {
+                    if (documents.length > 0) {
+                        const items = [];
+                        documents.map((doc)=> {
+                            items.push({name: doc.title, link: '/doc/' + doc.id});
+                        });
+                        results.push({heading: 'Documents', items})
+                    }
+                    good(results);
+                }).catch((err)=> {
+                    bad(err);
+                });
             });
 
 
-            // searches = searches.concat(
-            //     Type.filterAll('name', text)
-            // );
-            //
-            // searches = searches.concat(
-            //     Document.filter(function (doc) {
-            //         return doc('title').match(text);
-            //     })
-            // );
-
-            //
-            // Promise.all(searches).then((results)=> {
-            //     const flat = [].concat.apply([], results);
-            //     socket.emit('results', flat);
-            // }).catch((err)=> {
-            //     socket.emit('error', err);
-            // });
+            Promise.all([documentPromise, typePromise]).then((results)=> {
+                const flat = [].concat.apply([], results);
+                socket.emit('results', flat);
+            }).catch((err)=> {
+                socket.emit('error', err);
+            });
 
 
         })

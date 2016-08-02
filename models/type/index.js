@@ -25,7 +25,7 @@ function filterBy(key, filter) {
     searcher[key] = filter;
     return new Promise((resolve, reject) => {
         const promises = types.TYPES.map(function (type) {
-            return type.model.filter(searcher);
+            return type.model.filter(searcher).getJoin({db: true});
         });
         Promise.all(promises)
             .then((results)=> {

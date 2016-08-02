@@ -10,7 +10,7 @@ docs.document = {};
 
 function getTopLevelSubjects() {
     return Subject.filter((s)=> {
-        return s('subjectID').eq('').or(s.hasFields('subjectID').not());
+        return s.hasFields('subjectID').not().or(s('subjectID').eq(''));
     })
 }
 
@@ -56,11 +56,11 @@ docs.subject.save = (req, res) => {
 
 docs.document.show = (req, res) => {
     const itemID = req.params.itemID;
-    const subjectID = req.params.subjectID;
+    // const subjectID = req.params.subjectID;
     Document.get(itemID).getJoin({subject: true}).then((document)=> {
-        if (document.subject.id != subjectID) {
-            return renderError('subjectID does not match what was found', res)
-        }
+        // if (document.subject.id != subjectID) {
+        //     return renderError('subjectID does not match what was found', res)
+        // }
         getTopLevelSubjects().then((subjects)=> {
             return res.render('documents/item/show', {document, subjects});
         }).catch((err) => renderError(err, res));

@@ -21,7 +21,7 @@
             <% cart.items.map(function(item){ %>
             <input type="hidden" name="item" value="<%- item.id %>">
             <tr>
-                <td><a href="/db/category/item"><%- item.type.name %></a></td>
+                <td><a href="/premade/item/<%- item.type.id %>"><%- item.type.name %></a></td>
                 <td class="center">
                     <input type='checkbox' value="<%- item.largeScale %>"
                             <% if(item.largeScale){ %>

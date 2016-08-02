@@ -18,7 +18,7 @@
         <h2 class="center"><%- subject.name %></h2>
 
         <% subject.documents.map(function(document){ %>
-        <li><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></li>
+        <li><a href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
         <% }); %>
 
         <% subject.subjects.map(function(subSubject){ %>
@@ -26,11 +26,10 @@
 
         <% subSubject.documents.map(function(document){ %>
 
-        <h4><a href="/docs/<%- subject.id %>/<%- document.id %>"><%- document.title %></a></h4>
+        <h4><a href="/docs/item/<%- document.id %>"><%- document.title %></a></h4>
 
         <% }); %>
         <% }); %>
-
 
     </div>
 </div>
