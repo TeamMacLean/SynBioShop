@@ -16,4 +16,4 @@ const DB = thinky.createModel('DB', {
 module.exports = DB;
 
 const Category = require('./category');
-DB.hasMany(Category, "categories", "id", "dbID");
+DB.hasMany(Category, 'categories', 'id', 'dbID');

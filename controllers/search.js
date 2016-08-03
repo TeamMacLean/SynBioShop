@@ -17,7 +17,7 @@ const search = function (io) {
             const typePromise = new Promise((good, bad)=> {
                     const results = [];
 
-                    Promise.all([Type.filterAll('name', "(?i)" + text), Type.filterAll('description', "(?i)" + text)])
+                    Promise.all([Type.filterAll('name', '(?i)' + text), Type.filterAll('description', '(?i)' + text)])
                         .then((nonFlat)=> {
                             if (nonFlat) {
                                 const types = [].concat.apply([], nonFlat);
@@ -40,7 +40,7 @@ const search = function (io) {
             const documentPromise = new Promise((good, bad)=> {
                 const results = [];
                 Document.filter(function (doc) {
-                    return doc('title').match("(?i)" + text);
+                    return doc('title').match('(?i)' + text);
                 }).then((documents)=> {
                     if (documents.length > 0) {
                         const items = [];

@@ -71,8 +71,8 @@ types.getByCategory = function (dbID) {
 };
 
 
-types.type1.model.belongsTo(DB, "db", "dbID", "id");
-types.type2.model.belongsTo(DB, "db", "dbID", "id");
-types.type3.model.belongsTo(DB, "db", "dbID", "id");
+types.type1.model.belongsTo(DB, 'db', 'dbID', 'id');
+types.type2.model.belongsTo(DB, 'db', 'dbID', 'id');
+types.type3.model.belongsTo(DB, 'db', 'dbID', 'id');
 
 module.exports = types;

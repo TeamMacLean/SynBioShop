@@ -17,9 +17,9 @@ function initUserMenu() {
 }
 
 function initFlashButtons() {
-    $('*[data-close="true"]').on('click', function () {
+    $('*[data-close='true']').on('click', function () {
         var self = $(this).parent().parent();
-        self.slideToggle("fast", function () {
+        self.slideToggle('fast', function () {
             self.remove();
         });
     });
@@ -27,7 +27,7 @@ function initFlashButtons() {
 function initAreYouSureButtons() {
     $(function () {
         $('.areyousure').click(function () {
-            return window.confirm("Are you sure?");
+            return window.confirm('Are you sure?');
         });
     });
 }
@@ -53,7 +53,7 @@ function initAreYouSureButtons() {
 
 function animate(el, name) {
     el.on(
-        "transitionend MSTransitionEnd webkitTransitionEnd oTransitionEnd",
+        'transitionend MSTransitionEnd webkitTransitionEnd oTransitionEnd',
         function () {
             $(this).removeClass(name + ' animated');
         }
