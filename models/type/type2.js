@@ -6,10 +6,10 @@ Type2.model = thinky.createModel('Type2', {
     id: type.string(),
     disabled: type.boolean().default(false),
     name: type.string().required(),
+    description: type.string().required(),
     dbID: type.string().required(),
     categoryID: type.string().required(),
     code: type.string().required(),
-    description: type.string().required(),
     speciesOfOrigin: type.string().required(),
     whoMadeIt: type.string().required()
 });

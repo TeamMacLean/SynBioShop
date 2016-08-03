@@ -3,6 +3,7 @@
 <nav class="nav">
     <div class="brand">
         <a href="/">
+            <img src="/img/logo.png">
             <span>SynBio</span>
         </a>
     </div>
@@ -28,14 +29,14 @@
         <div class="user">
             <% if(locals.signedInUser){ %>
 
-            <a href="/whoami">
-                <div class="image">
-                    <img src="<%- locals.signedInUser.iconURL %>">
-                </div>
-                <div class="name">
-                    <span><%- locals.signedInUser.name %></span>
-                </div>
-            </a>
+            <!--<a href="/whoami">-->
+            <div class="image">
+                <img src="<%- locals.signedInUser.iconURL %>">
+            </div>
+            <div class="name">
+                <span><%- locals.signedInUser.name %></span>
+            </div>
+            <!--</a>-->
             <div class="user-menu hidden">
                 <ul>
                     <li>

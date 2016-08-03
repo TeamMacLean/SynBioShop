@@ -3,7 +3,6 @@ const renderError = require('../lib/renderError');
 const Type = require('../models/type');
 const config = require('../config.json');
 const Category = require('../models/category');
-const Log = require('../lib/log');
 const CartItem = require('../models/cartItem');
 
 const premade = {};
@@ -30,7 +29,7 @@ premade.index = (req, res) => {
 };
 
 
-premade.db.new = (req, res, next) => {
+premade.db.new = (req, res) => {
     getDbs().then((dbs)=> {
         return res.render('premade/db/new', {types: Type.TYPES, dbs});
     }).catch(err => renderError(err, res));
@@ -45,14 +44,14 @@ premade.db.newPost = (req, res, next) => {
         type
     });
 
-    db.save().then((saved)=> {
+    db.save().then(()=> {
         res.redirect('/premade');
     }).catch((err)=> {
         return renderError(err, res);
     })
 };
 
-premade.db.show = (req, res, next) => {
+premade.db.show = (req, res) => {
 
     DB.get(req.params.id).getJoin({categories: true}).then(db => {
         getDbs().then((dbs)=> {
@@ -61,28 +60,28 @@ premade.db.show = (req, res, next) => {
     }).catch((err)=>renderError(err, res));
 };
 
-premade.db.disable = (req, res, next) => {
+premade.db.disable = (req, res) => {
     const id = req.params.id;
     DB.get(id).then((db)=> {
         db.disabled = true;
-        db.save().then((saved)=> {
+        db.save().then(()=> {
             return res.redirect('/premade/' + id);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
 
-premade.db.enable = (req, res, next) => {
+premade.db.enable = (req, res) => {
     const id = req.params.id;
     DB.get(id).then((db)=> {
         db.disabled = false;
-        db.save().then((saved)=> {
+        db.save().then(()=> {
             return res.redirect('/premade/' + id);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 }
 
 
-premade.category.new = (req, res, next) => {
+premade.category.new = (req, res) => {
     const id = req.params.id;
     DB.get(id).then(function (db) {
         getDbs().then((dbs)=> {
@@ -91,7 +90,7 @@ premade.category.new = (req, res, next) => {
     }).catch(err => renderError(err, res));
 };
 
-premade.category.newPost = (req, res, next) => {
+premade.category.newPost = (req, res) => {
     const name = req.body.name;
     const id = req.params.id;
     const category = new Category({
@@ -99,14 +98,14 @@ premade.category.newPost = (req, res, next) => {
         dbID: id
     });
 
-    category.save().then((saved)=> {
+    category.save().then(()=> {
         res.redirect('/premade/' + id);
     }).catch((err)=> {
         return renderError(err, res);
     })
 };
 
-premade.category.show = (req, res, next) => {
+premade.category.show = (req, res) => {
 
     // const dbID = req.params.id;
     const categoryID = req.params.categoryID;
@@ -140,16 +139,16 @@ premade.category.show = (req, res, next) => {
     }).catch(err => renderError(err, res));
 };
 
-premade.category.enable = (req, res, next) => {
+premade.category.enable = (req, res) => {
     const id = req.params.categoryID;
     Category.get(id).then((category)=> {
         category.disabled = false;
-        category.save().then((saved)=> {
+        category.save().then(()=> {
             return res.redirect('/premade/category/' + id);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 }
-premade.category.disable = (req, res, next) => {
+premade.category.disable = (req, res) => {
     const id = req.params.categoryID;
     Category.get(id).then((category)=> {
         category.disabled = true;
@@ -159,7 +158,7 @@ premade.category.disable = (req, res, next) => {
     }).catch((err)=>renderError(err, res));
 }
 
-premade.item.new = (req, res, next) => {
+premade.item.new = (req, res) => {
     const dbID = req.params.id;
     const categoryID = req.params.categoryID;
     Category.get(categoryID).then((category)=> {
@@ -172,7 +171,7 @@ premade.item.new = (req, res, next) => {
     }).catch(err => renderError(err, res));
 };
 
-premade.item.newPost = (req, res, next) => {
+premade.item.newPost = (req, res) => {
     const dbID = req.params.id;
     const categoryID = req.params.categoryID;
 
@@ -196,7 +195,7 @@ premade.item.newPost = (req, res, next) => {
     }).catch(err => renderError(err, res));
 };
 
-premade.item.show = (req, res, next) => {
+premade.item.show = (req, res) => {
     const itemID = req.params.itemID;
 
     Type.getByID(itemID)
@@ -223,44 +222,23 @@ premade.item.show = (req, res, next) => {
         }).catch((err)=>renderError(err, res));
 };
 
-premade.item.enable = (req, res, next) => {
+premade.item.enable = (req, res) => {
     const id = req.params.itemID;
     Type.getByID(id).then((type)=> {
         type.disabled = false;
-        type.save().then((saved)=> {
+        type.save().then(()=> {
             return res.redirect('/premade/item/' + id);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
-}
-premade.item.disable = (req, res, next) => {
+};
+premade.item.disable = (req, res) => {
     const id = req.params.itemID;
     Type.getByID(id).then((type)=> {
         type.disabled = true;
-        type.save().then((saved)=> {
+        type.save().then(()=> {
             return res.redirect('/premade/item/' + id);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
-}
-
-// premade.delete = (req, res, next) => {
-//     const id = req.params.id;
-//     DB.get(id).then((db)=> {
-//         Type.getByDB(db.id).then((found)=> {
-//             if (found && found.length) {
-//                 return renderError('This DB is not empty', res);
-//             } else {
-//                 db.delete().then(() => {
-//                     return res.redirect('/premade');
-//                 }).error((err)=> {
-//                     return renderError(err, res);
-//                 });
-//             }
-//         }).catch((err)=> {
-//             return renderError(err, res);
-//         });
-//     }).error((err)=> {
-//         return renderError(err, res);
-//     });
-// };
+};
 
 module.exports = premade;

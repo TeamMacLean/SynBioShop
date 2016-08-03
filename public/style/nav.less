@@ -21,15 +21,22 @@
 
   .brand {
     //font-family: @header-font;
+
+    a {
+      color: @white
+    }
+
+    img{
+      height: 30px;
+      width: auto;
+      margin-bottom: 5px;
+    }
+
     float: left;
     color: @white;
     height: 45px;
     font-size: 1.5rem;
     font-weight: 600;
-    a {
-      color: @white
-    }
-
     background: @blue; /* Old browsers */
     //background: -moz-linear-gradient(left, @blue 0%, @blue-light 100%); /* FF3.6-15 */
     //background: -webkit-linear-gradient(left, @blue 0%, @blue-light 100%); /* Chrome10-25,Safari5.1-6 */
@@ -134,7 +141,7 @@
     //margin-top: 2px;
     float: left;
     /* width: 100%; */
-    position: absolute;
+    position: fixed;
     top: 45px;
     right: 0;
     //padding: 16px;

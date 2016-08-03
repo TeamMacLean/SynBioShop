@@ -15,12 +15,12 @@ Type1.model = thinky.createModel('Type1', {
     id: type.string(),
     disabled: type.boolean().default(false),
     name: type.string().required(),
+    description: type.string().required(),
     dbID: type.string().required(),
     categoryID: type.string().required(),
     codeSequence: type.string().required(),
     insideOverhangs: type.string().required(),
     outsideOverhangs: type.string().required(),
-    description: type.string().required(),
     resistance: type.string().required()
 });
 

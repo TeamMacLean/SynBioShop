@@ -6,10 +6,9 @@ Type3.model = thinky.createModel('Type3', {
     id: type.string(),
     disabled: type.boolean().default(false),
     name: type.string().required(),
+    description: type.string().required(),
     dbID: type.string().required(),
     categoryID: type.string().required(),
-    vectorName: type.string(),
-    moduleDescription: type.string(),
     FiveOH: type.string(),
     ThreeOH: type.string(),
     levelOne: type.string(),
@@ -17,7 +16,6 @@ Type3.model = thinky.createModel('Type3', {
     source: type.string()
 });
 Type3.fields = [
-    {type: 'text', name: 'vectorName', text: 'Vector Name'},
     {type: 'text', name: 'moduleDescription', text: 'Module Description'},
     {type: 'text', name: 'FiveOH', text: '5′ OH on 5′ Strand'},
     {type: 'text', name: 'ThreeOH', text: '3′ OH on 5′ Strand'},
