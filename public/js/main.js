@@ -17,7 +17,7 @@ function initUserMenu() {
 }
 
 function initFlashButtons() {
-    $('*[data-close='true']').on('click', function () {
+    $('*[data-close="true"]').on('click', function () {
         var self = $(this).parent().parent();
         self.slideToggle('fast', function () {
             self.remove();
