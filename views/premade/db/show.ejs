@@ -9,11 +9,17 @@
             <h4>Admin</h4>
             <div class="form-group">
                 <a href="/premade/<%- db.id %>/new" class="button primary">New Category</a>
-                <!--<a href="/premade/<%- db.id %>/delete" class="button danger">Delete Datebase</a>-->
+
+                <% if(db.disabled){ %>
+                <a href="/premade/<%- db.id %>/enable" class="button success areyousure">Enable
+                    Subject</a>
+                <% } else { %>
+                <a href="/premade/<%- db.id %>/disable" class="button danger areyousure">Disable
+                    Subject</a>
+                <% } %>
             </div>
         </div>
         <% } %>
-
 
         <h2 class="center"><%- db.name %></h2>
 

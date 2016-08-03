@@ -18,22 +18,23 @@ ShoppingCart.index = (req, res) => {
             }
 
             const promises = cart.items.map(function (item) {
-
                 return new Promise((resolve, reject)=> {
-                    item.getType().then((foundTypes)=> {
-                        if (foundTypes.length == 1) {
-                            item.type = foundTypes[0];
-                            return resolve(item);
-                        } else {
-                            return reject('found multiple types by id ' + item.typeID);
-                        }
+                    item.getType().then((type)=> {
+                        item.type = type;
+                        return resolve(item);
                     }).catch((err)=> {
                         return reject(err);
                     });
                 })
             });
             Promise.all(promises).then((updatedItems)=> {
+
+                // console.log('ui',updatedItems);
+
                 cart.items = [].concat.apply([], updatedItems);
+
+                console.log(cart.items);
+
                 return res.render('cart/index', {cart});
             }).catch((err)=> {
                 return renderError(err, res);

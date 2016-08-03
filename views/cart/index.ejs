@@ -30,7 +30,7 @@
                            name='largeScale-<%- item.id %>'>
                 </td>
                 <td class="center"><a href="/cart/remove/<%- item.id %>"
-                                      class="button danger outline icon remove-from-cart"><span
+                                      class="button danger outline icon remove-from-cart areyousure"><span
                                 data-icon="&#xe019;"></span></a>
                 </td>
             </tr>
@@ -40,7 +40,7 @@
 
         <div class="pull-right">
             <input type="submit" class="button primary" value="Update Cart">
-            <a href="/cart/order" class="button success">Place Order</a>
+            <a href="/cart/order" class="button success areyousure">Place Order</a>
         </div>
     </form>
     <% } else { %>

@@ -1,6 +1,7 @@
 $(function () {
     initUserMenu();
     initFlashButtons();
+    initAreYouSureButtons();
 });
 
 function initUserMenu() {
@@ -23,6 +24,14 @@ function initFlashButtons() {
         });
     });
 }
+function initAreYouSureButtons() {
+    $(function () {
+        $('.areyousure').click(function () {
+            return window.confirm("Are you sure?");
+        });
+    });
+}
+
 //$(function () {
 //
 //  $('#addDBButton').on('click', function () {

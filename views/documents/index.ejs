@@ -17,40 +17,39 @@
 
         <% subjects.map(function(subject){ %>
 
-        <div class="dragg">
-            <div class="draggInner">
-                <h3>
-                    <%- subject.name %>
-                </h3>
+        <!--<div class="dragg">-->
+        <!--<div class="draggInner">-->
+        <h3>
+            <%- subject.name %>
+        </h3>
 
-                <% subject.documents.map(function(document){ %>
-                <div class="dragg">
-                    <div class="draggInner">
-                        <li><a href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
-                    </div>
-                </div>
-                <% }); %>
+        <% subject.documents.map(function(document){ %>
+        <!--<div class="dragg">-->
+        <!--<div class="draggInner">-->
+        <li><a href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
+        <!--</div>-->
+        <!--</div>-->
+        <% }); %>
 
-                <% subject.subjects.map(function(subSubject){ %>
-                <div class="dragg">
-                    <div class="draggInner">
-                        <h4><a href="/docs/<%- subSubject.id %>"><%- subSubject.name %></a></h4>
+        <% subject.subjects.map(function(subSubject){ %>
+        <!--<div class="dragg">-->
+            <!--<div class="draggInner">-->
+                <h4><a href="/docs/<%- subSubject.id %>"><%- subSubject.name %></a></h4>
 
-                        <% subSubject.documents.map(function(document){ %>
-                        <div class="dragg">
-                            <div class="draggInner">
-                                <li><a href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
-                            </div>
-                        </div>
-                        <% }); %>
-                    </div>
-                </div>
+                <% subSubject.documents.map(function(document){ %>
+                <!--<div class="dragg">-->
+                <!--<div class="draggInner">-->
+                <li><a href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
+                <!--</div>-->
+                <!--</div>-->
                 <% }); %>
-                <br>
-                <% }); %>
-            </div>
-        </div>
+            <!--</div>-->
+        <!--</div>-->
+        <% }); %>
+        <% }); %>
     </div>
+    <!--</div>-->
+    <!--</div>-->
 </div>
 
 <link href="/components/dragula.js/dist/dragula.min.css" rel="stylesheet">

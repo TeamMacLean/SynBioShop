@@ -23,6 +23,14 @@ router.route('/docs/new')
     .post(docs.subject.save);
 router.route('/docs/:subjectID')
     .get(docs.subject.show);
+router.route('/docs/:subjectID/disable')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(docs.subject.disable);
+router.route('/docs/:subjectID/enable')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(docs.subject.enable);
 router.route('/docs/:subjectID/new')
     .all(isAuthenticated)
     .all(isAdmin)
@@ -36,23 +44,18 @@ router.route('/docs/:subjectID/addsubject')
 router.route('/docs/item/:itemID')
     .get(docs.document.show);
 
+router.route('/docs/item/:itemID/disable')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(docs.document.disable);
+router.route('/docs/item/:itemID/enable')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(docs.document.enable);
+
 router.route('/docs/item/:itemID/edit')
     .get(docs.document.edit)
     .post(docs.document.save);
-
-// router.route('/docs/edit/:id')
-//     .all(isAuthenticated)
-//     .all(isAdmin)
-//     .get(docs.edit)
-//     .post(docs.save);
-// router.route('/docs/disable/:id')
-//     .all(isAuthenticated)
-//     .all(isAdmin)
-//     .get(docs.disable);
-// router.route('/docs/enable/:id')
-//     .all(isAuthenticated)
-//     .all(isAdmin)
-//     .get(docs.enable);
 
 //PREMADE
 router.route('/premade')
@@ -66,6 +69,16 @@ router.route('/premade/new')
 router.route('/premade/:id')
     .all(isAuthenticated)
     .get(premade.db.show);
+
+router.route('/premade/:id/disable')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.db.disable);
+router.route('/premade/:id/enable')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.db.enable);
+
 router.route('/premade/:id/new')
     .all(isAuthenticated)
     .all(isAdmin)
@@ -76,6 +89,15 @@ router.route('/premade/category/:categoryID')
     .all(isAuthenticated)
     .get(premade.category.show);
 
+router.route('/premade/category/:categoryID/disable')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.category.disable);
+router.route('/premade/category/:categoryID/enable')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.category.enable);
+
 router.route('/premade/category/:categoryID/new')
     .all(isAuthenticated)
     .all(isAdmin)
@@ -85,6 +107,15 @@ router.route('/premade/category/:categoryID/new')
 router.route('/premade/item/:itemID')
     .all(isAuthenticated)
     .get(premade.item.show);
+
+router.route('/premade/item/:itemID/disable')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.item.disable);
+router.route('/premade/item/:itemID/enable')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.item.enable);
 
 
 //CUSTOM

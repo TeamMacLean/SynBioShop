@@ -10,7 +10,16 @@
             <div class="form-group">
                 <a href="/docs/<%- subject.id %>/new" class="button primary">Add Document</a>
                 <a href="/docs/<%- subject.id %>/addsubject" class="button primary">Add Sub-Subject</a>
-                <!--<a href="#" class="button danger">Delete Subject</a>-->
+
+
+                <% if(subject.disabled){ %>
+                <a href="/docs/<%- subject.id %>/enable" class="button success areyousure">Enable
+                    Subject</a>
+                <% } else { %>
+                <a href="/docs/<%- subject.id %>/disable" class="button danger areyousure">Disable
+                    Subject</a>
+                <% } %>
+
             </div>
         </div>
         <% } %>

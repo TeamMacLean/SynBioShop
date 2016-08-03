@@ -2,7 +2,7 @@ const Document = require('../models/document');
 const renderError = require('../lib/renderError');
 
 const Subject = require('../models/subject');
-const r = require('../lib/thinky').r;
+// const r = require('../lib/thinky').r;
 
 const docs = {};
 docs.subject = {};
@@ -39,6 +39,26 @@ docs.subject.show = (req, res) => {
     }).catch((err) => renderError(err, res));
 };
 
+docs.subject.disable = (req, res) => {
+    const id = req.params.subjectID;
+    Subject.get(id).then((subject)=> {
+        subject.disabled = true;
+        subject.save().then((saved)=> {
+            return res.redirect('/docs/' + id);
+        }).catch((err)=>renderError(err, res));
+    }).catch((err)=>renderError(err, res));
+};
+
+docs.subject.enable = (req, res) => {
+    const id = req.params.subjectID;
+    Subject.get(id).then((subject)=> {
+        subject.disabled = false;
+        subject.save().then((saved)=> {
+            return res.redirect('/docs/' + id);
+        }).catch((err)=>renderError(err, res));
+    }).catch((err)=>renderError(err, res));
+};
+
 docs.subject.save = (req, res) => {
     const name = req.body.name;
     const parentSubjectID = req.body.parentSubjectID;
@@ -65,6 +85,25 @@ docs.document.show = (req, res) => {
             return res.render('documents/item/show', {document, subjects});
         }).catch((err) => renderError(err, res));
     }).catch((err)=> renderError(err, res));
+};
+
+docs.document.disable = (req, res) => {
+    const id = req.params.itemID;
+    Document.get(id).then((document)=> {
+        document.disabled = true;
+        document.save().then((saved)=> {
+            return res.redirect('/docs/item/' + id);
+        }).catch((err)=>renderError(err, res));
+    }).catch((err)=>renderError(err, res));
+};
+docs.document.enable = (req, res) => {
+    const id = req.params.itemID;
+    Document.get(id).then((document)=> {
+        document.disabled = false;
+        document.save().then((saved)=> {
+            return res.redirect('/docs/item/' + id);
+        }).catch((err)=>renderError(err, res));
+    }).catch((err)=>renderError(err, res));
 };
 
 
@@ -136,34 +175,5 @@ docs.document.edit = (req, res) => {
     }).catch((err)=> renderError(err, res));
 };
 
-// docs.document.disable = (req, res) => {
-//     const id = req.params.id;
-//     Document.get(id).then((document)=> {
-//         document.disabled = true;
-//         document.save().then(()=> {
-//             return res.redirect('/docs')
-//         })
-//             .catch((error)=> {
-//                 return renderError(error, res);
-//             });
-//     }).catch((error)=> {
-//         return renderError(error, res);
-//     });
-// };
-//
-// docs.document.enable = (req, res) => {
-//     const id = req.params.id;
-//     Document.get(id).then((document)=> {
-//         document.disabled = false;
-//         document.save().then(()=> {
-//             return res.redirect('/docs')
-//         })
-//             .catch((error)=> {
-//                 return renderError(error, res);
-//             });
-//     }).catch((error)=> {
-//         return renderError(error, res);
-//     });
-// };
 
 module.exports = docs;

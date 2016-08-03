@@ -4,6 +4,7 @@ const Type2 = {};
 
 Type2.model = thinky.createModel('Type2', {
     id: type.string(),
+    disabled: type.boolean().default(false),
     name: type.string().required(),
     dbID: type.string().required(),
     categoryID: type.string().required(),

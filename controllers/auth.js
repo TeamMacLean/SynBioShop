@@ -80,7 +80,7 @@ Auth.uploadImagePost = (req, res, next) => {
 
 Auth.whoami = (req, res, next) => {
     return res.redirect('/');
-}
+};
 
 
 module.exports = Auth;

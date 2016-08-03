@@ -48,8 +48,23 @@ function filterBy(key, filter) {
 }
 
 types.getByID = function (typeID) {
-    return filterBy('id', typeID);
+
+    return new Promise((good, bad)=> {
+
+        filterBy('id', typeID).then((foundItems)=> {
+
+            if (foundItems.length > 0) {
+                return good(foundItems[0]);
+            } else {
+                return bad('types.getByID could not find anything for id ' + typeID);
+            }
+
+        }).catch((err)=> {
+            return bad(err);
+        })
+    })
 };
+
 
 types.getByCategory = function (dbID) {
     return filterBy('categoryID', dbID);

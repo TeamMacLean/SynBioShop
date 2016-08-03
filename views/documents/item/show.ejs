@@ -8,16 +8,16 @@
         <div class="tile pad">
             <h4>Admin</h4>
             <div class="form-group">
-                <a href="/docs/<%- document.subject.id %>/<%- document.id %>/edit" class="button primary">Edit
+                <a href="/docs/item/<%- document.id %>/edit" class="button primary">Edit
                     Document</a>
 
-                <!--<% if(document.disabled){ %>-->
-                <!--<a href="/docs/<%- document.subject.id %>/<%- document.id %>/enable" class="button success">Enable-->
-                <!--Document</a>-->
-                <!--<% } else { %>-->
-                <!--<a href="/docs/<%- document.subject.id %>/<%- document.id %>/disable" class="button danger">Disable-->
-                <!--Document</a>-->
-                <!--<% } %>-->
+                <% if(document.disabled){ %>
+                <a href="/docs/item/<%- document.id %>/enable" class="button success areyousure">Enable
+                    Document</a>
+                <% } else { %>
+                <a href="/docs/item/<%- document.id %>/disable" class="button danger areyousure">Disable
+                    Document</a>
+                <% } %>
             </div>
         </div>
         <% } %>

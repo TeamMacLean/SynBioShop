@@ -8,6 +8,15 @@
             <h4>Admin</h4>
             <div class="form-group">
                 <a href="/premade/category/<%- category.id %>/new" class="button primary">New Item</a>
+
+                <% if(category.disabled){ %>
+                <a href="/premade/category/<%- category.id %>/enable" class="button success areyousure">Enable
+                    Category</a>
+                <% } else { %>
+                <a href="/premade/category/<%- category.id %>/disable" class="button danger areyousure">Disable
+                    Category</a>
+                <% } %>
+
             </div>
         </div>
         <% } %>
@@ -41,7 +50,6 @@
                                 data-icon="&#xe004;"></span></a></td>
                 <td class="center"><a href="/cart/add/<%- t.id %>" class="button success outline icon"><span
                                 data-icon="&#x4c;"></span></a></td>
-                <!--<a href="#" class="button danger outline icon"><span data-icon="&#xe019;"></span></a>-->
 
             </tr>
 
