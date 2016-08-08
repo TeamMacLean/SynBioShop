@@ -11,7 +11,6 @@
                 <a href="/docs/<%- subject.id %>/new" class="button primary">Add Document</a>
                 <a href="/docs/<%- subject.id %>/addsubject" class="button primary">Add Sub-Subject</a>
 
-
                 <% if(subject.disabled){ %>
                 <a href="/docs/<%- subject.id %>/enable" class="button success areyousure">Enable
                     Subject</a>
@@ -27,15 +26,25 @@
         <h2 class="center"><%- subject.name %></h2>
 
         <% subject.documents.map(function(document){ %>
-        <li><a href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
+        <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
+        <li><a class="<% if(document.disabled){ %>disabled<% } %>"
+               href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
+        <% } %>
         <% }); %>
 
         <% subject.subjects.map(function(subSubject){ %>
-        <h3><a href="/docs/<%- subSubject.id %>"><%- subSubject.name %></a></h3>
+        <% if(subSubject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subSubject.disabled){ %>
+        <h3><a class="<% if(subSubject.disabled){ %>disabled<% } %>"
+               href="/docs/<%- subSubject.id %>"><%- subSubject.name %></a></h3>
+        <% } %>
 
         <% subSubject.documents.map(function(document){ %>
-
-        <h4><a href="/docs/item/<%- document.id %>"><%- document.title %></a></h4>
+        <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
+        <div class="indent">
+            <li><a class="<% if(document.disabled){ %>disabled<% } %>"
+                   href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
+        </div>
+        <% } %>
 
         <% }); %>
         <% }); %>

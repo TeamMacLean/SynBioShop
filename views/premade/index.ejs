@@ -17,12 +17,21 @@
         <h2 class="center">Pre Made</h2>
 
         <% dbs.map(function(db){ %>
-        <h5><%- db.name %></h5>
-        <ul>
-            <% db.categories.map(function(category){ %>
-            <li><a href="/premade/category/<%- category.id %>"><%- category.name %></a></li>
-            <% }); %>
-        </ul>
+        <% if(db.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !db.disabled){ %>
+        <div class="indent">
+            <h5 class="<% if(db.disabled){ %>disabled<% } %>"><%- db.name %></h5>
+            <ul>
+                <% db.categories.map(function(category){ %>
+                <% if(category.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !category.disabled){ %>
+                <div class="indent">
+                    <li><a class="<% if(category.disabled){ %>disabled<% } %>"
+                           href="/premade/category/<%- category.id %>"><%- category.name %></a></li>
+                </div>
+                <% } %>
+                <% }); %>
+            </ul>
+        </div>
+        <% } %>
         <% }); %>
 
     </div>

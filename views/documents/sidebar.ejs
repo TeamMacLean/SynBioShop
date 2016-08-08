@@ -9,12 +9,14 @@
         </li>
 
         <% subjects.sort().map(function(subject){ %>
+        <% if(subject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subject.disabled){ %>
         <li>
             <span class="icon arrow_carrot-right"></span>
             <a href="/docs/<%- subject.id %>">
-                <span class="name"><%- subject.name %></span>
+                <span class="name <% if(subject.disabled){ %>disabled<% } %>"><%- subject.name %></span>
             </a>
         </li>
+        <% } %>
         <% }) %>
     </ul>
 

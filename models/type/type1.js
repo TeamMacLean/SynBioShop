@@ -13,6 +13,7 @@ Type1.type = 1;
 Type1.typeName = 'Code/Sequence, Inside Overhangs, Outside overhangs, Description, Resistance';
 Type1.model = thinky.createModel('Type1', {
     id: type.string(),
+    superSize: type.boolean().default(false),
     disabled: type.boolean().default(false),
     name: type.string().required(),
     description: type.string().required(),

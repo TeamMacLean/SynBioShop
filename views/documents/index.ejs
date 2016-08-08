@@ -16,36 +16,58 @@
         <h2 class="center">Documents</h2>
 
         <% subjects.map(function(subject){ %>
+        <% if(subject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subject.disabled){ %>
 
-        <!--<div class="dragg">-->
-        <!--<div class="draggInner">-->
-        <h3>
-            <%- subject.name %>
-        </h3>
+        <div class="indent">
 
-        <% subject.documents.map(function(document){ %>
-        <!--<div class="dragg">-->
-        <!--<div class="draggInner">-->
-        <li><a href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
-        <!--</div>-->
-        <!--</div>-->
-        <% }); %>
-
-        <% subject.subjects.map(function(subSubject){ %>
-        <!--<div class="dragg">-->
+            <!--<div class="dragg">-->
             <!--<div class="draggInner">-->
-                <h4><a href="/docs/<%- subSubject.id %>"><%- subSubject.name %></a></h4>
+            <h3 class="<% if(subject.disabled){ %>disabled<% } %>">
+                <%- subject.name %>
+            </h3>
 
-                <% subSubject.documents.map(function(document){ %>
+            <% subject.documents.map(function(document){ %>
+            <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
+            <div class="indent">
                 <!--<div class="dragg">-->
                 <!--<div class="draggInner">-->
-                <li><a href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
+
+                <li><a class="<% if(document.disabled){ %>disabled<% } %>"
+                       href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
+
                 <!--</div>-->
                 <!--</div>-->
+            </div>
+            <% } %>
+            <% }); %>
+
+            <% subject.subjects.map(function(subSubject){ %>
+            <% if(subject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subject.disabled){ %>
+            <div class="indent">
+                <!--<div class="dragg">-->
+                <!--<div class="draggInner">-->
+                <h4 class="<% if(subSubject.disabled){ %>disabled<% } %>"><%- subSubject.name %></h4>
+
+                <% subSubject.documents.map(function(document){ %>
+                <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
+                <div class="indent">
+                    <!--<div class="dragg">-->
+                    <!--<div class="draggInner">-->
+
+                    <li><a class="<% if(document.disabled){ %>disabled<% } %>"
+                           href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
+                    <!--</div>-->
+                    <!--</div>-->
+                </div>
+                <% } %>
                 <% }); %>
-            <!--</div>-->
-        <!--</div>-->
-        <% }); %>
+                <!--</div>-->
+                <!--</div>-->
+            </div>
+            <% } %>
+            <% }); %>
+        </div>
+        <% } %>
         <% }); %>
     </div>
     <!--</div>-->

@@ -8,12 +8,14 @@
             <a href="/premade" class="name">Show All</a>
         </li>
         <% dbs.sort().map(function(db){ %>
+        <% if(db.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !db.disabled){ %>
         <li>
             <span class="icon arrow_carrot-right"></span>
             <a href="/premade/<%- db.id %>">
-                <span class="name"><%- db.name %></span>
+                <span class="name <% if(db.disabled){ %>disabled<% } %>"><%- db.name %></span>
             </a>
         </li>
+        <% } %>
         <% }) %>
     </ul>
 

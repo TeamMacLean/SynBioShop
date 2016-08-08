@@ -5,6 +5,7 @@
     <div class="container">
 
         <form method="post" action="/docs/<%- subject.id %>/new">
+            <input type="hidden" name="subjectID" value="<%- subject.id %>">
             <% if(typeof document != 'undefined'){ %>
             <input type="hidden" name="id" value="<%- document.id %>" required>
             <% } %>

@@ -108,7 +108,7 @@ docs.document.enable = (req, res) => {
 
 
 docs.document.save = (req, res) => {
-    const subjectID = req.params.subjectID;
+    const subjectID = req.body.subjectID;
     const title = req.body.title;
     const id = req.body.id;
     const content = req.body.content;
@@ -119,13 +119,8 @@ docs.document.save = (req, res) => {
                     document.title = req.body.title;
                     document.content = req.body.content;
                     document.save().then(()=> {
-                        document.subject = subject;
-                        getTopLevelSubjects({documents: true}).then((subjects)=> {
-                            subject.documents.map(function (document) {
-                                console.log(document);
-                            });
-                            return res.render('documents/subject/show', {document, subjects, subject});
-                        }).catch((err) => renderError(err, res));
+                        // document.subject = subject;
+                        return res.redirect('/docs/item/' + document.id);
                     })
                         .catch((error)=> {
                             return renderError(error, res);
@@ -163,15 +158,13 @@ docs.document.new = (req, res) => {
 };
 
 docs.document.edit = (req, res) => {
-    const subjectID = req.params.subjectID;
     const itemID = req.params.itemID;
 
-    Subject.get(subjectID).then((subject)=> {
-        Document.get(itemID).then((document)=> {
-            getTopLevelSubjects().then((subjects)=> {
-                return res.render('documents/item/edit', {subject, document, subjects});
-            }).catch((err) => renderError(err, res));
-        }).catch((err)=> renderError(err, res));
+
+    Document.get(itemID).getJoin({subject: true}).then((document)=> {
+        getTopLevelSubjects().then((subjects)=> {
+            return res.render('documents/item/edit', {subject: document.subject, document, subjects});
+        }).catch((err) => renderError(err, res));
     }).catch((err)=> renderError(err, res));
 };
 

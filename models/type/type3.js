@@ -4,6 +4,7 @@ const Type3 = {};
 
 Type3.model = thinky.createModel('Type3', {
     id: type.string(),
+    superSize: type.boolean().default(false),
     disabled: type.boolean().default(false),
     name: type.string().required(),
     description: type.string().required(),

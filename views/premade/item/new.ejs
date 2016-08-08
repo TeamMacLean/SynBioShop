@@ -6,8 +6,9 @@
 
         <h2>New Item for <%- category.name %></h2>
 
-        <form method="post" action="/premade/<%- db.id %>/<%- category.id %>/new" enctype='multipart/form-data'>
+        <form method="post" action="/premade/category/<%- category.id %>/new" enctype='multipart/form-data'>
 
+            <input type="hidden" name="dbID" value="<%- db.id %>">
 
             <div class="form-group">
                 <label for="name">Name</label>
