@@ -4,4 +4,5 @@ public/components
 public/style/*.css
 public/doc_imagbower install dragula --savees/*
 config.json
+public/doc_images/*.*
 log/*

@@ -33,9 +33,6 @@ Auth.signInPost = (req, res, next) => {
             LOG.error(err);
             return next(err);
         }
-        // if (info) {
-        //     LOG.log(info);
-        // }
         if (!user) {
             let message = 'No such user';
             if (info && info.message) {
@@ -65,15 +62,38 @@ Auth.uploadImage = (req, res, next) => {
     return res.render('upload/dialog');
 };
 
+Auth.availableImages = (req, res) => {
+    fs.readdir(config.imageUploadRoot, function (err, files) {
+        if (err) {
+            return res.json([]);
+        } else {
+            return res.json(files.map((file)=> {
+                const url = path.join(config.imageUploadRootURL, file);
+                return {
+                    imageUrl: url,
+                    name: file,
+                    value: url
+                };
+            }))
+        }
+
+    });
+
+};
+
 Auth.uploadImagePost = (req, res, next) => {
+
+
+    console.log('body', req.body);
+    console.log('files', req.files);
 
     const newName = uuid.v1();
     const file = req.files.userfile;
-    console.log(file);
+    // console.log(file);
     const newPath = path.join(config.imageUploadRoot, newName) + '.' + file.extension;
     fs.rename(file.path, newPath);
 
-    return res.json(newPath);
+    return res.json({location: path.join(config.imageUploadRootURL, newName) + '.' + file.extension});
 
 
 };

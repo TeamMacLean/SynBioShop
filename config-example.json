@@ -3,7 +3,16 @@
   "secret": "cats",
   "dbName": "synbioshop",
   "defaultUserIcon": "/img/default_icon.jpg",
+  "imageUploadRoot": "public/doc_images",
+  "imageUploadRootURL": "/doc_images",
+  "imageTypesAllowed": [
+    "png",
+    "jpg",
+    "jpeg",
+    "gif"
+  ],
   "tmpDir": "/tmp",
+  "baseURL": "http://127.0.0.1:3000",
   "ldap": {
     "url": "ldap://localhost:389",
     "bindDn": "root",

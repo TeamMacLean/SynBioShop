@@ -150,6 +150,10 @@ router.route('/imageupload')
     .get(Auth.uploadImage)
     .post(Auth.uploadImagePost);
 
+router.route('/availableImages')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(Auth.availableImages)
 //ORDERS
 
 router.route('/orders')
