@@ -2,7 +2,6 @@ node_modules
 .idea
 public/components
 public/style/*.css
-public/doc_imagbower install dragula --savees/*
+public/doc_images/*
 config.json
-public/doc_images/*.*
 log/*
