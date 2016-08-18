@@ -16,6 +16,11 @@ router.route('/')
 //DOCS
 router.route('/docs')
     .get(docs.index);
+router.route('/docs/rearrange')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(docs.rearrange);
+
 router.route('/docs/new')
     .all(isAuthenticated)
     .all(isAdmin)

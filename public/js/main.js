@@ -25,10 +25,8 @@ function initFlashButtons() {
     });
 }
 function initAreYouSureButtons() {
-    $(function () {
-        $('.areyousure').click(function () {
-            return window.confirm('Are you sure?');
-        });
+    $('.areyousure').click(function () {
+        return window.confirm('Are you sure?');
     });
 }
 

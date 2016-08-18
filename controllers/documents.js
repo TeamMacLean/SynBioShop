@@ -20,6 +20,32 @@ docs.index = (req, res) => {
     }).catch(err => renderError(err, res));
 };
 
+docs.rearrange = (req, res) => {
+    getTopLevelSubjects().getJoin({documents: true, subjects: {documents: true}}).then(subjects => {
+
+        const output = [];
+
+        subjects.map((subject)=> {
+            const obj = {id: subject.id, name: subject.name, order: subject.order, documents: [], subjects: []};
+
+            subject.documents.map((document)=> {
+                obj.documents.push({id: document.id, name: document.title, order: document.order});
+            });
+            subject.subjects.map((s)=> {
+                const ss = {id: s.id, name: s.name, order: s.order, documents: []};
+                obj.subjects.push(ss);
+                s.documents.map((d)=> {
+                    ss.documents.push({id: d.id, name: d.title, order: d.order});
+                })
+            });
+            output.push(obj)
+        });
+
+
+        return res.render('documents/rearrange', {subjects: output});
+    }).catch(err => renderError(err, res));
+};
+
 
 //NEW LAYOUT
 docs.subject.new = (req, res) => {

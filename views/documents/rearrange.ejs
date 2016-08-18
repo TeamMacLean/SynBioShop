@@ -1,0 +1,129 @@
+<% include ../head.ejs %>
+<% include ./sidebar.ejs %>
+
+<div class="sidebar-push">
+    <div class="container">
+        <h2 class="center">Documents - Rearrange</h2>
+        <div id="app"></div>
+    </div>
+</div>
+
+<link href="/components/dragula.js/dist/dragula.min.css" rel="stylesheet">
+<script src="/components/react/react.js"></script>
+<script src="/components/react/react-dom.js"></script>
+<script src="/components/dragula.js/dist/dragula.min.js"></script>
+<script src="https://npmcdn.com/babel-core@5.8.38/browser.min.js"></script>
+
+<script type="text/babel">
+
+    var subjects = JSON.parse('<%- JSON.stringify(subjects) %>');
+
+    var Subject = React.createClass({
+        render: function () {
+            return (
+                    <div data-id={this.props.id} className="dragg" data-type="subject">
+                        <h2>{this.props.name}</h2>
+                        {
+                            this.props.documents ? this.props.documents.map(function (item, i) {
+                                return (
+                                        <Document
+                                                id={item.id}
+                                                name={item.name}
+                                                key={item.id}
+                                        />
+                                )
+                            }, this) : null
+                        }
+                        {
+                            this.props.subjects ? this.props.subjects.map(function (item, i) {
+                                return (
+                                        <Subject
+                                                id={item.id}
+                                                name={item.name}
+                                                quee={i}
+                                                subjects={item.subjects}
+                                                documents={item.documents}
+                                                key={item.id}
+                                        />
+                                )
+                            }, this) : null
+                        }
+                    </div>
+            )
+        }
+    })
+
+    var Document = React.createClass({
+        render: function () {
+            return (
+                    <div data-id={this.props.id} data-type="document">
+                        {this.props.name}
+                    </div>
+            )
+        }
+    })
+
+    var App = React.createClass({
+        render: function () {
+            return (
+                    <div>
+                        {
+                            this.props.subjects ? this.props.subjects.map(function (item, i) {
+                                return (
+                                        <Subject
+                                                id={item.id}
+                                                name={item.name}
+                                                subjects={item.subjects}
+                                                documents={item.documents}
+                                                key={item.id}
+                                        />
+                                )
+                            }, this) : null
+                        }
+                    </div>
+            )
+        },
+        refresh: function () {
+
+            var dig = function (subject) {
+                var subjects = subject.find('*[data-type="subject"]')
+                var documents = subject.find('*[data-type="document"]');
+                var out = {subjects: [], documents: documents};
+                subjects.each(function () {
+                    out.subjects.push(dig($(this)));
+                })
+                return out
+            };
+
+            var update = [];
+
+            $('*[data-type="subject"]').each(function () {
+                update.push({subject: dig($(this))});
+            });
+
+            console.log('output', update);
+
+        },
+        componentDidMount: function () {
+            var self = this;
+            var dragger = dragula({
+                isContainer: function (el) {
+                    return el.classList.contains('dragg');
+                }
+            })
+            dragger.on('dragend', function () {
+                console.log("REFRESH");
+                self.refresh();
+            });
+        }
+    })
+
+    ReactDOM.render(
+            <App subjects={subjects}/>, document.getElementById('app')
+    );
+
+
+</script>
+
+
+<% include ../foot.ejs %>

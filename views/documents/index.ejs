@@ -9,6 +9,7 @@
             <h4>Admin</h4>
             <div class="form-group">
                 <a href="/docs/new" class="button primary">New</a>
+                <a href="/docs/rearrange" class="button primary">Rearrange</a>
             </div>
         </div>
         <% } %>
@@ -20,8 +21,6 @@
 
         <div class="indent">
 
-            <!--<div class="dragg">-->
-            <!--<div class="draggInner">-->
             <h3 class="<% if(subject.disabled){ %>disabled<% } %>">
                 <%- subject.name %>
             </h3>
@@ -29,8 +28,6 @@
             <% subject.documents.map(function(document){ %>
             <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
             <div class="indent">
-                <!--<div class="dragg">-->
-                <!--<div class="draggInner">-->
 
                 <li><a class="<% if(document.disabled){ %>disabled<% } %>"
                        href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
@@ -44,25 +41,17 @@
             <% subject.subjects.map(function(subSubject){ %>
             <% if(subject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subject.disabled){ %>
             <div class="indent">
-                <!--<div class="dragg">-->
-                <!--<div class="draggInner">-->
                 <h4 class="<% if(subSubject.disabled){ %>disabled<% } %>"><%- subSubject.name %></h4>
 
                 <% subSubject.documents.map(function(document){ %>
                 <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
                 <div class="indent">
-                    <!--<div class="dragg">-->
-                    <!--<div class="draggInner">-->
 
                     <li><a class="<% if(document.disabled){ %>disabled<% } %>"
                            href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
-                    <!--</div>-->
-                    <!--</div>-->
                 </div>
                 <% } %>
                 <% }); %>
-                <!--</div>-->
-                <!--</div>-->
             </div>
             <% } %>
             <% }); %>
@@ -70,18 +59,7 @@
         <% } %>
         <% }); %>
     </div>
-    <!--</div>-->
-    <!--</div>-->
 </div>
 
-<link href="/components/dragula.js/dist/dragula.min.css" rel="stylesheet">
-<script src="/components/dragula.js/dist/dragula.min.js"></script>
-<script>
-    var drake = dragula({
-        isContainer: function isContainer(el) {
-            return el.classList.contains('dragg');
-        }
-    });
-</script>
 
 <% include ../foot.ejs %>

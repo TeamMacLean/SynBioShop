@@ -1,11 +1,11 @@
 const thinky = require('../lib/thinky');
 const type = thinky.type;
-const util = require('../lib/util');
 
 
 const Subject = thinky.createModel('Subject', {
     id: type.string(),
     subjectID: type.string(),
+    order:type.number().default(0),
     name: type.string().required(),
     disabled: type.boolean().default(false)
 });
