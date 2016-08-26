@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const config = require('./config.json');
+// const config = require('./config.json');
 const Util = require('./lib/util');
 
 const docs = require('./controllers/documents');
@@ -19,7 +19,8 @@ router.route('/docs')
 router.route('/docs/rearrange')
     .all(isAuthenticated)
     .all(isAdmin)
-    .get(docs.rearrange);
+    .get(docs.rearrange)
+    .post(docs.rearrangeSave);
 
 router.route('/docs/new')
     .all(isAuthenticated)

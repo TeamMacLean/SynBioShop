@@ -46,6 +46,115 @@ docs.rearrange = (req, res) => {
     }).catch(err => renderError(err, res));
 };
 
+docs.rearrangeSave = (req, res)=> {
+
+    var newOrder = req.body.newOrder;
+
+    const processDocument = (document, parent)=>new Promise((good, bad)=> {
+
+        Document.get(document.id).then((dbDocument)=> {
+            // console.log('doc order', document.name, document.order);
+            dbDocument.order = document.order;
+
+            console.log(document.name, 'parent =', parent);
+
+            if (parent) {
+                // console.log('parent of', dbDocument.title, 'is', parent.name);
+                dbDocument.subjectID = parent.id;
+            }
+
+            dbDocument.save()
+                .then(()=> {
+                    return good();
+                })
+                .catch((err)=> {
+                    console.error(err);
+                    return bad(err);
+                })
+
+        }).catch((err)=> {
+            console.error(err);
+            return bad(err);
+        })
+
+    });
+
+    const processSubject = (subject, parent)=>new Promise((good, bad)=> {
+
+        var documentsToSave = [];
+        var subjectsToSave = [];
+
+
+        subject.subjects.map((subSubject)=> {
+            subjectsToSave.push(processSubject(subSubject, subject));
+        });
+
+        subject.documents.map((doc)=> {
+            documentsToSave.push(processDocument(doc, subject));
+        });
+
+        Promise.all(documentsToSave).then(()=> {
+
+            Promise.all(subjectsToSave).then(()=> {
+                Subject.get(subject.id).then((dbSubject)=> {
+                    // console.log('sub order', subject.name, subject.order);
+                    dbSubject.order = subject.order;
+
+                    // console.log(subject.name, 'parent =', parent);
+
+                    if (parent) {
+                        // console.log('parent of', dbSubject.name, 'is', parent.name, '(', parent.id, ')');
+                        dbSubject.subjectID = parent.id;
+                    }
+
+                    dbSubject.save()
+                        .then(()=> {
+                            return good();
+                        })
+                        .catch((err)=> {
+                            console.error(err);
+                            return bad(err);
+                        })
+                }).catch((err)=> {
+                    console.error(err);
+                    return bad(err);
+                })
+
+            }).catch((err)=> {
+                console.error(err);
+                return bad(err);
+            });
+
+
+        }).catch((err)=> {
+            console.error(err);
+            return bad(err);
+        });
+
+
+    });
+
+    const parsedJSON = JSON.parse(newOrder);
+
+
+    var rootSubjects = parsedJSON.map((subject)=> {
+        return new Promise((good, bad)=> {
+            processSubject(subject, null)
+                .then(()=> {
+                    return good();
+                }).catch((err)=> {
+                return bad(err);
+            })
+        })
+    });
+    Promise.all(rootSubjects).then(()=> {
+        return res.sendStatus(200);
+    }).catch((err)=> {
+        return res.sendStatus(400).json({error: err});
+    })
+
+};
+
 
 //NEW LAYOUT
 docs.subject.new = (req, res) => {

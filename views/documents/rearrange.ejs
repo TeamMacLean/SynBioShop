@@ -21,33 +21,46 @@
     var Subject = React.createClass({
         render: function () {
             return (
-                    <div data-id={this.props.id} className="dragg" data-type="subject">
+                    <div className="subject">
                         <h2>{this.props.name}</h2>
-                        {
-                            this.props.documents ? this.props.documents.map(function (item, i) {
-                                return (
-                                        <Document
-                                                id={item.id}
-                                                name={item.name}
-                                                key={item.id}
-                                        />
-                                )
-                            }, this) : null
-                        }
-                        {
-                            this.props.subjects ? this.props.subjects.map(function (item, i) {
-                                return (
-                                        <Subject
-                                                id={item.id}
-                                                name={item.name}
-                                                quee={i}
-                                                subjects={item.subjects}
-                                                documents={item.documents}
-                                                key={item.id}
-                                        />
-                                )
-                            }, this) : null
-                        }
+                        <div data-id={this.props.id} className="dragg" data-type="subject"
+                             data-root={this.props.isRoot} data-name={this.props.name}>
+                            {
+                                this.props.documents ? this.props.documents
+                                        .sort(function (a, b) {
+                                            return a.order - b.order
+                                        })
+                                        .map(function (item, i) {
+                                            return (
+                                                    <Document
+                                                            id={item.id}
+                                                            name={item.name}
+                                                            key={item.id}
+                                                    />
+                                            )
+                                        }, this) : null
+                            }
+
+                            {
+                                this.props.subjects ? this.props.subjects
+                                        .sort(function (a, b) {
+                                            return a.order - b.order
+                                        })
+                                        .map(function (item, i) {
+                                            return (
+                                                    <Subject
+                                                            id={item.id}
+                                                            name={item.name}
+                                                            quee={i}
+                                                            subjects={item.subjects}
+                                                            documents={item.documents}
+                                                            key={item.id}
+                                                            isRoot={false}
+                                                    />
+                                            )
+                                        }, this) : null
+                            }
+                        </div>
                     </div>
             )
         }
@@ -56,7 +69,7 @@
     var Document = React.createClass({
         render: function () {
             return (
-                    <div data-id={this.props.id} data-type="document">
+                    <div data-id={this.props.id} data-type="document" data-name={this.props.name}>
                         {this.props.name}
                     </div>
             )
@@ -64,44 +77,112 @@
     })
 
     var App = React.createClass({
+        getInitialState: function () {
+            return {
+                subjects: this.props.subjects
+            };
+        },
+        save: function () {
+
+            var POST_URL = '/docs/rearrange';
+            var dataJSON = JSON.stringify(this.state.subjects);
+
+            $.post(POST_URL, {newOrder: dataJSON})
+                    .done(function () {
+                        console.log("second success");
+                    })
+                    .fail(function (resData) {
+                        console.error("error", resData);
+                    })
+
+
+        },
         render: function () {
+            var self = this;
             return (
                     <div>
-                        {
-                            this.props.subjects ? this.props.subjects.map(function (item, i) {
-                                return (
-                                        <Subject
-                                                id={item.id}
-                                                name={item.name}
-                                                subjects={item.subjects}
-                                                documents={item.documents}
-                                                key={item.id}
-                                        />
-                                )
-                            }, this) : null
-                        }
+                        <div className="dragg">
+                            {
+                                this.state.subjects ? this.state.subjects
+                                        .sort(function (a, b) {
+                                            return a.order - b.order
+                                        })
+                                        .map(function (item, i) {
+                                            return (
+                                                    <Subject
+                                                            id={item.id}
+                                                            name={item.name}
+                                                            subjects={item.subjects}
+                                                            documents={item.documents}
+                                                            key={item.id}
+                                                            isRoot={true}
+                                                    />
+                                            )
+                                        }, this) : null
+                            }
+                        </div>
+                        <button className="button primary" onClick={self.save}>Save Order</button>
                     </div>
+
             )
         },
         refresh: function () {
+            var self = this;
 
-            var dig = function (subject) {
-                var subjects = subject.find('*[data-type="subject"]')
-                var documents = subject.find('*[data-type="document"]');
-                var out = {subjects: [], documents: documents};
-                subjects.each(function () {
-                    out.subjects.push(dig($(this)));
+            var digSubjects = function (subject) {
+                var subjects = subject.find('*[data-type="subject"]').filter(function () {
+//                    console.log($(this).parent().parent().data('id'), subject.data('id'))
+                    return $(this).parent().parent().data('id') == subject.data('id');
+                })
+
+                var out = [];
+
+                subjects.each(function (i) {
+                    var el = $(this);
+                    out.push({
+                        id: el.data('id'),
+                        name: el.data('name'),
+                        order: i,
+                        subjects: digSubjects(el),
+                        documents: digDocuments(el)
+                    })
                 })
                 return out
             };
 
+            var digDocuments = function (subject) {
+                var documents = subject.find('*[data-type="document"]').filter(function () {
+                    return $(this).parent().data('id') == subject.data('id');
+                })
+
+                var out = [];
+
+                documents.each(function (i) {
+                    var el = $(this);
+                    out.push({id: el.data('id'), name: el.data('name'), order: i});
+                })
+                return out;
+            };
+
             var update = [];
 
-            $('*[data-type="subject"]').each(function () {
-                update.push({subject: dig($(this))});
+
+            //GET ROOT SUBJECTS
+            $('*[data-type="subject"][data-root="true"]').each(function (i) {
+                update.push({
+                    id: $(this).data('id'),
+                    name: $(this).data('name'),
+                    subjects: digSubjects($(this)),
+                    documents: digDocuments($(this)),
+                    order: i
+                });
             });
 
-            console.log('output', update);
+            console.log(update);
+
+            self.setState({subjects: update});
+//            self.forceUpdate()
+//            console.log('output', update);
 
         },
         componentDidMount: function () {
@@ -112,12 +193,12 @@
                 }
             })
             dragger.on('dragend', function () {
-                console.log("REFRESH");
                 self.refresh();
             });
         }
     })
 
+    console.log('init data', subjects);
     ReactDOM.render(
             <App subjects={subjects}/>, document.getElementById('app')
     );
