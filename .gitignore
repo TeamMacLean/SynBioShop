@@ -5,3 +5,4 @@ public/style/*.css
 public/doc_images/*
 config.json
 log/*
+**/.DS_Store
