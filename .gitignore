@@ -2,7 +2,7 @@ node_modules
 .idea
 public/components
 public/style/*.css
-public/doc_images/*
+public/uploads/*
 config.json
 log/*
 **/.DS_Store

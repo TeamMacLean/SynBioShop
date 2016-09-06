@@ -5,7 +5,7 @@
     <div class="container">
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-        <div class="tile pad">
+        <div class="tile pad inverted">
             <h4>Admin</h4>
             <div class="form-group">
                 <a href="/docs/item/<%- document.id %>/edit" class="button primary">Edit
@@ -13,6 +13,8 @@
 
                 <% if(document.disabled){ %>
                 <a href="/docs/item/<%- document.id %>/enable" class="button success areyousure">Enable
+                    Document</a>
+                <a href="/docs/item/<%- document.id %>/delete" class="button danger areyousure">Delete
                     Document</a>
                 <% } else { %>
                 <a href="/docs/item/<%- document.id %>/disable" class="button danger areyousure">Disable

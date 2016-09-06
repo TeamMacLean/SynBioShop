@@ -6,9 +6,10 @@ const Util = require('./lib/util');
 const docs = require('./controllers/documents');
 const premade = require('./controllers/premade');
 const custom = require('./controllers/custom');
-const Auth = require('./controllers/auth');
+const auth = require('./controllers/auth');
 const shoppingCart = require('./controllers/shoppingCart');
 const orders = require('./controllers/orders');
+const upload = require('./controllers/upload');
 
 router.route('/')
     .get((req, res) => res.render('index'));
@@ -29,10 +30,17 @@ router.route('/docs/new')
     .post(docs.subject.save);
 router.route('/docs/:subjectID')
     .get(docs.subject.show);
+router.route('/docs/:subjectID/rename')
+    .get(docs.subject.rename)
+    .post(docs.subject.save);
 router.route('/docs/:subjectID/disable')
     .all(isAuthenticated)
     .all(isAdmin)
     .get(docs.subject.disable);
+router.route('/docs/:subjectID/delete')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(docs.subject.delete);
 router.route('/docs/:subjectID/enable')
     .all(isAuthenticated)
     .all(isAdmin)
@@ -58,6 +66,10 @@ router.route('/docs/item/:itemID/enable')
     .all(isAuthenticated)
     .all(isAdmin)
     .get(docs.document.enable);
+router.route('/docs/item/:itemID/delete')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(docs.document.delete);
 
 router.route('/docs/item/:itemID/edit')
     .get(docs.document.edit)
@@ -84,6 +96,10 @@ router.route('/premade/:id/enable')
     .all(isAuthenticated)
     .all(isAdmin)
     .get(premade.db.enable);
+router.route('/premade/:id/delete')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.db.delete);
 
 router.route('/premade/:id/new')
     .all(isAuthenticated)
@@ -103,6 +119,10 @@ router.route('/premade/category/:categoryID/enable')
     .all(isAuthenticated)
     .all(isAdmin)
     .get(premade.category.enable);
+router.route('/premade/category/:categoryID/delete')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.category.delete);
 
 router.route('/premade/category/:categoryID/new')
     .all(isAuthenticated)
@@ -122,6 +142,10 @@ router.route('/premade/item/:itemID/enable')
     .all(isAuthenticated)
     .all(isAdmin)
     .get(premade.item.enable);
+router.route('/premade/item/:itemID/delete')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.item.delete);
 
 
 //CUSTOM
@@ -149,17 +173,26 @@ router.route('/cart/remove/:cartItemID')
 router.route('/cart/add/:typeID')
     .get(shoppingCart.add);
 
+
+//FILE UPLOAD
+
+router.route('/upload')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    // .get(upload.uploadFile)
+    .post(upload.uploadFilePost);
+
 //IMAGE UPLOAD
 router.route('/imageupload')
     .all(isAuthenticated)
     .all(isAdmin)
-    .get(Auth.uploadImage)
-    .post(Auth.uploadImagePost);
+    // .get(upload.uploadImage)
+    .post(upload.uploadImagePost);
 
-router.route('/availableImages')
+router.route('/filemanager')
     .all(isAuthenticated)
     .all(isAdmin)
-    .get(Auth.availableImages)
+    .get(upload.fileManager);
 //ORDERS
 
 router.route('/orders')
@@ -186,16 +219,16 @@ router.route('/order/:id/incomplete')
 
 //AUTH
 router.route('/signin')
-    .get(Auth.signIn)
-    .post(Auth.signInPost);
+    .get(auth.signIn)
+    .post(auth.signInPost);
 
 router.route('/signout')
     .all(isAuthenticated)
-    .get(Auth.signOut);
+    .get(auth.signOut);
 
 router.route('/whoamoi')
     .all(isAuthenticated)
-    .get(Auth.whoami);
+    .get(auth.whoami);
 
 router.route('*')
     .get((req, res) => {
@@ -217,7 +250,7 @@ function isAdmin(req, res, next) {
     if (Util.isAdmin(req.user.username)) {
         return next();
     } else {
-        return res.send('your not an admin!');
+        return res.send('You cannot access this page, you are not an admin.');
     }
 }
 

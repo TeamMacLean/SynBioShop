@@ -4,13 +4,15 @@
     <div class="container">
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-        <div class="tile pad">
+        <div class="tile pad inverted">
             <h4>Admin</h4>
             <div class="form-group">
                 <a href="/premade/category/<%- category.id %>/new" class="button primary">New Item</a>
 
                 <% if(category.disabled){ %>
                 <a href="/premade/category/<%- category.id %>/enable" class="button success areyousure">Enable
+                    Category</a>
+                <a href="/premade/category/<%- category.id %>/delete" class="button danger areyousure">Delete
                     Category</a>
                 <% } else { %>
                 <a href="/premade/category/<%- category.id %>/disable" class="button danger areyousure">Disable

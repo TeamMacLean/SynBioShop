@@ -29,6 +29,8 @@ input[type="button"] {
   -o-transition: background-color ease-in-out .15s, border-color ease-in-out .15s, color ease-in-out .15s;
   transition: background-color ease-in-out .15s, border-color ease-in-out .15s, color ease-in-out .15s;
 
+  margin-bottom: 4px;
+
   //&:focus {
   //  border: 1px solid @blue;
   //  outline: 0;
@@ -36,6 +38,9 @@ input[type="button"] {
 
   &:hover {
     background-color: darken(@white, 4%);
+  }
+  &:focus {
+    border: 1px solid @blue;
   }
 
   &.success {
@@ -101,6 +106,18 @@ input[type="button"] {
     opacity: 0.65;
     cursor: not-allowed;
     pointer-events: none;
+  }
+
+  &.inputbutton {
+    padding-top: 0;
+    margin-left: -6px;
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+    img {
+      height: 20px;
+      vertical-align: middle;
+      padding-bottom: 4px;
+    }
   }
 
 }

@@ -39,6 +39,11 @@
             <!--</a>-->
             <div class="user-menu hidden">
                 <ul>
+                    <% if (locals.signedInUser.isAdmin){ %>
+                    <li>
+                        <a href="/filemanager">File Manager</a>
+                    </li>
+                    <% } %>
                     <li>
                         <a href="/signout">Sign out</a>
                     </li>

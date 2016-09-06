@@ -5,7 +5,7 @@
     <div class="container">
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-        <div class="tile pad">
+        <div class="tile pad inverted">
             <h4>Admin</h4>
             <div class="form-group">
                 <a href="/docs/new" class="button primary">New</a>
@@ -14,7 +14,7 @@
         </div>
         <% } %>
 
-        <h2 class="center">Documents</h2>
+        <h1 class="center">Documents</h1>
 
         <% subjects.map(function(subject){ %>
         <% if(subject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subject.disabled){ %>
@@ -32,8 +32,6 @@
                 <li><a class="<% if(document.disabled){ %>disabled<% } %>"
                        href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
 
-                <!--</div>-->
-                <!--</div>-->
             </div>
             <% } %>
             <% }); %>

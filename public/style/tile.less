@@ -14,14 +14,20 @@
   //}
 
   &.pad {
-    padding: 2px;
+    padding: 8px;
     margin: 12px;
+  }
+
+  &.inverted {
+    background-color: @background-dark;
+    color: white;
   }
 
   .pillow;
 
   .tile-block {
     padding: 20px 10px;
+    overflow-wrap: break-word;
   }
   .tile-title {
     margin-bottom: .75rem;
@@ -30,6 +36,16 @@
   .tile-img-top {
     border-radius: 4px 4px 0 0;
     width: 100%;
+    height: 200px;
+
+    object-fit: cover;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+
+    &.short {
+      height: 120px;
+    }
   }
 
   .tile-button-bottom {
@@ -39,6 +55,7 @@
     padding: 20px;
     font-size: 1.2rem;
     line-height: 1.2rem;
+    margin-bottom: 0;
     &.thin {
       padding: 8px;
     }

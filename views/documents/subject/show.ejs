@@ -5,15 +5,17 @@
     <div class="container">
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-        <div class="tile pad">
+        <div class="tile pad inverted">
             <h4>Admin</h4>
             <div class="form-group">
+                <a href="/docs/<%- subject.id %>/rename" class="button primary">Rename</a>
                 <a href="/docs/<%- subject.id %>/new" class="button primary">Add Document</a>
                 <a href="/docs/<%- subject.id %>/addsubject" class="button primary">Add Sub-Subject</a>
 
                 <% if(subject.disabled){ %>
                 <a href="/docs/<%- subject.id %>/enable" class="button success areyousure">Enable
                     Subject</a>
+                <a href="/docs/<%- subject.id %>/delete" class="button danger areyousure">Delete Subject</a>
                 <% } else { %>
                 <a href="/docs/<%- subject.id %>/disable" class="button danger areyousure">Disable
                     Subject</a>

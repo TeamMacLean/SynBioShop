@@ -2,7 +2,6 @@ const Document = require('../models/document');
 const renderError = require('../lib/renderError');
 
 const Subject = require('../models/subject');
-// const r = require('../lib/thinky').r;
 
 const docs = {};
 docs.subject = {};
@@ -97,13 +96,9 @@ docs.rearrangeSave = (req, res)=> {
 
             Promise.all(subjectsToSave).then(()=> {
                 Subject.get(subject.id).then((dbSubject)=> {
-                    // console.log('sub order', subject.name, subject.order);
                     dbSubject.order = subject.order;
 
-                    // console.log(subject.name, 'parent =', parent);
-
                     if (parent) {
-                        // console.log('parent of', dbSubject.name, 'is', parent.name, '(', parent.id, ')');
                         dbSubject.subjectID = parent.id;
                     }
 
@@ -165,6 +160,18 @@ docs.subject.new = (req, res) => {
     }).catch(err => renderError(err, res));
 };
 
+docs.subject.rename = (req, res) => {
+    const parentSubjectID = req.params.subjectID;
+
+    Subject.get(parentSubjectID)
+        .then((subject)=> {
+            getTopLevelSubjects().then((subjects)=> {
+                return res.render('documents/subject/rename', {subject, subjects});
+            }).catch(err => renderError(err, res));
+        })
+        .catch(err => renderError(err, res));
+};
+
 docs.subject.show = (req, res) => {
     const subjectID = req.params.subjectID;
     Subject.get(subjectID).getJoin({documents: true, subjects: {documents: true}}).then((subject) => {
@@ -194,28 +201,47 @@ docs.subject.enable = (req, res) => {
     }).catch((err)=>renderError(err, res));
 };
 
+docs.subject.delete = (req, res) => {
+    const id = req.params.subjectID;
+    Subject.get(id).then((subject)=> {
+        subject.deleteAll({documents: true, subjects: true}).then(()=> {
+            return res.redirect('/docs/');
+        }).catch((err)=>renderError(err, res));
+    }).catch((err)=>renderError(err, res));
+};
+
 docs.subject.save = (req, res) => {
     const name = req.body.name;
     const parentSubjectID = req.body.parentSubjectID;
-    const newSubject = new Subject({name: name});
+    const subjectID = req.params.subjectID;
 
-    if (parentSubjectID) {
-        newSubject.subjectID = parentSubjectID;
+    if (subjectID) {
+        Subject.get(subjectID)
+            .then((subject)=> {
+                subject.name = name;
+
+                subject.save()
+                    .then(()=> {
+                        return res.redirect('/docs/' + subject.id);
+                    })
+                    .catch((err) => renderError(err, res));
+            })
+            .catch((err) => renderError(err, res));
+    } else {
+        const newSubject = new Subject({name: name});
+        if (parentSubjectID) {
+            newSubject.subjectID = parentSubjectID;
+        }
+        newSubject.save().then((savedSubject) => {
+            return res.redirect('/docs/' + savedSubject.id);
+        }).catch((err) => renderError(err, res));
     }
-
-    newSubject.save().then((savedSubject) => {
-        return res.redirect('/docs/' + savedSubject.id);
-    }).catch((err) => renderError(err, res));
 };
 
 
 docs.document.show = (req, res) => {
     const itemID = req.params.itemID;
-    // const subjectID = req.params.subjectID;
     Document.get(itemID).getJoin({subject: true}).then((document)=> {
-        // if (document.subject.id != subjectID) {
-        //     return renderError('subjectID does not match what was found', res)
-        // }
         getTopLevelSubjects().then((subjects)=> {
             return res.render('documents/item/show', {document, subjects});
         }).catch((err) => renderError(err, res));
@@ -231,12 +257,22 @@ docs.document.disable = (req, res) => {
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
+
 docs.document.enable = (req, res) => {
     const id = req.params.itemID;
     Document.get(id).then((document)=> {
         document.disabled = false;
         document.save().then((saved)=> {
             return res.redirect('/docs/item/' + id);
+        }).catch((err)=>renderError(err, res));
+    }).catch((err)=>renderError(err, res));
+};
+
+docs.document.delete = (req, res) => {
+    const id = req.params.itemID;
+    Document.get(id).then((document)=> {
+        document.delete().then(()=> {
+            return res.redirect('/docs/item/' + document.subjectID);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };

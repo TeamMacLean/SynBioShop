@@ -6,7 +6,7 @@
     <div class="container">
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-        <div class="tile pad">
+        <div class="tile pad inverted">
             <h4>Admin</h4>
             <div class="form-group">
                 <a href="/premade/new" class="button primary">New</a>
@@ -14,7 +14,7 @@
         </div>
         <% } %>
 
-        <h2 class="center">Pre Made</h2>
+        <h1 class="center">Pre Made</h1>
 
         <% dbs.map(function(db){ %>
         <% if(db.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !db.disabled){ %>

@@ -13,6 +13,7 @@
     "express-flash": "0.0.2",
     "express-session": "^1.13.0",
     "gravatar": "^1.5.2",
+    "is-image": "^1.0.1",
     "less-middleware": "^2.1.0",
     "moment": "^2.14.1",
     "multer": "^0.1.8",

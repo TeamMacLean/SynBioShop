@@ -3,8 +3,8 @@
   "secret": "cats",
   "dbName": "synbioshop",
   "defaultUserIcon": "/img/default_icon.jpg",
-  "imageUploadRoot": "public/doc_images",
-  "imageUploadRootURL": "/doc_images",
+  "uploadRoot": "public/uploads",
+  "uploadRootURL": "/uploads",
   "imageTypesAllowed": [
     "png",
     "jpg",

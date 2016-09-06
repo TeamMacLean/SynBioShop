@@ -70,6 +70,15 @@ premade.db.disable = (req, res) => {
     }).catch((err)=>renderError(err, res));
 };
 
+premade.db.delete = (req, res) => {
+    const id = req.params.id;
+    DB.get(id).then((db)=> {
+        db.delete().then(()=> {
+            return res.redirect('/premade/');
+        }).catch((err)=>renderError(err, res));
+    }).catch((err)=>renderError(err, res));
+};
+
 premade.db.enable = (req, res) => {
     const id = req.params.id;
     DB.get(id).then((db)=> {
@@ -78,7 +87,7 @@ premade.db.enable = (req, res) => {
             return res.redirect('/premade/' + id);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
-}
+};
 
 
 premade.category.new = (req, res) => {
@@ -149,13 +158,21 @@ premade.category.enable = (req, res) => {
             return res.redirect('/premade/category/' + id);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
-}
+};
 premade.category.disable = (req, res) => {
     const id = req.params.categoryID;
     Category.get(id).then((category)=> {
         category.disabled = true;
         category.save().then((saved)=> {
             return res.redirect('/premade/category/' + id);
+        }).catch((err)=>renderError(err, res));
+    }).catch((err)=>renderError(err, res));
+};
+premade.category.delete = (req, res) => {
+    const id = req.params.categoryID;
+    Category.get(id).then((category)=> {
+        category.delete().then(()=> {
+            return res.redirect('/premade/' + category.dbID);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
@@ -192,7 +209,7 @@ premade.item.newPost = (req, res) => {
         const newType = type.model(obj);
         newType.name = req.body.name;
         newType.file = 'TODO';
-        newType.save().then(savedType => res.redirect(`/premade/category/${categoryID}`)).catch(err => renderError(err, res))
+        newType.save().then(savedType => res.redirect('/premade/category/' + categoryID)).catch(err => renderError(err, res))
     }).catch(err => renderError(err, res));
 };
 
@@ -238,6 +255,14 @@ premade.item.disable = (req, res) => {
         type.disabled = true;
         type.save().then(()=> {
             return res.redirect('/premade/item/' + id);
+        }).catch((err)=>renderError(err, res));
+    }).catch((err)=>renderError(err, res));
+};
+premade.item.delete = (req, res) => {
+    const id = req.params.itemID;
+    Type.getByID(id).then((type)=> {
+        type.delete().then(()=> {
+            return res.redirect('/premade/category/' + type.categoryID);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };

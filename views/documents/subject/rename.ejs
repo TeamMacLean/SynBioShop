@@ -1,0 +1,25 @@
+<% include ../../head.ejs %>
+<% include ../sidebar.ejs %>
+
+<div class="sidebar-push">
+    <div class="container">
+
+        <h2>Rename Documentation Subject</h2>
+
+        <form method="post" action="/docs/<%- subject.id %>/rename">
+
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" name="name" id="name" value="<%- subject.name %>" required>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="success">Save</button>
+            </div>
+
+
+        </form>
+    </div>
+</div>
+
+<% include ../../foot.ejs %>
