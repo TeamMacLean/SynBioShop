@@ -27,6 +27,8 @@
     "thinky": "^2.2.8"
   },
   "devDependencies": {
+    "glob": "^7.0.6",
+    "lebab": "^2.3.3"
   },
   "scripts": {
     "test": "mocha"

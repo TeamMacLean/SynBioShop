@@ -1,6 +1,6 @@
 const thinky = require('../../lib/thinky');
 const type = thinky.type;
-const Type3 = {};
+var Type3 = {};
 
 Type3.fields = [
     {type: 'text', name: 'moduleDescription', text: 'Module Description'},

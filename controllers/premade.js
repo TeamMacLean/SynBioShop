@@ -38,10 +38,12 @@ premade.db.new = (req, res) => {
 premade.db.newPost = (req, res, next) => {
     const name = req.body.name;
     const type = req.body.type;
+    const description = req.body.description;
 
     const db = new DB({
         name,
-        type
+        type,
+        description
     });
 
     db.save().then(()=> {
@@ -92,7 +94,7 @@ premade.db.enable = (req, res) => {
 
 premade.category.new = (req, res) => {
     const id = req.params.id;
-    DB.get(id).then(function (db) {
+    DB.get(id).then(db => {
         getDbs().then((dbs)=> {
             return res.render('premade/category/new', {dbs, db});
         }).catch(err => renderError(err, res));
@@ -102,9 +104,11 @@ premade.category.new = (req, res) => {
 premade.category.newPost = (req, res) => {
     const name = req.body.name;
     const id = req.params.id;
+    const description = req.body.description;
     const category = new Category({
         name,
-        dbID: id
+        dbID: id,
+        description
     });
 
     category.save().then(()=> {

@@ -30,14 +30,12 @@ Cart.define('empty', function () {
 
             const toRemoveFromCart = [];
 
-            cart.items.map(function (item) {
+            cart.items.map(item => {
                 item.cartID = '';
                 toRemoveFromCart.push(item.save());
             });
 
-            Promise.all(toRemoveFromCart).then(function () {
-                return good()
-            }).catch((err)=> {
+            Promise.all(toRemoveFromCart).then(() => good()).catch((err)=> {
                 return bad(err);
             })
 

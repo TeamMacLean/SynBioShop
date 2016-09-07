@@ -17,21 +17,19 @@ ShoppingCart.index = (req, res) => {
                 cart.items = [];
             }
 
-            const promises = cart.items.map(function (item) {
-                return new Promise((resolve, reject)=> {
-                    item.getType().then((type)=> {
-                        item.type = type;
-                        return resolve(item);
-                    }).catch((err)=> {
-                        return reject(err);
-                    });
-                })
-            });
+            const promises = cart.items.map(item => new Promise((resolve, reject)=> {
+                item.getType().then((type)=> {
+                    item.type = type;
+                    return resolve(item);
+                }).catch((err)=> {
+                    return reject(err);
+                });
+            }));
             Promise.all(promises).then((updatedItems)=> {
 
                 // console.log('ui',updatedItems);
 
-                cart.items = [].concat.apply([], updatedItems);
+                cart.items = [].concat(...updatedItems);
 
                 console.log(cart.items);
 
@@ -40,9 +38,7 @@ ShoppingCart.index = (req, res) => {
                 return renderError(err, res);
             });
 
-        }).catch(function (err) {
-        return renderError(err, res);
-    });
+        }).catch(err => renderError(err, res));
 };
 
 ShoppingCart.add = (req, res, next) => {
@@ -106,7 +102,7 @@ ShoppingCart.ensureCart = (username, join) => new Promise((good, bad) => {
 
 ShoppingCart.ensureAdd = (username, typeID) => new Promise((good, bad) => {
     ShoppingCart.ensureCart(username).then((cart)=> {
-        new CartItem({cartID: cart.id, typeID: typeID})
+        new CartItem({cartID: cart.id, typeID})
             .save().then(() => {
             return good(cart);
         }).catch(err => {
@@ -152,10 +148,10 @@ ShoppingCart.remove = (req, res, next) => {
 ShoppingCart.placeOrder = (req, res) => {
     const username = req.user.username;
     ShoppingCart.ensureCart(username, {items: true}).then((cart)=> {
-        new Order({username: username}).save().then((savedOrder)=> {
+        new Order({username}).save().then((savedOrder)=> {
             var saving = [];
 
-            cart.items.map(function (item) {
+            cart.items.map(item => {
                 item.orderID = savedOrder.id;
                 saving.push(item.save());
             });

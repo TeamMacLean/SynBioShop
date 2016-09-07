@@ -16,11 +16,9 @@ types.filterAll = (key, filter) => {
     return new Promise((good, bad)=> {
         return Promise.all(
             types.TYPES.map((type)=> {
-                return type.model.filter(function (doc) {
-                    return doc(key).match(filter);
-                });
+                return type.model.filter(doc => doc(key).match(filter));
             })).then((nonFlat)=> {
-            const flat = [].concat.apply([], nonFlat);
+            const flat = [].concat(...nonFlat);
             return good(flat);
         }).catch((err)=> {
             return bad(err)
@@ -33,12 +31,10 @@ function filterBy(key, filter) {
     var searcher = {};
     searcher[key] = filter;
     return new Promise((resolve, reject) => {
-        const promises = types.TYPES.map(function (type) {
-            return type.model.filter(searcher).getJoin({db: true});
-        });
+        const promises = types.TYPES.map(type => type.model.filter(searcher).getJoin({db: true}));
         Promise.all(promises)
             .then((results)=> {
-                const mergedResults = [].concat.apply([], results);
+                const mergedResults = [].concat(...results);
                 return resolve(mergedResults);
             })
             .catch((err)=> {
@@ -47,28 +43,23 @@ function filterBy(key, filter) {
     });
 }
 
-types.getByID = function (typeID) {
+types.getByID = typeID => new Promise((good, bad)=> {
 
-    return new Promise((good, bad)=> {
+    filterBy('id', typeID).then((foundItems)=> {
 
-        filterBy('id', typeID).then((foundItems)=> {
+        if (foundItems.length > 0) {
+            return good(foundItems[0]);
+        } else {
+            return bad('types.getByID could not find anything for id ' + typeID);
+        }
 
-            if (foundItems.length > 0) {
-                return good(foundItems[0]);
-            } else {
-                return bad('types.getByID could not find anything for id ' + typeID);
-            }
-
-        }).catch((err)=> {
-            return bad(err);
-        })
+    }).catch((err)=> {
+        return bad(err);
     })
-};
+});
 
 
-types.getByCategory = function (dbID) {
-    return filterBy('categoryID', dbID);
-};
+types.getByCategory = dbID => filterBy('categoryID', dbID);
 
 
 types.type1.model.belongsTo(DB, 'db', 'dbID', 'id');
