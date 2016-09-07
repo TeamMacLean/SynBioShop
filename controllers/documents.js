@@ -228,7 +228,7 @@ docs.subject.save = (req, res) => {
             })
             .catch((err) => renderError(err, res));
     } else {
-        const newSubject = new Subject({name: name});
+        const newSubject = new Subject({name});
         if (parentSubjectID) {
             newSubject.subjectID = parentSubjectID;
         }

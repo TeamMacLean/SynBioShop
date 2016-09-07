@@ -1,6 +1,5 @@
 {
-  "port": "1337",
-  "secret": "cats",
+  "port": "3000",
   "dbName": "synbioshop",
   "defaultUserIcon": "/img/default_icon.jpg",
   "uploadRoot": "public/uploads",

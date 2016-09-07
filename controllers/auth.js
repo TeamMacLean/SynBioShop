@@ -25,36 +25,56 @@ Auth.signOut = (req, res) => {
 
 Auth.signInPost = (req, res, next) => {
 
-    passport.authenticate('ldapauth', (err, user, info) => {
+    req.logIn({
+        id: 'pagem',
+        username: 'pagem',
+        name: 'pagem',
+        mail: 'pagem',
+        memberOf: []
+    }, err => {
         if (err) {
-            LOG.error(err);
             return next(err);
         }
-        if (!user) {
-            let message = 'No such user';
-            if (info && info.message) {
-                message += `, ${info.message}`;
-            }
-            return renderError(message, res);
-            //return res.render('error', {error: message});
+
+        req.user.iconURL = gravatar.url(req.user.mail) || config.defaultUserIcon;
+
+        //take them to the page they wanted before signing in :)
+        if (req.session.returnTo) {
+            return res.redirect(req.session.returnTo);
+        } else {
+            return res.redirect('/');
         }
-        req.logIn(user, err => {
-            if (err) {
-                return next(err);
-            }
+    });
 
-            req.user.iconURL = gravatar.url(req.user.mail) || config.defaultUserIcon;
-
-            //take them to the page they wanted before signing in :)
-            if (req.session.returnTo) {
-                return res.redirect(req.session.returnTo);
-            } else {
-                return res.redirect('/');
-            }
-        });
-    })(req, res, next);
+    // passport.authenticate('ldapauth', (err, user, info) => {
+    //     if (err) {
+    //         LOG.error(err);
+    //         return next(err);
+    //     }
+    //     if (!user) {
+    //         let message = 'No such user';
+    //         if (info && info.message) {
+    //             message += `, ${info.message}`;
+    //         }
+    //         return renderError(message, res);
+    //         //return res.render('error', {error: message});
+    //     }
+    //     req.logIn(user, err => {
+    //         if (err) {
+    //             return next(err);
+    //         }
+    //
+    //         req.user.iconURL = gravatar.url(req.user.mail) || config.defaultUserIcon;
+    //
+    //         //take them to the page they wanted before signing in :)
+    //         if (req.session.returnTo) {
+    //             return res.redirect(req.session.returnTo);
+    //         } else {
+    //             return res.redirect('/');
+    //         }
+    //     });
+    // })(req, res, next);
 };
-
 
 
 Auth.whoami = (req, res, next) => {

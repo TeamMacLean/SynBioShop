@@ -30,7 +30,7 @@
                     <p><%- file.originalName %></p>
                     <div class="form-group has-feedback">
                         <input type="text" class="has-button" id="<%- file.id %>" value="<%- file.relativePath() %>">
-                        <button class="inputbutton clipboard success" data-clipboard-target="#<%- file.id %>">
+                        <button class="inputbutton clipboard" data-clipboard-target="#<%- file.id %>">
                             <img src="/img/clippy.svg" alt="Copy to clipboard">
                         </button>
                     </div>

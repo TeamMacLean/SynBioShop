@@ -11,9 +11,7 @@ upload.fileManager = (req, res)=> {
 
     File.run().then((files)=> {
 
-        files = files.sort(function (a, b) {
-            return new Date(b.createdAt) - new Date(a.createdAt);
-        });
+        files = files.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         return res.render('upload/index', {files});
     }).catch((err)=> {

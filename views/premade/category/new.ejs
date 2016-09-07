@@ -13,6 +13,14 @@
                 <input type="text" id="name" name="name" class="wide" required>
             </div>
             <div class="form-group">
+                <label for="description">Description</label>
+                <% if(typeof category != 'undefined'){ %>
+                <textarea id="tinymce" class="wide" name="description"><%- category.description %></textarea>
+                <% } else { %>
+                <textarea id="tinymce" class="wide" name="description"></textarea>
+                <% } %>
+            </div>
+            <div class="form-group">
                 <button type="submit" class="success">Save</button>
             </div>
         </form>

@@ -4,13 +4,14 @@
   }
 
   z-index: 100;
-  overflow: auto;
+  //overflow: auto;
   background-color: @white;
   height: 45px;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
+  overflow: hidden;
 
   .pillow;
 
@@ -30,7 +31,7 @@
     img {
       height: 30px;
       width: auto;
-      margin-bottom: 5px;
+      margin-bottom:8px;
     }
 
     float: left;
@@ -46,7 +47,7 @@
     //background-color: @font-color;
 
     width: 180px;
-    line-height: 45px;
+    line-height: 40px;
     text-align: center;
   }
 
@@ -56,7 +57,7 @@
 
   .user {
     float: left;
-    line-height: 45px;
+
     //width: 180px;;
     margin-right: 10px;
     text-align: center;
@@ -67,9 +68,11 @@
         height: 35px;
         width: 35px;
         margin-right: 8px;
+        margin-top: 5px;
       }
     }
     .name {
+      line-height: 45px;
       color: @font-color;
       float: left;
     }
@@ -115,10 +118,11 @@
     padding: 12px;
     //margin: 20px;
     top: 45px;
-    right: 2px;
+    right: 45px;
+    left:45px;
     margin-left: 20px;
     display: block;
-    left: 180px;
+    //left: 180px;
     &.hidden {
       display: none;
     }
@@ -149,7 +153,7 @@
 
     a {
       color: @font-color;
-      line-height: 32px;
+      //line-height: 32px;
     }
     ul {
       list-style: none;
@@ -213,7 +217,7 @@
       .icon {
         margin-right: 8px;
         font-size: 1rem;
-        line-height: 1rem;
+        //line-height: 1rem;
         vertical-align: middle;
         float: left;
       }
@@ -245,6 +249,10 @@
 @media (max-width: @breakpoint) {
   .user .name {
     display: none;
+  }
+
+  .search{
+    display:none;
   }
 
   //.nav-left, .nav .brand {

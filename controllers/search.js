@@ -1,18 +1,18 @@
 const Document = require('../models/document');
 const Type = require('../models/type');
 
-const search = function (io) {
+const search = io => {
 
     const clients = [];
 
-    io.on('connection', function (socket) {
+    io.on('connection', socket => {
         clients[socket.id] = socket;
 
-        socket.on('disconnect', function () {
+        socket.on('disconnect', () => {
             delete clients[socket.id];
         });
 
-        socket.on('search', function (text) {
+        socket.on('search', text => {
 
             const typePromise = new Promise((good, bad)=> {
                     const results = [];
@@ -20,7 +20,7 @@ const search = function (io) {
                     Promise.all([Type.filterAll('name', '(?i)' + text), Type.filterAll('description', '(?i)' + text)])
                         .then((nonFlat)=> {
                             if (nonFlat) {
-                                const types = [].concat.apply([], nonFlat);
+                                const types = [].concat(...nonFlat);
                                 if (types.length) {
                                     const items = [];
                                     types.map((t)=> {
@@ -39,9 +39,7 @@ const search = function (io) {
 
             const documentPromise = new Promise((good, bad)=> {
                 const results = [];
-                Document.filter(function (doc) {
-                    return doc('title').match('(?i)' + text);
-                }).then((documents)=> {
+                Document.filter(doc => doc('title').match('(?i)' + text)).then((documents)=> {
                     if (documents.length > 0) {
                         const items = [];
                         documents.map((doc)=> {
@@ -57,7 +55,7 @@ const search = function (io) {
 
 
             Promise.all([documentPromise, typePromise]).then((results)=> {
-                const flat = [].concat.apply([], results);
+                const flat = [].concat(...results);
                 socket.emit('results', flat);
             }).catch((err)=> {
                 console.error('err', err);

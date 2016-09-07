@@ -53,7 +53,7 @@ app.use((req, res, next) => {
         if (req.user.iconURL) {
             res.locals.signedInUser.iconURL = req.user.iconURL;
         }
-        Cart.filter({username: res.locals.signedInUser.username}).getJoin({items: true}).then(function (carts) {
+        Cart.filter({username: res.locals.signedInUser.username}).getJoin({items: true}).then(carts => {
             if (carts.length == 1) {
                 res.locals.signedInUser.cart = carts[0];
             } else {
@@ -61,9 +61,7 @@ app.use((req, res, next) => {
                 res.locals.signedInUser.cart.items = [];
             }
             return next(null, req, res);
-        }).error(function (err) {
-            return next(err, req, res);
-        })
+        }).error(err => next(err, req, res))
     } else {
         next();
     }
