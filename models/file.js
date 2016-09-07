@@ -16,10 +16,10 @@ const File = thinky.createModel('File', {
 });
 module.exports = File;
 
-File.define("relativePath", function () {
+File.define('relativePath', function () {
     return config.uploadRootURL + '/' + this.name;
 });
 
-File.define("isImage", function () {
+File.define('isImage', function () {
     return isImage(this.path);
 });

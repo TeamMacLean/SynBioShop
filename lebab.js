@@ -1,4 +1,4 @@
-var glob = require("glob");
+var glob = require('glob');
 var exec = require('child_process').exec;
 var path = require('path');
 
