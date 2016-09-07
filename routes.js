@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 // const config = require('./config.json');
 const Util = require('./lib/util');
-
 const docs = require('./controllers/documents');
 const premade = require('./controllers/premade');
 const custom = require('./controllers/custom');

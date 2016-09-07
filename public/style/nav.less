@@ -31,7 +31,7 @@
     img {
       height: 30px;
       width: auto;
-      margin-bottom:8px;
+      margin-bottom: 8px;
     }
 
     float: left;
@@ -104,7 +104,7 @@
 
   .search {
     text-align: center;
-    padding: 5px;
+    padding: 3px;
     float: left;
     input, button {
       vertical-align: middle;
@@ -112,15 +112,17 @@
   }
 
   .search-results {
+
+    width: 50%;
     .pillow;
     position: fixed;
     background-color: white;
     padding: 12px;
     //margin: 20px;
     top: 45px;
-    right: 45px;
-    left:45px;
-    margin-left: 20px;
+    //right: 180px;
+    //left:180px;
+    margin: 0 20px;
     display: block;
     //left: 180px;
     &.hidden {
@@ -248,11 +250,28 @@
 
 @media (max-width: @breakpoint) {
   .user .name {
-    display: none;
+    display: none !important;
   }
 
-  .search{
-    display:none;
+  .search, .search-results {
+    display: none !important;
+  }
+
+  .nav-left {
+    display: none !important;
+
+  }
+
+  .sidebar-push {
+    margin-left: 0 !important;
+  }
+
+  body > nav > div.brand > a > img {
+    display: none !important;
+  }
+
+  body > nav > div.brand {
+    width: 100px !important;
   }
 
   //.nav-left, .nav .brand {

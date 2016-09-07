@@ -19,7 +19,7 @@ Type3.model = thinky.createModel('Type3', {
     //FOR ALL
     id: type.string(),
     name: type.string().required(),
-    comments: type.string().required(),
+    comments: type.string().required().default(''),
     description: type.string().required(),
     dbID: type.string().required(),
     superSize: type.boolean().default(false),
