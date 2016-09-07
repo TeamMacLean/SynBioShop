@@ -2,7 +2,7 @@ var glob = require('glob');
 var exec = require('child_process').exec;
 var path = require('path');
 
-glob("**/*.js", {ignore: ['node_modules/**', 'public/**',]}, (er, files) => {
+glob('**/*.js', {ignore: ['node_modules/**', 'public/**',]}, (er, files) => {
     files.map(file=> {
         console.log(file);
         var filePath =file;
