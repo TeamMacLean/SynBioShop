@@ -1,5 +1,6 @@
 const Document = require('../models/document');
 const renderError = require('../lib/renderError');
+const Flash = require('../lib/flash');
 
 const Subject = require('../models/subject');
 
@@ -26,16 +27,16 @@ docs.rearrange = (req, res) => {
         const output = [];
 
         subjects.map((subject)=> {
-            const obj = {id: subject.id, name: subject.name, order: subject.order, documents: [], subjects: []};
+            const obj = {id: subject.id, name: subject.name, position: subject.position, documents: [], subjects: []};
 
             subject.documents.map((document)=> {
-                obj.documents.push({id: document.id, name: document.title, order: document.order});
+                obj.documents.push({id: document.id, name: document.title, position: document.position});
             });
             subject.subjects.map((s)=> {
-                const ss = {id: s.id, name: s.name, order: s.order, documents: []};
+                const ss = {id: s.id, name: s.name, position: s.position, documents: []};
                 obj.subjects.push(ss);
                 s.documents.map((d)=> {
-                    ss.documents.push({id: d.id, name: d.title, order: d.order});
+                    ss.documents.push({id: d.id, name: d.title, position: d.position});
                 })
             });
             output.push(obj)
@@ -48,107 +49,66 @@ docs.rearrange = (req, res) => {
 
 docs.rearrangeSave = (req, res)=> {
 
-    var newOrder = req.body.newOrder;
+    var newOrder = JSON.parse(req.body.newOrder);
 
-    const processDocument = (document, parent)=>new Promise((good, bad)=> {
+    const toDo = [];
 
-        Document.get(document.id).then((dbDocument)=> {
-            // console.log('doc order', document.name, document.order);
-            dbDocument.order = document.order;
+    function process(obj) {
 
-            console.log(document.name, 'parent =', parent);
-
-            if (parent) {
-                // console.log('parent of', dbDocument.title, 'is', parent.name);
-                dbDocument.subjectID = parent.id;
-            }
-
-            dbDocument.save()
-                .then(()=> {
-                    return good();
-                })
-                .catch((err)=> {
-                    console.error(err);
-                    return bad(err);
-                })
-
-        }).catch((err)=> {
-            console.error(err);
-            return bad(err);
-        })
-
-    });
-
-    const processSubject = (subject, parent)=>new Promise((good, bad)=> {
-
-        var documentsToSave = [];
-        var subjectsToSave = [];
-
-
-        subject.subjects.map((subSubject)=> {
-            subjectsToSave.push(processSubject(subSubject, subject));
-        });
-
-        subject.documents.map((doc)=> {
-            documentsToSave.push(processDocument(doc, subject));
-        });
-
-        Promise.all(documentsToSave).then(()=> {
-
-            Promise.all(subjectsToSave).then(()=> {
-                Subject.get(subject.id).then((dbSubject)=> {
-                    dbSubject.order = subject.order;
-
-                    if (parent) {
-                        dbSubject.subjectID = parent.id;
-                    }
-
-                    dbSubject.save()
-                        .then(()=> {
-                            return good();
-                        })
-                        .catch((err)=> {
-                            console.error(err);
-                            return bad(err);
-                        })
-                }).catch((err)=> {
-                    console.error(err);
-                    return bad(err);
-                })
-
-            }).catch((err)=> {
-                console.error(err);
-                return bad(err);
-            });
-
-
-        }).catch((err)=> {
-            console.error(err);
-            return bad(err);
-        });
-
-
-    });
-
-    const parsedJSON = JSON.parse(newOrder);
-
-
-    var rootSubjects = parsedJSON.map((subject)=> {
-        return new Promise((good, bad)=> {
-            processSubject(subject, null)
-                .then(()=> {
-                    return good();
-                }).catch((err)=> {
-                return bad(err);
+        function update(objType, item) {
+            return new Promise((good, bad) => {
+                objType.get(item.id)
+                    .then((doc)=> {
+                        doc.position = item.position;
+                        doc.save().then(good).catch(err=>bad);
+                    })
+                    .catch(err=>bad);
             })
-        })
-    });
-    Promise.all(rootSubjects).then(()=> {
-        return res.sendStatus(200);
-    }).catch((err)=> {
-        return res.sendStatus(400).json({error: err});
-    })
+        }
 
+        console.log('.');
+
+        if (!("documents" in obj) && !("subjects" in obj)) {
+            toDo.push(
+                update(Document, obj)
+            )
+        } else {
+            if (obj.subjects) {
+                obj.subjects.map((o)=> {
+                    process(o)
+                });
+                toDo.push(
+                    update(Subject, obj)
+                )
+            }
+            if (obj.documents) {
+                obj.documents.map((o)=> {
+                    process(o)
+                });
+                toDo.push(
+                    update(Subject, obj)
+                )
+            }
+        }
+
+
+    }
+
+    newOrder.map(no=> {
+        process(no);
+    });
+
+    // console.log(toDo);
+
+    Promise.all(toDo)
+        .then(()=> {
+            Flash.success(req, 'Rearrange saved');
+            return res.sendStatus(200);
+        })
+        .catch(err=> {
+            Flash.error(req, err);
+            return res.sendStatus(400).json({error: err});
+        })
 };
 
 

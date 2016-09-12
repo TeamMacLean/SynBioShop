@@ -12,7 +12,7 @@ const Document = thinky.createModel('Document', {
     createdAt: type.date().default(r.now()),
     editedAt: type.date(),
     editedBt: type.string(),
-    order: type.number().default(0),
+    position: type.number().default(0),
     disabled: type.boolean().default(false)
 });
 

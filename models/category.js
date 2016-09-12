@@ -7,7 +7,7 @@ const Category = thinky.createModel('Category', {
     name: type.string().required(),
     dbID: type.string().required(),
     createdAt: type.date().default(r.now()),
-    order: type.number().default(0),
+    position: type.number().default(0),
     description: type.string().required().default('')
 });
 

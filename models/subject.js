@@ -5,7 +5,7 @@ const r = thinky.r;
 const Subject = thinky.createModel('Subject', {
     id: type.string(),
     subjectID: type.string(),
-    order: type.number().default(0),
+    position: type.number().default(0),
     name: type.string().required(),
     createdAt: type.date().default(r.now()),
     disabled: type.boolean().default(false)

@@ -13,12 +13,20 @@ const search = io => {
         });
 
         socket.on('search', text => {
+            function escapeRegExp(str) {
+                return str.replace(/[\-\[\]\/{}()*+?.\\\^$|]/g, "\\$&");
+            }
+
+            text = escapeRegExp(text);
 
             const typePromise = new Promise((good, bad)=> {
                     const results = [];
 
                     Promise.all([Type.filterAll('name', '(?i)' + text), Type.filterAll('description', '(?i)' + text)])
                         .then((nonFlat)=> {
+                            nonFlat = nonFlat.filter(function (n) {
+                                return !n.disabled;
+                            });
                             if (nonFlat) {
                                 const types = [].concat(...nonFlat);
                                 if (types.length) {
@@ -40,6 +48,9 @@ const search = io => {
             const documentPromise = new Promise((good, bad)=> {
                 const results = [];
                 Document.filter(doc => doc('title').match('(?i)' + text)).then((documents)=> {
+                    documents = documents.filter(function (n) {
+                        return !n.disabled;
+                    });
                     if (documents.length > 0) {
                         const items = [];
                         documents.map((doc)=> {

@@ -7,7 +7,7 @@ const DB = thinky.createModel('DB', {
     name: type.string().required(),
     type: type.number().required(),
     createdAt: type.date().default(r.now()),
-    order: type.number().default(0),
+    position: type.number().default(0),
     description: type.string().required().default('')
 });
 
