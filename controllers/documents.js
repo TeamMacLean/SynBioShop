@@ -1,7 +1,7 @@
 const Document = require('../models/document');
 const renderError = require('../lib/renderError');
 const Flash = require('../lib/flash');
-
+const Log = require('../lib/log');
 const Subject = require('../models/subject');
 
 const docs = {};
@@ -66,8 +66,6 @@ docs.rearrangeSave = (req, res)=> {
             })
         }
 
-        console.log('.');
-
         if (!("documents" in obj) && !("subjects" in obj)) {
             toDo.push(
                 update(Document, obj)
@@ -98,15 +96,15 @@ docs.rearrangeSave = (req, res)=> {
         process(no);
     });
 
-    // console.log(toDo);
-
     Promise.all(toDo)
         .then(()=> {
             Flash.success(req, 'Rearrange saved');
+            Log.error(success);
             return res.sendStatus(200);
         })
         .catch(err=> {
             Flash.error(req, err);
+            Log.error(err);
             return res.sendStatus(400).json({error: err});
         })
 };
