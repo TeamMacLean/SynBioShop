@@ -99,7 +99,7 @@ docs.rearrangeSave = (req, res)=> {
     Promise.all(toDo)
         .then(()=> {
             Flash.success(req, 'Rearrange saved');
-            Log.error(success);
+            Log.error('Rearrange saved');
             return res.sendStatus(200);
         })
         .catch(err=> {
