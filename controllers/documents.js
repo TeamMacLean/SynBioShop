@@ -15,6 +15,7 @@ function getTopLevelSubjects() {
 
 docs.index = (req, res) => {
     getTopLevelSubjects().getJoin({documents: true, subjects: {documents: true}}).then(subjects => {
+        subjects = subjects.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         return res.render('documents/index', {subjects});
     }).catch(err => renderError(err, res));
 };

@@ -3,7 +3,6 @@ const renderError = require('../lib/renderError');
 const Type = require('../models/type');
 const config = require('../config.json');
 const Category = require('../models/category');
-const CartItem = require('../models/cartItem');
 
 const premade = {};
 premade.db = {};
@@ -13,7 +12,7 @@ premade.item = {};
 function getDbs() {
     return new Promise((resolve, reject) => {
         DB.run().then(dbs => {
-            dbs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            dbs = dbs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             resolve(dbs);
         })
             .error(err => {
