@@ -6,7 +6,7 @@
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
         <div class="tile pad inverted">
-            <h4>Admin</h4>
+            <h3>Admin</h3>
             <div class="form-group">
                 <a href="/docs/new" class="button primary">New</a>
                 <a href="/docs/rearrange" class="button primary">Rearrange</a>
@@ -21,9 +21,9 @@
 
         <div class="indent">
 
-            <h3 class="<% if(subject.disabled){ %>disabled<% } %>">
+            <h2 class="<% if(subject.disabled){ %>disabled<% } %>">
                 <%- subject.name %>
-            </h3>
+            </h2>
 
             <% subject.documents.map(function(document){ %>
             <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
@@ -39,7 +39,7 @@
             <% subject.subjects.map(function(subSubject){ %>
             <% if(subject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subject.disabled){ %>
             <div class="indent">
-                <h4 class="<% if(subSubject.disabled){ %>disabled<% } %>"><%- subSubject.name %></h4>
+                <h3 class="<% if(subSubject.disabled){ %>disabled<% } %>"><%- subSubject.name %></h3>
 
                 <% subSubject.documents.map(function(document){ %>
                 <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>

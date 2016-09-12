@@ -19,7 +19,7 @@
         <% dbs.map(function(db){ %>
         <% if(db.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !db.disabled){ %>
         <div class="indent">
-            <h5 class="<% if(db.disabled){ %>disabled<% } %>"><%- db.name %></h5>
+            <h2 class="<% if(db.disabled){ %>disabled<% } %>"><%- db.name %></h2>
             <ul>
                 <% db.categories.map(function(category){ %>
                 <% if(category.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !category.disabled){ %>
