@@ -32,7 +32,7 @@
             <% subject.documents.map(function(document){ %>
             <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
             <li><a class="<% if(document.disabled){ %>disabled<% } %>"
-                   href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
+                   href="/docs/item/<%- document.id %>"><span data-icon="&#x68;"></span> <%- document.title %></a></li>
             <% } %>
             <% }); %>
 
@@ -40,7 +40,7 @@
             <% if(subSubject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subSubject.disabled){ %>
             <!--<div class="indent">-->
             <h3><a class="<% if(subSubject.disabled){ %>disabled<% } %>"
-                   href="/docs/<%- subSubject.id %>"><%- subSubject.name %></a>
+                   href="/docs/<%- subSubject.id %>"><span data-icon="&#x6d;"></span> <%- subSubject.name %></a>
             </h3>
             <!--</div>-->
             <% } %>
@@ -49,7 +49,7 @@
             <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
             <div class="indent">
                 <li><a class="<% if(document.disabled){ %>disabled<% } %>"
-                       href="/docs/item/<%- document.id %>"><%- document.title %></a></li>
+                       href="/docs/item/<%- document.id %>"><span data-icon="&#x68;"></span> <%- document.title %></a></li>
             </div>
             <% } %>
 
