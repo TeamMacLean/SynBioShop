@@ -24,7 +24,7 @@
             <div class="indent">
 
                 <h2 class="<% if(subject.disabled){ %>disabled<% } %>">
-                    <%- subject.name %>
+                    <span data-icon="&#x6d;"></span> <%- subject.name %>
                 </h2>
 
                 <% subject.documents.map(function(document){ %>
@@ -42,14 +42,16 @@
                 <% subject.subjects.map(function(subSubject){ %>
                 <% if(subject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subject.disabled){ %>
                 <div class="indent">
-                    <h3 class="<% if(subSubject.disabled){ %>disabled<% } %>"><span data-icon="&#x6d;"></span> <%- subSubject.name %></h3>
+                    <h3 class="<% if(subSubject.disabled){ %>disabled<% } %>"><span
+                                data-icon="&#x6d;"></span> <%- subSubject.name %></h3>
 
                     <% subSubject.documents.map(function(document){ %>
                     <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
                     <div class="indent">
 
                         <li><a class="<% if(document.disabled){ %>disabled<% } %>"
-                               href="/docs/item/<%- document.id %>"><span data-icon="&#x68;"></span> <%- document.title %></a></li>
+                               href="/docs/item/<%- document.id %>"><span
+                                        data-icon="&#x68;"></span> <%- document.title %></a></li>
                     </div>
                     <% } %>
                     <% }); %>
