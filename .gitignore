@@ -4,5 +4,6 @@ public/components
 public/style/*.css
 public/uploads/*
 config.json
+docs
 log/*
 **/.DS_Store
