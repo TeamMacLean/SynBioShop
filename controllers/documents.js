@@ -66,7 +66,7 @@ docs.rearrangeSave = (req, res)=> {
             })
         }
 
-        if (!("documents" in obj) && !("subjects" in obj)) {
+        if (!('documents' in obj) && !('subjects' in obj)) {
             toDo.push(
                 update(Document, obj)
             )

@@ -14,7 +14,7 @@ const search = io => {
 
         socket.on('search', text => {
             function escapeRegExp(str) {
-                return str.replace(/[\-\[\]\/{}()*+?.\\\^$|]/g, "\\$&");
+                return str.replace(/[\-\[\]\/{}()*+?.\\\^$|]/g, '\\$&');
             }
 
             text = escapeRegExp(text);
