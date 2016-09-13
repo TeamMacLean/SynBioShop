@@ -12,7 +12,6 @@ const Subject = thinky.createModel('Subject', {
 });
 
 module.exports = Subject;
-
 const Document = require('./document');
 
 Subject.hasMany(Subject, 'subjects', 'id', 'subjectID');

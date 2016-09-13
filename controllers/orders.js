@@ -56,7 +56,7 @@ orders.markAsComplete = (req, res) => {
                     .then(()=> {
                         Email.orderReady(orderWithTypes).then(()=> {
                             Flash.success(req, 'Completion email sent to user');
-                            return res.redirect('/order/' + orderID);
+                            return res.redirect(`/order/${orderID}`);
                         }).catch((err)=> renderError(err, res));
                     })
                     .catch((err)=>renderError(err, res));
@@ -75,7 +75,7 @@ orders.markAsIncomplete = (req, res) => {
             order.complete = false;
             order.save()
                 .then(()=> {
-                    return res.redirect('/order/' + orderID);
+                    return res.redirect(`/order/${orderID}`);
                 })
                 .catch((err)=>renderError(err, res));
         })

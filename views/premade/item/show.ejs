@@ -7,6 +7,8 @@
         <div class="tile pad inverted">
             <h4>Admin</h4>
             <div class="form-group">
+                <a href="/premade/item/<%- item.id %>/edit" class="button primary">Edit
+                    Item</a>
                 <% if(item.disabled){ %>
                 <a href="/premade/item/<%- item.id %>/enable" class="button success areyousure">Enable
                     Item</a>

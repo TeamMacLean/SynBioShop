@@ -28,7 +28,7 @@ types.filterAll = (key, filter) => {
 
 
 function filterBy(key, filter) {
-    var searcher = {};
+    const searcher = {};
     searcher[key] = filter;
     return new Promise((resolve, reject) => {
         const promises = types.TYPES.map(type => type.model.filter(searcher).getJoin({db: true}));
@@ -50,7 +50,7 @@ types.getByID = typeID => new Promise((good, bad)=> {
         if (foundItems.length > 0) {
             return good(foundItems[0]);
         } else {
-            return bad('types.getByID could not find anything for id ' + typeID);
+            return bad(`types.getByID could not find anything for id ${typeID}`);
         }
 
     }).catch((err)=> {

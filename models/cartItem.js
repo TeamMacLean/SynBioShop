@@ -1,4 +1,4 @@
-const thinky = require('../lib/thinky');
+const thinky = require( '../lib/thinky');
 const type = thinky.type;
 
 const CartItem = thinky.createModel('CartItem', {
@@ -15,6 +15,5 @@ CartItem.define('getType', function () {
 });
 
 module.exports = CartItem;
-
 const Cart = require('./cart');
 CartItem.belongsTo(Cart, 'cart', 'id', 'cartID');

@@ -45,6 +45,5 @@ Order.define('getTypes', function () {
 
 
 module.exports = Order;
-
 const CartItem = require('./cartItem');
 Order.hasMany(CartItem, 'items', 'id', 'orderID');

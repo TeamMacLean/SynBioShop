@@ -1,4 +1,4 @@
-const thinky = require('../lib/thinky');
+const thinky = require( '../lib/thinky');
 const type = thinky.type;
 const r = thinky.r;
 
@@ -12,6 +12,5 @@ const Category = thinky.createModel('Category', {
 });
 
 module.exports = Category;
-
 const DB = require('./db');
 Category.belongsTo(DB, 'db', 'dbID', 'id');

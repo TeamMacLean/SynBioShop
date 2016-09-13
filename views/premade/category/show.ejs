@@ -7,8 +7,8 @@
         <div class="tile pad inverted">
             <h4>Admin</h4>
             <div class="form-group">
+                <a href="/premade/category/<%- category.id %>/edit" class="button primary">Edit Category</a>
                 <a href="/premade/category/<%- category.id %>/new" class="button primary">New Item</a>
-
                 <% if(category.disabled){ %>
                 <a href="/premade/category/<%- category.id %>/enable" class="button success areyousure">Enable
                     Category</a>
@@ -26,7 +26,7 @@
         <h1 class="center"><%- category.name %></h1>
 
         <div>
-            <%-category.description%>
+            <%- category.description %>
         </div>
 
         <h2 class="center">Items</h2>

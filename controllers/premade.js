@@ -1,7 +1,6 @@
 const DB = require('../models/db');
 const renderError = require('../lib/renderError');
 const Type = require('../models/type');
-const config = require('../config.json');
 const Category = require('../models/category');
 
 const premade = {};
@@ -66,7 +65,7 @@ premade.db.disable = (req, res) => {
     DB.get(id).then((db)=> {
         db.disabled = true;
         db.save().then(()=> {
-            return res.redirect('/premade/' + id);
+            return res.redirect(`/premade/${id}`);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
@@ -85,11 +84,21 @@ premade.db.enable = (req, res) => {
     DB.get(id).then((db)=> {
         db.disabled = false;
         db.save().then(()=> {
-            return res.redirect('/premade/' + id);
+            return res.redirect(`/premade/${id}`);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
 
+premade.db.edit = (req, res) => {
+    //TODO
+    // const id = req.params.id;
+    // DB.get(id).then((db)=> {
+    //     db.disabled = false;
+    //     db.save().then(()=> {
+    //         return res.redirect('/premade/' + id);
+    //     }).catch((err)=>renderError(err, res));
+    // }).catch((err)=>renderError(err, res));
+};
 
 premade.category.new = (req, res) => {
     const id = req.params.id;
@@ -111,10 +120,20 @@ premade.category.newPost = (req, res) => {
     });
 
     category.save().then(()=> {
-        res.redirect('/premade/' + id);
+        res.redirect(`/premade/${id}`);
     }).catch((err)=> {
         return renderError(err, res);
     })
+};
+
+premade.category.edit = (req, res) => {
+    //TODO
+    // const id = req.params.id;
+    // DB.get(id).then(db => {
+    //     getDbs().then((dbs)=> {
+    //         return res.render('premade/category/new', {dbs, db});
+    //     }).catch(err => renderError(err, res));
+    // }).catch(err => renderError(err, res));
 };
 
 premade.category.show = (req, res) => {
@@ -158,7 +177,7 @@ premade.category.enable = (req, res) => {
     Category.get(id).then((category)=> {
         category.disabled = false;
         category.save().then(()=> {
-            return res.redirect('/premade/category/' + id);
+            return res.redirect(`/premade/category/${id}`);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
@@ -167,7 +186,7 @@ premade.category.disable = (req, res) => {
     Category.get(id).then((category)=> {
         category.disabled = true;
         category.save().then((saved)=> {
-            return res.redirect('/premade/category/' + id);
+            return res.redirect(`/premade/category/${id}`);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
@@ -175,7 +194,7 @@ premade.category.delete = (req, res) => {
     const id = req.params.categoryID;
     Category.get(id).then((category)=> {
         category.delete().then(()=> {
-            return res.redirect('/premade/' + category.dbID);
+            return res.redirect(`/premade/${category.dbID}`);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
@@ -198,7 +217,7 @@ premade.item.newPost = (req, res) => {
     const categoryID = req.params.categoryID;
 
     DB.get(dbID).then((db)=> {
-        var type = Type.getByTypeNumber(db.type);
+        const type = Type.getByTypeNumber(db.type);
         const obj = {};
         obj.dbID = dbID;
         obj.categoryID = categoryID;
@@ -212,7 +231,7 @@ premade.item.newPost = (req, res) => {
         const newType = type.model(obj);
         newType.name = req.body.name;
         newType.file = 'TODO';
-        newType.save().then(savedType => res.redirect('/premade/category/' + categoryID)).catch(err => renderError(err, res))
+        newType.save().then(savedType => res.redirect(`/premade/category/${categoryID}`)).catch(err => renderError(err, res))
     }).catch(err => renderError(err, res));
 };
 
@@ -248,7 +267,7 @@ premade.item.enable = (req, res) => {
     Type.getByID(id).then((type)=> {
         type.disabled = false;
         type.save().then(()=> {
-            return res.redirect('/premade/item/' + id);
+            return res.redirect(`/premade/item/${id}`);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
@@ -257,15 +276,27 @@ premade.item.disable = (req, res) => {
     Type.getByID(id).then((type)=> {
         type.disabled = true;
         type.save().then(()=> {
-            return res.redirect('/premade/item/' + id);
+            return res.redirect(`/premade/item/${id}`);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
+
+premade.item.edit = (req, res) => {
+    //TODO
+    const id = req.params.itemID;
+    Type.getByID(id).then((type)=> {
+        //     type.disabled = false;
+        //     type.save().then(()=> {
+        //         return res.redirect('/premade/item/' + id);
+        //     }).catch((err)=>renderError(err, res));
+    }).catch((err)=>renderError(err, res));
+};
+
 premade.item.delete = (req, res) => {
     const id = req.params.itemID;
     Type.getByID(id).then((type)=> {
         type.delete().then(()=> {
-            return res.redirect('/premade/category/' + type.categoryID);
+            return res.redirect(`/premade/category/${type.categoryID}`);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };

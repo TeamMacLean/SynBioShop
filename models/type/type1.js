@@ -1,4 +1,4 @@
-const thinky = require('../../lib/thinky');
+const thinky = require( '../../lib/thinky');
 const type = thinky.type;
 const Type1 = {};
 
@@ -28,9 +28,6 @@ Type1.model = thinky.createModel('Type1', {
     outsideOverhangs: type.string().required(),
     resistance: type.string().required()
 });
-
-
-// Type1.model.defineStatic('fields', () => Type1.fields);
 
 
 module.exports = Type1;

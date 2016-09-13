@@ -3,7 +3,6 @@ const passport = require('passport');
 const gravatar = require('gravatar');
 const renderError = require('../lib/renderError');
 const config = require('../config.json');
-
 const LOG = require('../lib/log');
 /**
  * render site index

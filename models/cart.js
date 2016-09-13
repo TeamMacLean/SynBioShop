@@ -1,4 +1,4 @@
-const thinky = require('../lib/thinky');
+const thinky = require( '../lib/thinky');
 const type = thinky.type;
 // const util = require('../lib/util');
 // const async = require('async');
@@ -44,7 +44,6 @@ Cart.define('empty', function () {
     });
 });
 module.exports = Cart;
-
 const CartItem = require('./cartItem');
 
 Cart.hasMany(CartItem, 'items', 'id', 'cartID');

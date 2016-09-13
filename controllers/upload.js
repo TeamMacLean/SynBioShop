@@ -3,9 +3,9 @@ const config = require('../config.json');
 const fs = require('fs');
 const path = require('path');
 const File = require('../models/file');
-var uuid = require('node-uuid');
+const uuid = require('node-uuid');
 
-var upload = {};
+const upload = {};
 
 upload.fileManager = (req, res)=> {
 
@@ -33,8 +33,8 @@ upload.uploadFilePost = (req, res) => {
         fs.mkdirSync(config.uploadRoot);
     }
 
-    var files = req.files;
-    var file = files.file;
+    const files = req.files;
+    const file = files.file;
     if (file) {
 
         const newPath = path.join(config.uploadRoot, file.name);

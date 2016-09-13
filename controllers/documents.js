@@ -49,7 +49,7 @@ docs.rearrange = (req, res) => {
 
 docs.rearrangeSave = (req, res)=> {
 
-    var newOrder = JSON.parse(req.body.newOrder);
+    const newOrder = JSON.parse(req.body.newOrder);
 
     const toDo = [];
 
@@ -145,7 +145,7 @@ docs.subject.disable = (req, res) => {
     Subject.get(id).then((subject)=> {
         subject.disabled = true;
         subject.save().then((saved)=> {
-            return res.redirect('/docs/' + id);
+            return res.redirect(`/docs/${id}`);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
@@ -155,7 +155,7 @@ docs.subject.enable = (req, res) => {
     Subject.get(id).then((subject)=> {
         subject.disabled = false;
         subject.save().then((saved)=> {
-            return res.redirect('/docs/' + id);
+            return res.redirect(`/docs/${id}`);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
@@ -181,7 +181,7 @@ docs.subject.save = (req, res) => {
 
                 subject.save()
                     .then(()=> {
-                        return res.redirect('/docs/' + subject.id);
+                        return res.redirect(`/docs/${subject.id}`);
                     })
                     .catch((err) => renderError(err, res));
             })
@@ -192,7 +192,7 @@ docs.subject.save = (req, res) => {
             newSubject.subjectID = parentSubjectID;
         }
         newSubject.save().then((savedSubject) => {
-            return res.redirect('/docs/' + savedSubject.id);
+            return res.redirect(`/docs/${savedSubject.id}`);
         }).catch((err) => renderError(err, res));
     }
 };
@@ -212,7 +212,7 @@ docs.document.disable = (req, res) => {
     Document.get(id).then((document)=> {
         document.disabled = true;
         document.save().then((saved)=> {
-            return res.redirect('/docs/item/' + id);
+            return res.redirect(`/docs/item/${id}`);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
@@ -222,7 +222,7 @@ docs.document.enable = (req, res) => {
     Document.get(id).then((document)=> {
         document.disabled = false;
         document.save().then((saved)=> {
-            return res.redirect('/docs/item/' + id);
+            return res.redirect(`/docs/item/${id}`);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
@@ -231,7 +231,7 @@ docs.document.delete = (req, res) => {
     const id = req.params.itemID;
     Document.get(id).then((document)=> {
         document.delete().then(()=> {
-            return res.redirect('/docs/item/' + document.subjectID);
+            return res.redirect(`/docs/item/${document.subjectID}`);
         }).catch((err)=>renderError(err, res));
     }).catch((err)=>renderError(err, res));
 };
@@ -250,7 +250,7 @@ docs.document.save = (req, res) => {
                     document.content = req.body.content;
                     document.save().then(()=> {
                         // document.subject = subject;
-                        return res.redirect('/docs/item/' + document.id);
+                        return res.redirect(`/docs/item/${document.id}`);
                     })
                         .catch((error)=> {
                             return renderError(error, res);

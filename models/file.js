@@ -1,4 +1,4 @@
-const thinky = require('../lib/thinky');
+const thinky = require( '../lib/thinky');
 const type = thinky.type;
 const isImage = require('is-image');
 const config = require('../config.json');
@@ -17,7 +17,7 @@ const File = thinky.createModel('File', {
 module.exports = File;
 
 File.define('relativePath', function () {
-    return config.uploadRootURL + '/' + this.name;
+    return `${config.uploadRootURL}/${this.name}`;
 });
 
 File.define('isImage', function () {

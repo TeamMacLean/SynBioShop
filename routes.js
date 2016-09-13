@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-// const config = require('./config.json');
 const Util = require('./lib/util');
 const docs = require('./controllers/documents');
 const premade = require('./controllers/premade');
@@ -87,6 +86,11 @@ router.route('/premade/:id')
     .all(isAuthenticated)
     .get(premade.db.show);
 
+router.route('/premade/:id/edit')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.db.edit);
+
 router.route('/premade/:id/disable')
     .all(isAuthenticated)
     .all(isAdmin)
@@ -99,7 +103,6 @@ router.route('/premade/:id/delete')
     .all(isAuthenticated)
     .all(isAdmin)
     .get(premade.db.delete);
-
 router.route('/premade/:id/new')
     .all(isAuthenticated)
     .all(isAdmin)
@@ -109,7 +112,10 @@ router.route('/premade/:id/new')
 router.route('/premade/category/:categoryID')
     .all(isAuthenticated)
     .get(premade.category.show);
-
+router.route('/premade/category/:categoryID/edit')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.category.edit);
 router.route('/premade/category/:categoryID/disable')
     .all(isAuthenticated)
     .all(isAdmin)
@@ -132,7 +138,10 @@ router.route('/premade/category/:categoryID/new')
 router.route('/premade/item/:itemID')
     .all(isAuthenticated)
     .get(premade.item.show);
-
+router.route('/premade/item/:itemID/edit')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.item.edit);
 router.route('/premade/item/:itemID/disable')
     .all(isAuthenticated)
     .all(isAdmin)

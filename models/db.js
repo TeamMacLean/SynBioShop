@@ -1,4 +1,4 @@
-const thinky = require('../lib/thinky');
+const thinky = require( '../lib/thinky');
 const type = thinky.type;
 const r = thinky.r;
 
@@ -12,6 +12,5 @@ const DB = thinky.createModel('DB', {
 });
 
 module.exports = DB;
-
 const Category = require('./category');
 DB.hasMany(Category, 'categories', 'id', 'dbID');

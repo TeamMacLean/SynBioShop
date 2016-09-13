@@ -8,16 +8,17 @@
         <div class="tile pad inverted">
             <h4>Admin</h4>
             <div class="form-group">
+                <a href="/premade/<%- db.id %>/edit" class="button primary">Edit
+                    DB</a>
                 <a href="/premade/<%- db.id %>/new" class="button primary">New Category</a>
-
                 <% if(db.disabled){ %>
                 <a href="/premade/<%- db.id %>/enable" class="button success areyousure">Enable
-                    Subject</a>
+                    DB</a>
                 <a href="/premade/<%- db.id %>/delete" class="button danger areyousure">Delete
-                    Subject</a>
+                    DB</a>
                 <% } else { %>
                 <a href="/premade/<%- db.id %>/disable" class="button danger areyousure">Disable
-                    Subject</a>
+                    DB</a>
                 <% } %>
             </div>
         </div>

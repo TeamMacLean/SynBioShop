@@ -4,10 +4,11 @@ const Cart = require('../models/cart');
 const CartItem = require('../models/cartItem');
 const Order = require('../models/order');
 const Log = require('../lib/log');
-const ShoppingCart = {};
 const async = require('async');
 const Email = require('../lib/email');
 const Flash = require('../lib/flash');
+
+const ShoppingCart = {};
 
 ShoppingCart.index = (req, res) => {
     ShoppingCart.ensureCart(req.user.username, {items: true})
@@ -113,7 +114,7 @@ ShoppingCart.ensureAdd = (username, typeID) => new Promise((good, bad) => {
 
 ShoppingCart.update = (req, res) => {
 
-    var items = req.body.item;
+    let items = req.body.item;
 
 
     if (items && !Array.isArray(items)) {
@@ -122,7 +123,7 @@ ShoppingCart.update = (req, res) => {
 
     async.each(items, (itemID, cb)=> {
         CartItem.get(itemID).then((item)=> {
-            item.largeScale = !!req.body['largeScale-' + itemID];
+            item.largeScale = !!req.body[`largeScale-${itemID}`];
             item.save().then(()=> {
                 return cb();
             }).catch(err => {
@@ -149,7 +150,7 @@ ShoppingCart.placeOrder = (req, res) => {
     const username = req.user.username;
     ShoppingCart.ensureCart(username, {items: true}).then((cart)=> {
         new Order({username}).save().then((savedOrder)=> {
-            var saving = [];
+            const saving = [];
 
             cart.items.map(item => {
                 item.orderID = savedOrder.id;
@@ -186,6 +187,5 @@ ShoppingCart.placeOrder = (req, res) => {
         return renderError(err, res);
     });
 };
-
 
 module.exports = ShoppingCart;
