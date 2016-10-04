@@ -8,9 +8,15 @@
 
         <form method="post" action="/premade/new">
 
+            <% if (typeof db == 'undefined') {
+                var db = {};
+            } else { %>
+            <input type="hidden" name="id" id="id" value="<%- db.id %>">
+            <% } %>
+
             <div class="form-group">
                 <label for="name">Name</label>
-                <input type="text" id="name" name="name" class="wide" required>
+                <input type="text" id="name" name="name" class="wide" value="<%- db.name %>" required>
             </div>
             <div class="form-group">
                 <label for="type">Type</label>
@@ -22,11 +28,7 @@
             </div>
             <div class="form-group">
                 <label for="description">Description</label>
-                <% if(typeof db != 'undefined'){ %>
                 <textarea id="tinymce" class="wide" name="description"><%- db.description %></textarea>
-                <% } else { %>
-                <textarea id="tinymce" class="wide" name="description"></textarea>
-                <% } %>
             </div>
             <div class="form-group">
                 <button type="submit" class="success">Save</button>

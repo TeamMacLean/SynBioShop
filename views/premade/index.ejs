@@ -20,23 +20,22 @@
             <% dbs.map(function(db){ %>
             <% if(db.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !db.disabled){ %>
             <!--<div class="indent">-->
-            <h5 class="<% if(db.disabled){ %>disabled<% } %>"><%- db.name %></h5>
+            <h2 class="<% if(db.disabled){ %>disabled<% } %>"><%- db.name %></h2>
             <ul>
                 <% db.categories.map(function(category){ %>
                 <% if(category.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !category.disabled){ %>
                 <div class="indent">
                     <li><a class="<% if(category.disabled){ %>disabled<% } %>"
-                           href="/premade/category/<%- category.id %>"><%- category.name %></a></li>
+                           href="/premade/category/<%- category.id %>"><span
+                                    data-icon="&#xe017;"></span> <%- category.name %></a></li>
                 </div>
                 <% } %>
                 <% }); %>
             </ul>
+            <% } %>
+            <% }); %>
         </div>
-        <% } %>
-        <% }); %>
     </div>
-
-    <!--</div>-->
 </div>
 
 

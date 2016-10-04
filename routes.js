@@ -81,7 +81,7 @@ router.route('/premade/new')
     .all(isAuthenticated)
     .all(isAdmin)
     .get(premade.db.new)
-    .post(premade.db.newPost);
+    .post(premade.db.save);
 router.route('/premade/:id')
     .all(isAuthenticated)
     .get(premade.db.show);

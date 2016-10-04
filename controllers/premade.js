@@ -29,26 +29,49 @@ premade.index = (req, res) => {
 
 premade.db.new = (req, res) => {
     getDbs().then((dbs)=> {
-        return res.render('premade/db/new', {types: Type.TYPES, dbs});
+        return res.render('premade/db/edit', {types: Type.TYPES, dbs});
     }).catch(err => renderError(err, res));
 };
 
-premade.db.newPost = (req, res, next) => {
+premade.db.save = (req, res, next) => {
     const name = req.body.name;
     const type = req.body.type;
     const description = req.body.description;
 
-    const db = new DB({
-        name,
-        type,
-        description
-    });
 
-    db.save().then(()=> {
-        res.redirect('/premade');
-    }).catch((err)=> {
-        return renderError(err, res);
-    })
+    const id = req.body.id;
+
+
+    if (id) {
+        DB.get(id)
+            .then((db)=> {
+                db.name = name;
+                // db.type=type; //should not be allowed to change this!!!!
+                db.description = description;
+                db.save().then(()=> {
+                    res.redirect('/premade');
+                }).catch((err)=> {
+                    return renderError(err, res);
+                })
+            })
+            .catch((err)=> {
+                return renderError(err, res);
+            })
+
+    } else {
+        const db = new DB({
+            name,
+            type,
+            description
+        });
+        db.save().then(()=> {
+            res.redirect('/premade');
+        }).catch((err)=> {
+            return renderError(err, res);
+        })
+    }
+
+
 };
 
 premade.db.show = (req, res) => {
@@ -90,14 +113,16 @@ premade.db.enable = (req, res) => {
 };
 
 premade.db.edit = (req, res) => {
-    //TODO
-    // const id = req.params.id;
-    // DB.get(id).then((db)=> {
-    //     db.disabled = false;
-    //     db.save().then(()=> {
-    //         return res.redirect('/premade/' + id);
-    //     }).catch((err)=>renderError(err, res));
-    // }).catch((err)=>renderError(err, res));
+    const id = req.params.id;
+    DB.get(id)
+        .then((db)=> {
+            getDbs().then((dbs)=> {
+                return res.render('premade/db/edit', {db, dbs, types: [Type.TYPES[db.type]]});
+            }).catch(err => renderError(err, res));
+        })
+        .catch((err)=> {
+            return renderError(err, res);
+        });
 };
 
 premade.category.new = (req, res) => {

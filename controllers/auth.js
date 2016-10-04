@@ -51,7 +51,7 @@ Auth.signInPost = (req, res, next) => {
             return next(err);
         }
         if (!user) {
-            let message = 'No such user';
+            var message = 'No such user';
             if (info && info.message) {
                 message += `, ${info.message}`;
             }

@@ -114,7 +114,7 @@ ShoppingCart.ensureAdd = (username, typeID) => new Promise((good, bad) => {
 
 ShoppingCart.update = (req, res) => {
 
-    let items = req.body.item;
+    var items = req.body.item;
 
 
     if (items && !Array.isArray(items)) {
