@@ -22,6 +22,7 @@ Type2.model = thinky.createModel('Type2', {
     superSize: type.boolean().default(false),
     disabled: type.boolean().default(false),
     categoryID: type.string().required(),
+    file:type.string(),
 
     //TYPE SPECIFIC
     code: type.string().required(),
@@ -31,3 +32,6 @@ Type2.model = thinky.createModel('Type2', {
 
 
 module.exports = Type2;
+
+const File = require('../file');
+Type2.model.hasMany(File, 'files', 'id', 'typeID');

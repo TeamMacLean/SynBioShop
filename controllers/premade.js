@@ -2,6 +2,8 @@ const DB = require('../models/db');
 const renderError = require('../lib/renderError');
 const Type = require('../models/type');
 const Category = require('../models/category');
+const File = require('../models/file');
+const config = require('../config.json');
 
 const premade = {};
 premade.db = {};
@@ -250,13 +252,35 @@ premade.item.newPost = (req, res) => {
         Object.keys(req.body).forEach(key => {
             obj[key] = req.body[key];
         });
-        Object.keys(req.files).forEach(key => {
-            obj[key] = req.body[key];
-        });
+        // Object.keys(req.files).forEach(key => {
+        //     obj[key] = req.body[key];
+        // });
         const newType = type.model(obj);
         newType.name = req.body.name;
+
+        //TODO move file;
+
+
         newType.file = 'TODO';
-        newType.save().then(savedType => res.redirect(`/premade/category/${categoryID}`)).catch(err => renderError(err, res))
+        newType.save().then((savedType) => {
+
+            if (req.files && req.files.file) {
+                const file = req.files.file;
+                const newPath = path.join(config.uploadRoot, file.name);
+                fs.rename(file.path, newPath);
+                new File({
+                    path: newPath,
+                    name: file.name,
+                    originalName: file.originalname,
+                    typeID: savedType.id
+                }).save().catch((err)=> {
+                    return renderError(err, res);
+                });
+
+            }
+
+            res.redirect(`/premade/category/${categoryID}`)
+        }).catch(err => renderError(err, res))
     }).catch(err => renderError(err, res));
 };
 

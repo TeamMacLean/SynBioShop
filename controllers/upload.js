@@ -3,7 +3,6 @@ const config = require('../config.json');
 const fs = require('fs');
 const path = require('path');
 const File = require('../models/file');
-const uuid = require('node-uuid');
 
 const upload = {};
 
@@ -83,7 +82,6 @@ upload.uploadFilePost = (req, res) => {
 
 upload.uploadImagePost = (req, res, next) => {
     console.log('uploaded files', req.files);
-    const newName = uuid.v1();
     const file = req.files.userfile;
     const newPath = path.join(config.uploadRoot, file.name);
     fs.rename(file.path, newPath);

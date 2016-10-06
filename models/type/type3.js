@@ -1,4 +1,4 @@
-const thinky = require( '../../lib/thinky');
+const thinky = require('../../lib/thinky');
 const type = thinky.type;
 const Type3 = {};
 
@@ -25,6 +25,7 @@ Type3.model = thinky.createModel('Type3', {
     superSize: type.boolean().default(false),
     disabled: type.boolean().default(false),
     categoryID: type.string().required(),
+    file: type.string(),
 
     //TYPE SPECIFIC
     FiveOH: type.string(),
@@ -36,4 +37,7 @@ Type3.model = thinky.createModel('Type3', {
 
 
 module.exports = Type3;
+
+const File = require('../file');
+Type3.model.hasMany(File, 'files', 'id', 'typeID');
 
