@@ -11,6 +11,7 @@ const cookieParser = require('cookie-parser');
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 require('./controllers/search')(io);
+// require('./lib/quantityUpdater')(io);
 const Cart = require('./models/cart');
 const flash = require('express-flash');
 

@@ -103,12 +103,13 @@ router.route('/premade/:id/delete')
     .all(isAuthenticated)
     .all(isAdmin)
     .get(premade.db.delete);
+
+
 router.route('/premade/:id/new')
     .all(isAuthenticated)
     .all(isAdmin)
     .get(premade.category.new)
-    .post(premade.category.newPost);
-
+    .post(premade.category.save);
 router.route('/premade/category/:categoryID')
     .all(isAuthenticated)
     .get(premade.category.show);

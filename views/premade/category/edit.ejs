@@ -8,17 +8,19 @@
 
         <form method="post" action="/premade/<%- db.id %>/new">
 
+            <% if (typeof category == 'undefined') {
+                var category = {};
+            } else { %>
+            <input type="hidden" name="id" id="id" value="<%- category.id %>">
+            <% } %>
+
             <div class="form-group">
                 <label for="name">Name</label>
-                <input type="text" id="name" name="name" class="wide" required>
+                <input type="text" id="name" name="name" class="wide" value="<%- category.name %>" required>
             </div>
             <div class="form-group">
                 <label for="description">Description</label>
-                <% if(typeof category != 'undefined'){ %>
                 <textarea id="tinymce" class="wide" name="description"><%- category.description %></textarea>
-                <% } else { %>
-                <textarea id="tinymce" class="wide" name="description"></textarea>
-                <% } %>
             </div>
             <div class="form-group">
                 <button type="submit" class="success">Save</button>

@@ -23,7 +23,7 @@
             <tr>
                 <td><a href="/premade/item/<%- item.type.id %>"><%- item.type.name %></a></td>
                 <td class="center">
-                    <input type='checkbox' value="<%- item.largeScale %>"
+                    <input type='checkbox' data-id="<%- item.id %>" value="<%- item.largeScale %>"
                             <% if(item.largeScale){ %>
                            checked
                             <% } %>
@@ -37,6 +37,23 @@
             <% }); %>
             </tbody>
         </table>
+
+        <!--<script>-->
+            <!--$(function () {-->
+                <!--var updatesLeft = 0;-->
+                <!--$('input[type="checkbox"]').change(function (event) {-->
+                    <!--var el = $(this);-->
+                    <!--var checked = el.is(":checked");-->
+                    <!--event.preventDefault();-->
+                    <!--updatesLeft += (1);-->
+                    <!--socket.emit('toggle-quantity', {id: el.data('id'), checked: checked});-->
+                    <!--$(this).attr("checked", checked);-->
+                <!--})-->
+                <!--socket.on('item-updated', function () {-->
+                    <!--updatesLeft -= 1;-->
+                <!--})-->
+            <!--})-->
+        <!--</script>-->
 
         <div class="pull-right">
             <input type="submit" class="button primary" value="Update Cart">

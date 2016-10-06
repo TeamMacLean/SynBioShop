@@ -31,9 +31,12 @@ function filterBy(key, filter) {
     const searcher = {};
     searcher[key] = filter;
     return new Promise((resolve, reject) => {
-        const promises = types.TYPES.map(type => type.model.filter(searcher).getJoin({db: true}));
+        const promises = types.TYPES.map(type => type.model.filter(searcher).getJoin({db: true, file: true}));
         Promise.all(promises)
             .then((results)=> {
+
+                // console.log('found', results);
+
                 const mergedResults = [].concat(...results);
                 return resolve(mergedResults);
             })

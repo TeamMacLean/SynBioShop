@@ -28,12 +28,13 @@
         <p><span class="bold"><%- heading %>:</span> <%- values[i] %></p>
         <% }); %>
 
-        <!--<div class="pull-right">-->
-        <a href="#" class="button primary outline icon"><span
+        <% if(item.file){ %>
+        <a href="<%- item.file.relativePath() %>" class="button primary outline icon"><span
                     data-icon="&#xe004;"></span></a>
+        <% } %>
+
         <a href="/cart/add/<%- item.id %>" class="button success outline icon"><span
                     data-icon="&#x4c;"></span></a>
-        <!--</div>-->
     </div>
 </div>
 <% include ../../foot.ejs %>

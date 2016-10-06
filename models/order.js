@@ -27,7 +27,7 @@ Order.define('getTypes', function () {
             Promise.all(gettingTypes).then((types)=> {
 
                 orderWithItems.items.map((item, i)=> {
-                    item.type = types[i][0];
+                    item.type = types[i];
                 });
 
                 return good(orderWithItems);

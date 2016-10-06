@@ -48,35 +48,38 @@ ShoppingCart.add = (req, res, next) => {
         return next('no type ID given');
     }
 
-    Type.getByID(typeID).then((types) => {
-        if (types.length == 1) {
-            ShoppingCart.ensureCart(req.user.username, {items: true}).then((cart)=> {
-                cart.contains(typeID)
-                    .then((alreadyInCart)=> {
-                        if (alreadyInCart) {
-                            return res.render('cart/exists');
-                        } else {
-                            ShoppingCart.ensureAdd(req.user.username, types[0].id).then(() => {
-                                Flash.success(req, 'Added to cart');
-                                return res.redirect('/cart');
-                            }).catch((err) => {
-                                return renderError(err, res);
-                            })
-                        }
-                    }).catch((err)=> {
-                    return renderError(err, res);
-                });
-            }).catch((err)=> {
+    Type.getByID(typeID).then((type) => {
+        console.log('adding to cart', type);
+        // if (types.length == 1 || !types.length) {
+
+
+        ShoppingCart.ensureCart(req.user.username, {items: true}).then((cart)=> {
+            cart.contains(typeID)
+                .then((alreadyInCart)=> {
+                    if (alreadyInCart) {
+                        return res.render('cart/exists');
+                    } else {
+                        ShoppingCart.ensureAdd(req.user.username, type.id).then(() => {
+                            Flash.success(req, 'Added to cart');
+                            return res.redirect('/cart');
+                        }).catch((err) => {
+                            return renderError(err, res);
+                        })
+                    }
+                }).catch((err)=> {
                 return renderError(err, res);
             });
-        } else {
-            if (types.length > 1) {
-                Log.error('TYPES', types);
-                return renderError(new Error('more than one type found with that id'), res);
-            } else {
-                return renderError(new Error('type not found'), res);
-            }
-        }
+        }).catch((err)=> {
+            return renderError(err, res);
+        });
+        // } else {
+        //     if (types.length > 1) {
+        //         Log.error('TYPES', types);
+        //         return renderError(new Error('more than one type found with that id'), res);
+        //     } else {
+        //         return renderError(new Error('type not found'), res);
+        //     }
+        // }
     }).catch((err) => {
         return renderError(err, res);
     });

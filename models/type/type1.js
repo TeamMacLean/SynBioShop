@@ -1,4 +1,4 @@
-const thinky = require( '../../lib/thinky');
+const thinky = require('../../lib/thinky');
 const type = thinky.type;
 const Type1 = {};
 
@@ -22,7 +22,6 @@ Type1.model = thinky.createModel('Type1', {
     superSize: type.boolean().default(false),
     disabled: type.boolean().default(false),
     categoryID: type.string().required(),
-    file:type.string(),
 
     //TYPE SPECIFIC
     insideOverhangs: type.string().required(),
@@ -33,6 +32,5 @@ Type1.model = thinky.createModel('Type1', {
 
 module.exports = Type1;
 
-
 const File = require('../file');
-Type1.model.hasMany(File, 'files', 'id', 'typeID');
+Type1.model.hasOne(File, 'file', 'id', 'typeID');
