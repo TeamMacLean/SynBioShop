@@ -134,8 +134,7 @@ router.route('/premade/category/:categoryID/new')
     .all(isAuthenticated)
     .all(isAdmin)
     .get(premade.item.new)
-    .post(premade.item.newPost);
-
+    .post(premade.item.save);
 router.route('/premade/item/:itemID')
     .all(isAuthenticated)
     .get(premade.item.show);

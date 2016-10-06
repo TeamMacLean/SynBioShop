@@ -255,59 +255,90 @@ premade.item.new = (req, res) => {
         // DB.get(dbID).run().then(db => {
         const type = Type.getByTypeNumber(category.db.type);
         getDbs().then((dbs)=> {
-            return res.render('premade/item/new', {dbs, db: category.db, category, type});
+            return res.render('premade/item/edit', {dbs, db: category.db, category, type});
         }).catch((err)=>renderError(err, res));
         // }).catch(err => renderError(err, res));
     }).catch(err => renderError(err, res));
 };
 
-premade.item.newPost = (req, res) => {
+premade.item.save = (req, res) => {
     const dbID = req.body.dbID;
     const categoryID = req.params.categoryID;
 
-    DB.get(dbID).then((db)=> {
-        const type = Type.getByTypeNumber(db.type);
-        const obj = {};
-        obj.dbID = dbID;
-        obj.categoryID = categoryID;
+    const id = req.body.id;
 
-        Object.keys(req.body).forEach(key => {
-            obj[key] = req.body[key];
-        });
-        // Object.keys(req.files).forEach(key => {
-        //     obj[key] = req.body[key];
-        // });
-        const newType = type.model(obj);
-        newType.name = req.body.name;
-
-        newType.file = 'TODO';
-        newType.save().then((savedType) => {
+    if (id) {
 
 
-            if (req.files && req.files.file) {
-                const file = req.files.file;
-                const newPath = path.join(config.uploadRoot, file.name);
-                fs.rename(file.path, newPath);
-                new File({
-                    path: newPath,
-                    name: file.name,
-                    originalName: file.originalname,
-                    typeID: savedType.id
-                })
-                    .save()
+        Type.getByID(id)
+            .then((type)=> {
+                var TYPE = Type.getByTypeNumber(type.db.type);
+
+                type.name = req.body.name;
+
+                TYPE.fields.map((f)=> {
+                    type[f.name] = req.body[f.name];
+                });
+
+                type.save()
                     .then(()=> {
-                        return res.redirect(`/premade/category/${categoryID}`)
+                        return res.redirect(`/premade/item/${id}`);
                     })
                     .catch((err)=> {
                         return renderError(err, res);
                     });
 
-            } else {
-                return res.redirect(`/premade/category/${categoryID}`)
-            }
 
-        }).catch(err => renderError(err, res))
-    }).catch(err => renderError(err, res));
+            }).catch((err)=> {
+            return renderError(err, res);
+        })
+
+    } else {
+
+        DB.get(dbID).then((db)=> {
+            const type = Type.getByTypeNumber(db.type);
+            const obj = {};
+            obj.dbID = dbID;
+            obj.categoryID = categoryID;
+
+            Object.keys(req.body).forEach(key => {
+                obj[key] = req.body[key];
+            });
+            // Object.keys(req.files).forEach(key => {
+            //     obj[key] = req.body[key];
+            // });
+            const newType = type.model(obj);
+            newType.name = req.body.name;
+
+            newType.file = 'TODO';
+            newType.save().then((savedType) => {
+
+
+                if (req.files && req.files.file) {
+                    const file = req.files.file;
+                    const newPath = path.join(config.uploadRoot, file.name);
+                    fs.rename(file.path, newPath);
+                    new File({
+                        path: newPath,
+                        name: file.name,
+                        originalName: file.originalname,
+                        typeID: savedType.id
+                    })
+                        .save()
+                        .then(()=> {
+                            return res.redirect(`/premade/category/${categoryID}`)
+                        })
+                        .catch((err)=> {
+                            return renderError(err, res);
+                        });
+
+                } else {
+                    return res.redirect(`/premade/category/${categoryID}`)
+                }
+
+            }).catch(err => renderError(err, res))
+        }).catch(err => renderError(err, res));
+    }
 };
 
 premade.item.show = (req, res) => {
@@ -358,16 +389,20 @@ premade.item.disable = (req, res) => {
 };
 
 premade.item.edit = (req, res) => {
-    //TODO
     const id = req.params.itemID;
     Type.getByID(id).then((type)=> {
-        //     type.disabled = false;
-        //     type.save().then(()=> {
-        //         return res.redirect('/premade/item/' + id);
-        //     }).catch((err)=>renderError(err, res));
+
+        type.fields = Type.getByTypeNumber(type.db.type).fields;
+
+        Category.get(type.categoryID)
+            .then((category)=> {
+                getDbs().then((dbs)=> {
+                    // console.log(type);
+                    return res.render('premade/item/edit.ejs', {type, dbs, category, db: type.db});
+                }).catch(err => renderError(err, res));
+            })
     }).catch((err)=>renderError(err, res));
 };
-
 premade.item.delete = (req, res) => {
     const id = req.params.itemID;
     Type.getByID(id).then((type)=> {
