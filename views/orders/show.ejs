@@ -2,14 +2,14 @@
 
 <div class="container">
 
-    <h2>Order</h2>
+    <h1 class="center">Order</h1>
 
-    <p>Orderd: <%- order.humanDate %></p>
-    <p>Completed: <%- order.complete %></p>
+    <p>Orderd: <%- order.createdHumanDate() %></p>
+    <p>Status: <%- order.complete ? 'Complete' : 'Pending' %></p>
     <p>Customer: <%- order.username %></p>
 
     <% if(order.completedAt){ %>
-    <p>Completed: <%- order.completedAt %></p>
+    <p>Completed: <%- order.completedHumanDate() %></p>
     <% } %>
 
     <h2 class="center">Order Details</h2>

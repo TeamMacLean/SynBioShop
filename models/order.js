@@ -12,7 +12,12 @@ const Order = thinky.createModel('Order', {
     completedAt: type.date()
 });
 
-Order.define('humanDate', moment(this.date).calendar());
+Order.define('createdHumanDate', function () {
+    return moment(this.createdAt).calendar();
+});
+Order.define('completedHumanDate', function () {
+    return moment(this.completedAt).calendar();
+});
 
 Order.define('getTypes', function () {
 

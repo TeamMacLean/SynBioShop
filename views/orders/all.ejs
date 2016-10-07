@@ -2,8 +2,7 @@
 
 <div class="container">
 
-    <h2 class="center">Orders</h2>
-
+    <h1 class="center">Orders</h1>
 
     <h3 class="center">Open</h3>
     <div class="row">
@@ -12,22 +11,43 @@
         <% } %>
         <% orders.open.map(function(order){ %>
         <div class="col4 auto-clear">
-            <% include ./_one.ejs %>
+            <div class="tile">
+                <div class="tile-block">
+                    <p>Orderd: <%- order.createdHumanDate() %></p>
+                    <p>Status: <%- order.complete ? 'Complete' : 'In Progress' %></p>
+                    <p>Customer: <%- order.username %></p>
+                </div>
+                <a href="/order/<%- order.id %>" class="button primary tile-button-bottom">Show</a>
+            </div>
         </div>
         <% }); %>
     </div>
 
     <h3 class="center">Closed</h3>
-    <div class="row">
-        <% if(orders.closed.length == 0){ %>
-        <p class="center">None</p>
-        <% } %>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Order Placed</th>
+            <th>Completion Date</th>
+            <th>Customer</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+
         <% orders.closed.map(function(order){ %>
-        <div class="col4">
-            <% include ./_one.ejs %>
-        </div>
+
+        <tr>
+            <td><%- order.createdHumanDate() %></td>
+            <td><%- order.completedHumanDate() %></td>
+            <td><%- order.username %></td>
+            <td><a href="/order/<%- order.id %>">View</a></td>
+        </tr>
         <% }); %>
-    </div>
+
+        </tbody>
+    </table>
 
 </div>
 

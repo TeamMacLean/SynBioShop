@@ -2,31 +2,37 @@ const renderError = require('../lib/renderError');
 const Order = require('../models/order');
 const Email = require('../lib/email');
 const Flash = require('../lib/flash');
+const Util = require('../lib/util');
 
 const orders = {};
 
 orders.show = (req, res) => {
-
     const orderID = req.params.id;
-
     Order.get(orderID).getJoin({items: true}).then((order)=> {
-
         order.getTypes().then((orderWithTypes)=> {
             return res.render('orders/show', {order: orderWithTypes});
-
         }).catch((err)=> renderError(err, res));
-
-
     }).catch((err)=> {
         return renderError(err, res);
     })
+};
+
+orders.mine = (req, res)=> {
 
 
 };
 
 orders.showAll = (req, res) => {
 
-    Order.getJoin({items: true}).then((orders)=> {
+    var username = req.user.username;
+
+    var filter = {};
+
+    if (!Util.isAdmin(username)) {
+        filter.username = username;
+    }
+
+    Order.filter(filter).getJoin({items: true}).then((orders)=> {
 
         const sortedOrders = {open: [], closed: []};
 
@@ -52,6 +58,7 @@ orders.markAsComplete = (req, res) => {
         .then((order)=> {
             order.getTypes().then((orderWithTypes)=> {
                 orderWithTypes.complete = true;
+                orderWithTypes.completedAt = Date.now();
                 orderWithTypes.save()
                     .then(()=> {
                         Email.orderReady(orderWithTypes).then(()=> {
@@ -82,12 +89,12 @@ orders.markAsIncomplete = (req, res) => {
         .catch((err)=>renderError(err, res));
 };
 
-orders.showOpen = (req, res) => {
-
-};
-
-orders.showClosed = (req, res) => {
-
-};
+// orders.showOpen = (req, res) => {
+//
+// };
+//
+// orders.showClosed = (req, res) => {
+//
+// };
 
 module.exports = orders;
