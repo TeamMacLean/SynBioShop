@@ -5,9 +5,7 @@
     <% if(typeof cart != 'undefined'){ %>
     <% if(cart.items.length > 0){ %>
 
-    <p>5mL will be provided unless 'Large Scale' is selected.</p>
-
-    <form method="post" action="/cart/update">
+    <form method="post" action="/cart/order">
         <table class="cart">
             <thead>
             <tr>
@@ -38,26 +36,19 @@
             </tbody>
         </table>
 
-        <!--<script>-->
-            <!--$(function () {-->
-                <!--var updatesLeft = 0;-->
-                <!--$('input[type="checkbox"]').change(function (event) {-->
-                    <!--var el = $(this);-->
-                    <!--var checked = el.is(":checked");-->
-                    <!--event.preventDefault();-->
-                    <!--updatesLeft += (1);-->
-                    <!--socket.emit('toggle-quantity', {id: el.data('id'), checked: checked});-->
-                    <!--$(this).attr("checked", checked);-->
-                <!--})-->
-                <!--socket.on('item-updated', function () {-->
-                    <!--updatesLeft -= 1;-->
-                <!--})-->
-            <!--})-->
-        <!--</script>-->
+        <div class="row">
+            <div class="col12">
+                <p class="small pull-right">5mL will be provided unless 'Large Scale' is selected.</p>
+            </div>
+        </div>
 
-        <div class="pull-right">
-            <input type="submit" class="button primary" value="Update Cart">
-            <a href="/cart/order" class="button success areyousure">Place Order</a>
+        <div class="row">
+            <div class="col12">
+                <div class="pull-right">
+                    <!--<input type="submit" class="button primary" value="Update Cart">-->
+                    <button class="button success areyousure">Place Order</button>
+                </div>
+            </div>
         </div>
     </form>
     <% } else { %>

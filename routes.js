@@ -166,20 +166,20 @@ router.route('/cart')
     .all(isAuthenticated)
     .get(shoppingCart.index);
 
-router.route('/cart/update')
-    .all(isAuthenticated)
-    .post(shoppingCart.update);
+// router.route('/cart/update')
+//     .all(isAuthenticated)
+//     .post(shoppingCart.update);
 
 router.route('/cart/order')
     .all(isAuthenticated)
-    .get(shoppingCart.placeOrder);
+    .post(shoppingCart.placeOrder);
 
-router.route('/cart/remove/:cartItemID')
-    .all(isAuthenticated)
-    .get(shoppingCart.remove);
+// router.route('/cart/remove/:cartItemID')
+//     .all(isAuthenticated)
+//     .get(shoppingCart.remove);
 
-router.route('/cart/add/:typeID')
-    .get(shoppingCart.add);
+// router.route('/cart/add/:typeID')
+//     .get(shoppingCart.add);
 
 
 //FILE UPLOAD

@@ -1,10 +1,10 @@
 const renderError = require('../lib/renderError');
-const Type = require('../models/type');
+// const Type = require('../models/type');
 const Cart = require('../models/cart');
 const CartItem = require('../models/cartItem');
 const Order = require('../models/order');
-const Log = require('../lib/log');
-const async = require('async');
+// const Log = require('../lib/log');
+// const async = require('async');
 const Email = require('../lib/email');
 const Flash = require('../lib/flash');
 
@@ -32,7 +32,7 @@ ShoppingCart.index = (req, res) => {
 
                 cart.items = [].concat(...updatedItems);
 
-                console.log(cart.items);
+                // console.log(cart.items);
 
                 return res.render('cart/index', {cart});
             }).catch((err)=> {
@@ -42,49 +42,54 @@ ShoppingCart.index = (req, res) => {
         }).catch(err => renderError(err, res));
 };
 
-ShoppingCart.add = (req, res, next) => {
-    const typeID = req.params.typeID;
-    if (!typeID) {
-        return next('no type ID given');
-    }
-
-    Type.getByID(typeID).then((type) => {
-        console.log('adding to cart', type);
-        // if (types.length == 1 || !types.length) {
-
-
-        ShoppingCart.ensureCart(req.user.username, {items: true}).then((cart)=> {
-            cart.contains(typeID)
-                .then((alreadyInCart)=> {
-                    if (alreadyInCart) {
-                        return res.render('cart/exists');
-                    } else {
-                        ShoppingCart.ensureAdd(req.user.username, type.id).then(() => {
-                            Flash.success(req, 'Added to cart');
-                            return res.redirect('/cart');
-                        }).catch((err) => {
-                            return renderError(err, res);
-                        })
-                    }
-                }).catch((err)=> {
-                return renderError(err, res);
-            });
-        }).catch((err)=> {
-            return renderError(err, res);
-        });
-        // } else {
-        //     if (types.length > 1) {
-        //         Log.error('TYPES', types);
-        //         return renderError(new Error('more than one type found with that id'), res);
-        //     } else {
-        //         return renderError(new Error('type not found'), res);
-        //     }
-        // }
-    }).catch((err) => {
-        return renderError(err, res);
-    });
-};
-
+// ShoppingCart.add = (req, res, next) => {
+//     const typeID = req.params.typeID;
+//     if (!typeID) {
+//         return next('no type ID given');
+//     }
+//
+//     Type.getByID(typeID).then((type) => {
+//         // console.log('adding to cart', type);
+//         // if (types.length == 1 || !types.length) {
+//
+//
+//         ShoppingCart.ensureCart(req.user.username, {items: true}).then((cart)=> {
+//             cart.contains(typeID)
+//                 .then((alreadyInCart)=> {
+//                     if (alreadyInCart) {
+//                         Flash.info(req, 'Item is already in cart');
+//                         return res.redirect(`/premade/category/${type.categoryID}`);
+//                         // return res.render('cart/exists');
+//                     } else {
+//                         ShoppingCart.ensureAdd(req.user.username, type.id).then(() => {
+//                             Flash.success(req, 'Added to cart');
+//
+//                             return res.redirect(`/premade/category/${type.categoryID}`);
+//
+//                             // return res.redirect('/cart');
+//                         }).catch((err) => {
+//                             return renderError(err, res);
+//                         })
+//                     }
+//                 }).catch((err)=> {
+//                 return renderError(err, res);
+//             });
+//         }).catch((err)=> {
+//             return renderError(err, res);
+//         });
+//         // } else {
+//         //     if (types.length > 1) {
+//         //         Log.error('TYPES', types);
+//         //         return renderError(new Error('more than one type found with that id'), res);
+//         //     } else {
+//         //         return renderError(new Error('type not found'), res);
+//         //     }
+//         // }
+//     }).catch((err) => {
+//         return renderError(err, res);
+//     });
+// };
+//
 ShoppingCart.ensureCart = (username, join) => new Promise((good, bad) => {
     join = join || {};
     Cart.filter({username}).getJoin(join).then(carts => {
@@ -114,40 +119,40 @@ ShoppingCart.ensureAdd = (username, typeID) => new Promise((good, bad) => {
         });
     });
 });
-
-ShoppingCart.update = (req, res) => {
-
-    var items = req.body.item;
-
-
-    if (items && !Array.isArray(items)) {
-        items = [items]
-    }
-
-    async.each(items, (itemID, cb)=> {
-        CartItem.get(itemID).then((item)=> {
-            item.largeScale = !!req.body[`largeScale-${itemID}`];
-            item.save().then(()=> {
-                return cb();
-            }).catch(err => {
-                return cb(err);
-            });
-        }).catch(err => {
-            return cb(err);
-        });
-    }, (err)=> {
-        if (err) {
-            return renderError(err, res);
-        } else {
-            Flash.success(req, 'Cart updated');
-            return res.redirect('/cart');
-        }
-    });
-};
-
-ShoppingCart.remove = (req, res, next) => {
-    return res.redirect('/');
-};
+//
+// ShoppingCart.update = (req, res) => {
+//
+//     var items = req.body.item;
+//
+//
+//     if (items && !Array.isArray(items)) {
+//         items = [items]
+//     }
+//
+//     async.each(items, (itemID, cb)=> {
+//         CartItem.get(itemID).then((item)=> {
+//             item.largeScale = !!req.body[`largeScale-${itemID}`];
+//             item.save().then(()=> {
+//                 return cb();
+//             }).catch(err => {
+//                 return cb(err);
+//             });
+//         }).catch(err => {
+//             return cb(err);
+//         });
+//     }, (err)=> {
+//         if (err) {
+//             return renderError(err, res);
+//         } else {
+//             Flash.success(req, 'Cart updated');
+//             return res.redirect('/cart');
+//         }
+//     });
+// };
+//
+// ShoppingCart.remove = (req, res, next) => {
+//     return res.redirect('/');
+// };
 
 ShoppingCart.placeOrder = (req, res) => {
     const username = req.user.username;

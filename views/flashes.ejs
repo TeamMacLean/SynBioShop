@@ -2,7 +2,7 @@
 <% locals.messages.success_messages.map(function(success){ %>
 <div class="flash success">
     <div class="container">
-        <span class="pull-left icon icon_check"></span>
+        <span class="pull-left status icon icon_check"></span>
         <span class=""><%- success %></span>
         <a href="#" data-close="true" class="icon icon_close trans_black pull-right"></a>
     </div>
@@ -13,7 +13,7 @@
 <% locals.messages.info_messages.map(function(info){ %>
 <div class="flash primary">
     <div class="container">
-        <span class="pull-left icon  icon_info_alt"></span>
+        <span class="pull-left status icon  icon_info_alt"></span>
         <span class=""><%- info %></span>
         <a href="#" data-close="true" class="icon icon_close trans_black pull-right"></a>
     </div>
@@ -24,7 +24,7 @@
 <% locals.messages.error_messages.map(function(error){ %>
 <div class="flash error">
     <div class="container">
-        <span class="pull-left icon icon_error-circle_alt"></span>
+        <span class="pull-left status icon icon_error-circle_alt"></span>
         <span class=""><%- error %></span>
         <a href="#" data-close="true" class="icon icon_close trans_black pull-right"></a>
     </div>
