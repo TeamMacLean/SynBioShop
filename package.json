@@ -25,7 +25,8 @@
     "passport-ldapauth": "^0.5.0",
     "session-rethinkdb": "^2.0.0",
     "socket.io": "^1.4.5",
-    "thinky": "^2.2.8"
+    "thinky": "^2.2.8",
+    "less": "^2.7.1"
   },
   "scripts": {
     "test": "mocha"
@@ -43,5 +44,5 @@
   "bugs": {
     "url": "https://github.com/wookoouk/synbioshop/issues"
   },
-  "homepage": "https://github.com/wookoouk/synbioshop#readme"
+  "homepage": "https://github.com/wookoouk/synbioshop#readme",
 }
