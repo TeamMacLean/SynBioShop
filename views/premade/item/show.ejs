@@ -33,8 +33,16 @@
                     data-icon="&#xe004;"></span></a>
         <% } %>
 
+        <%
+        var addToCartIcon = locals.signedInUser.cart.items
+                .filter(function (ci) {
+                    return ci.typeID == item.id;
+                })
+                .length ? "&#x4e;" : "&#x4c;";
+        %>
+
         <a href="#" data-addToCart="true" data-typeID="<%- item.id %>" class="button success outline icon"><span
-                    data-icon="&#x4c;"></span></a>
+                    data-icon="<%- addToCartIcon %>"></span></a>
     </div>
 </div>
 <% include ../../foot.ejs %>

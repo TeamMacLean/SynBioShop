@@ -3,8 +3,6 @@ const type = thinky.type;
 const Type3 = {};
 
 Type3.fields = [
-    {type: 'text', name: 'moduleDescription', text: 'Module Description'},
-    {type: 'text', name: 'comments', text: 'Comments'},
     {type: 'text', name: 'FiveOH', text: '5′ OH on 5′ Strand'},
     {type: 'text', name: 'ThreeOH', text: '3′ OH on 5′ Strand'},
     {type: 'text', name: 'levelOne', text: 'Level 1 Position'},
@@ -26,6 +24,9 @@ Type3.model = thinky.createModel('Type3', {
     disabled: type.boolean().default(false),
     categoryID: type.string().required(),
     file: type.string(),
+
+    concentration: type.number().required().default(0),
+    synBioID: type.string().required().default('unknown'),
 
     //TYPE SPECIFIC
     FiveOH: type.string(),

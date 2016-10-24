@@ -25,7 +25,7 @@
 
         <h1 class="center"><%- category.name %></h1>
 
-        <div>
+        <div class="document">
             <%- category.description %>
         </div>
 
@@ -39,8 +39,8 @@
                 <% headings.map(function(t){ %>
                 <th><%- t %></th>
                 <% }); %>
-                <th class="center">Download</th>
-                <th class="center">Add to cart</th>
+                <!--<th class="center">Download</th>-->
+                <!--<th class="center">Add to cart</th>-->
 
             </tr>
             </thead>
@@ -57,17 +57,17 @@
                 </td>
                 <% }) %>
 
-                <td class="center">
-                    <% if(item.file){ %>
-                    <a href="<%- item.file.relativePath() %>" class="button primary outline icon"><span
-                                data-icon="&#xe004;"></span></a>
-                    <% } %>
+                <!--<td class="center">-->
+                <!--<% if(item.file){ %>-->
+                <!--<a href="<%- item.file.relativePath() %>" class="button primary outline icon"><span-->
+                <!--data-icon="&#xe004;"></span></a>-->
+                <!--<% } %>-->
 
-                </td>
+                <!--</td>-->
 
-                <td class="center"><a href="#" data-addToCart="true" data-typeID="<%- item.id %>"
-                                      class="button success outline icon"><span
-                                data-icon="&#x4c;"></span></a></td>
+                <!--<td class="center"><a href="#" data-addToCart="true" data-typeID="<%- item.id %>"-->
+                <!--class="button success outline icon"><span-->
+                <!--data-icon="&#x4c;"></span></a></td>-->
             </tr>
             <% } %>
             <% }) %>

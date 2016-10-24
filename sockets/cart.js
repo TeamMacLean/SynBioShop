@@ -1,13 +1,12 @@
 const Type = require('../models/type');
 const ShoppingCarts = require('../controllers/shoppingCart');
+const CartItem = require('../models/cartItem');
 
 module.exports = socket => {
 
     socket.on('addToCart', (data)=> {
         var typeID = data.typeID;
         var username = data.username;
-
-        console.log('data', data);
 
         if (typeID && username) {
             Type.getByID(typeID).then((type) => {
@@ -35,6 +34,43 @@ module.exports = socket => {
                 socket.emit('error', err);
             });
         }
+
+    });
+
+    socket.on('removeFromCart', (data)=> {
+        CartItem.get(data.id)
+            .then((item)=> {
+                item.delete()
+                    .then(()=> {
+                        socket.emit('removedFromCart', {
+                            id: data.id
+                        });
+                    })
+                    .catch((err)=> {
+                        socket.emit('error', err);
+                    });
+            })
+            .catch((err)=> {
+                socket.emit('error', err);
+            })
+    });
+
+    socket.on('changeQuantity', (data)=> {
+        CartItem.get(data.id)
+            .then((item)=> {
+                item.largeScale = !item.largeScale;
+                item.save()
+                    .then((savedItem)=> {
+                        //send done
+                        socket.emit('quantityUpdated', {id: savedItem.id, large: savedItem.largeScale});
+                    })
+                    .catch((err)=> {
+                        socket.emit('error', err);
+                    })
+            })
+            .catch((err)=> {
+                socket.emit('error', err);
+            });
 
     });
 };

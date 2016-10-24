@@ -18,17 +18,17 @@
             <tbody>
             <% cart.items.map(function(item){ %>
             <input type="hidden" name="item" value="<%- item.id %>">
-            <tr>
+            <tr data-id="<%- item.id %>">
                 <td><a href="/premade/item/<%- item.type.id %>"><%- item.type.name %></a></td>
                 <td class="center">
-                    <input type='checkbox' data-id="<%- item.id %>" value="<%- item.largeScale %>"
+                    <input data-quantity="true" type='checkbox' data-id="<%- item.id %>" value="<%- item.largeScale %>"
                             <% if(item.largeScale){ %>
                            checked
                             <% } %>
                            name='largeScale-<%- item.id %>'>
                 </td>
-                <td class="center"><a href="/cart/remove/<%- item.id %>"
-                                      class="button danger outline icon remove-from-cart areyousure"><span
+                <td class="center"><a href="#" class="button danger outline icon remove-from-cart areyousure"
+                                      data-id="<%- item.id %>"><span
                                 data-icon="&#xe019;"></span></a>
                 </td>
             </tr>

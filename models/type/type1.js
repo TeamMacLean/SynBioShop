@@ -3,10 +3,10 @@ const type = thinky.type;
 const Type1 = {};
 
 Type1.fields = [
-    {type: 'text', name: 'comments', text: 'Comments'},
-    {type: 'text', name: 'insideOverhangs', text: 'Inside Overhangs'},
-    {type: 'text', name: 'outsideOverhangs', text: 'Outside Overhangs'},
-    {type: 'text', name: 'description', text: 'Description'},
+    {type: 'text', name: 'insideOverhangLeft', text: 'Inside Overhang Left'},
+    {type: 'text', name: 'insideOverhangRight', text: 'Inside Overhang Right'},
+    {type: 'text', name: 'outsideOverhangLeft', text: 'Outside Overhang Left'},
+    {type: 'text', name: 'outsideOverhangRight', text: 'Outside Overhang Right'},
     {type: 'text', name: 'resistance', text: 'Resistance'}
 ];
 Type1.typeName = 'Comments, Inside Overhangs, Outside overhangs, Description, Resistance';
@@ -22,10 +22,15 @@ Type1.model = thinky.createModel('Type1', {
     superSize: type.boolean().default(false),
     disabled: type.boolean().default(false),
     categoryID: type.string().required(),
+    concentration: type.number().required().default(0),
+    synBioID: type.string().required().default('unknown'),
+
 
     //TYPE SPECIFIC
-    insideOverhangs: type.string().required(),
-    outsideOverhangs: type.string().required(),
+    insideOverhangLeft: type.string().required(),
+    insideOverhangRight: type.string().required(),
+    outsideOverhangLeft: type.string().required(),
+    outsideOverhangRight: type.string().required(),
     resistance: type.string().required()
 });
 

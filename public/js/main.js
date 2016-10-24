@@ -34,6 +34,7 @@ function initAreYouSureButtons() {
 }
 
 function initCartSocket() {
+    var cart = $('.nav-cart');
     $('*[data-addToCart="true"]').on('click', function (e) {
         e.preventDefault();
         var typeID = $(this).attr('data-typeID');
@@ -48,21 +49,47 @@ function initCartSocket() {
     });
 
     socket.on('alreadyInCart', function (type) {
-        // var cart = $('.nav-cart');
-        // animate(cart, 'shake');
-
         var elForItemAdded = $('*[data-addToCart="true"][data-typeID="' + type.id + '"]');
         animateCSS(elForItemAdded, 'shake');
     });
 
-    // socket.on('cartItemCount', function (amount) {
-    //     var cart = $('.nav-cart');
-    //     if (cart) {
-    //         var count = cart.find('.count');
-    //         count.text(amount);
-    //     }
-    //
-    // })
+
+    // on cart page
+
+    $('input[type="checkbox"][data-quantity="true"]').on('click', function (e) {
+        e.preventDefault();
+
+        socket.emit('changeQuantity', {
+            id: $(this).data('id')
+        });
+    });
+    socket.on('quantityUpdated', function (data) {
+        $('input[type="checkbox"][data-quantity="true"][data-id="' + data.id + '"]').prop("checked", data.large);
+    });
+
+
+    $('a.remove-from-cart').on('click', function (e) {
+        e.preventDefault();
+        socket.emit('removeFromCart', {
+            id: $(this).data('id')
+        })
+    });
+    socket.on('removedFromCart', function (data) {
+        $('tr[data-id="' + data.id + '"]')
+            .fadeOut(500, function () {
+                $(this).remove();
+                var count = cart.find('.count');
+
+                var newCount = parseInt(count.text()) - 1;
+
+                count.text(newCount);
+
+                if (newCount < 1) {
+                    location.reload();
+                }
+
+            });
+    });
 }
 
 function flyToCart(el) {
@@ -100,6 +127,11 @@ function flyToCart(el) {
                 count.text(parseInt(count.text()) + 1);
                 $(clonedEl).remove();
                 animateCSS(cart, 'rubberBand');
+
+
+                //make button tick'd
+                $(el).find('span')
+                    .attr('data-icon', 'N');
 
                 // $(cart).fadeOut('fast', function () {
                 //     $(cart).fadeIn('fast', function () {

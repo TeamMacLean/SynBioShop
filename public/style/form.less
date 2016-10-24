@@ -11,6 +11,13 @@ fieldset {
 
 input {
   margin: 0;
+  //width:100%;
+
+  @media (max-width: @breakpoint) {
+    //.narrow-center {
+    width: 100%;
+    //}
+  }
 }
 
 input[type="email"],
@@ -133,4 +140,14 @@ hr {
   border-top: 1px solid rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 
+}
+
+.document {
+  word-wrap: break-word;
+  img {
+    @media (max-width: @breakpoint) {
+      width: 100%;
+      height: auto;
+    }
+  }
 }
