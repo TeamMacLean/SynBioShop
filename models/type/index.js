@@ -1,7 +1,6 @@
 const DB = require('../db');
 
 const types = {};
-// const DB = require('../db');
 types.type1 = require('./type1');
 types.type2 = require('./type2');
 types.type3 = require('./type3');
