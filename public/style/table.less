@@ -42,16 +42,19 @@ table {
 
     td {
       border-bottom: none;
-      text-align: center;
+      //text-align: center;
+
+      text-align: right;
 
       &:before {
         content: attr(data-th) ": "; // who knew you could do this? The internet, that's who.
         font-weight: bold;
 
         // optional stuff to make it look nicer
-        width: 6.5em; // magic number :( adjust according to your own content
+        //width: 6.5em; // magic number :( adjust according to your own content
         display: inline-block;
         // end options
+        float: left;
 
         @media (min-width: @breakpoint) {
           display: none;
