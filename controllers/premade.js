@@ -194,20 +194,24 @@ premade.category.show = (req, res) => {
 
         Type.getByCategory(categoryID).then(types => {
             const type = Type.getByTypeNumber(category.db.type);
-            const headings = [];
+            const headings = ['Name', 'Description', 'Comments'];
             const items = [];
 
             type.fields.map(t => {
                 headings.push(t.text);
             });
 
-            type.model = type;
-
             types.map(t => {
                 const x = {items: [], id: t.id, name: t.name, disabled: t.disabled, file: t.file};
                 type.fields.map(tt => {
                     if (t[tt.name]) {
                         x.items.push(t[tt.name])
+                    }
+                    if(t[tt.description]){
+                        x.items.push(t[tt.description])
+                    }
+                    if(t[tt.comments]){
+                        x.items.push(t[tt.comments])
                     }
                 });
                 if (x.items.length > 0) {
