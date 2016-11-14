@@ -361,6 +361,7 @@ premade.item.show = (req, res) => {
                     values.push(item[tt.name])
                 }
             });
+            type.model = item;
 
 
             getDbs().then((dbs)=> {
