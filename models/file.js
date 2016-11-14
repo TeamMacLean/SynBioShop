@@ -22,7 +22,7 @@ File.define('relativePath', function () {
 });
 
 File.define('downloadPath', function(){
-    return `/file/${this.id}/download`;
+    return `/filemanager/${this.id}/download`;
 });
 
 File.define('isImage', function () {

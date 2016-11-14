@@ -197,7 +197,7 @@ router.route('/imageupload')
     // .get(upload.uploadImage)
     .post(upload.uploadImagePost);
 
-router.route('/file/:id/download')
+router.route('/filemanager/:id/download')
     .all(isAuthenticated)
     .get(upload.download);
 
