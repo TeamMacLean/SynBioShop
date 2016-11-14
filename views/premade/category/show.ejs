@@ -53,6 +53,10 @@
             <tr class="<% if(item.disabled){ %>disabled<% } %>">
                 <td><a href="/premade/item/<%- item.id %>"><%- item.name %></a>
                 </td>
+
+                <td>item.description</td>
+                <td>item.comments</td>
+
                 <% item.items.map(function(tt){ %>
                 <td>
                     <%- tt %>
