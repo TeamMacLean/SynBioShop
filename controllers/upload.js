@@ -9,10 +9,15 @@ const upload = {};
 
 upload.fileManager = (req, res)=> {
 
-    File
-        .filter(function (file) {
-            return file('originalName').contains('.gb');
-        })
+    // File
+    // .filter(function (file) {
+    //     return file('originalName').contains('.gb');
+    // })
+
+    r.table('File').filter(function (file) {
+        return file('originalName').contains('loki', 'hulk', '.gb');
+    })
+
         .run().then((files)=> {
         files = files.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         return res.render('upload/index', {files});
