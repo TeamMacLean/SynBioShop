@@ -11,7 +11,7 @@ upload.fileManager = (req, res)=> {
 
     File
         .filter(function (file) {
-            file('originalName').contains('.gb', '.genbank');
+            return file('originalName').contains('.gb', '.genbank');
         })
         .run().then((files)=> {
         files = files.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
