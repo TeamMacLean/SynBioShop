@@ -201,6 +201,8 @@ premade.category.show = (req, res) => {
                 headings.push(t.text);
             });
 
+            type.model = type;
+
             types.map(t => {
                 const x = {items: [], id: t.id, name: t.name, disabled: t.disabled, file: t.file};
                 type.fields.map(tt => {
