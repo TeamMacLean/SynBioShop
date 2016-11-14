@@ -195,7 +195,6 @@ premade.category.show = (req, res) => {
         Type.getByCategory(categoryID).then(types => {
             const type = Type.getByTypeNumber(category.db.type);
             const headings = ['Name', 'Description', 'Comments'];
-            // const values = [type.name, type.description, type.comments];
             const items = [];
 
             type.fields.map(t => {
@@ -203,7 +202,13 @@ premade.category.show = (req, res) => {
             });
 
             types.map(t => {
-                const x = {items: [], id: t.id, name: t.name, disabled: t.disabled, file: t.file};
+                const x = {
+                    items: [t.name, t.description, t.comments],
+                    id: t.id,
+                    name: t.name,
+                    disabled: t.disabled,
+                    file: t.file
+                };
                 type.fields.map(tt => {
                     if (t[tt.name]) {
                         x.items.push(t[tt.name])
@@ -351,7 +356,7 @@ premade.item.show = (req, res) => {
 
             const type = Type.getByTypeNumber(item.db.type);
             const headings = ['Description', 'Comments'];
-            const values = [type.description, type.comments];
+            const values = [item.description, item.comments];
 
             type.fields.map(t => {
                 headings.push(t.text);
