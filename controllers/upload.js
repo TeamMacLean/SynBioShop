@@ -3,15 +3,18 @@ const config = require('../config.json');
 const fs = require('fs');
 const path = require('path');
 const File = require('../models/file');
+const r = require('../lib/thinky').r;
 
 const upload = {};
 
 upload.fileManager = (req, res)=> {
 
-    File.run().then((files)=> {
-
+    File
+        .filter(function (file) {
+            return !file('originalName').contains('.gb') || !file('originalName').contains('.genbank')
+        })
+        .run().then((files)=> {
         files = files.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
         return res.render('upload/index', {files});
     }).catch((err)=> {
         return renderError(err, res);

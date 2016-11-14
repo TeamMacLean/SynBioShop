@@ -3,9 +3,15 @@ const type = thinky.type;
 const Type2 = {};
 
 Type2.fields = [
+    {type: 'text', name: 'description', text: 'Description'},
+    {type: 'text', name: 'comments', text: 'Comments'},
+
     {type: 'text', name: 'code', text: 'Code'},
     {type: 'text', name: 'speciesOfOrigin', text: 'Species of Origin'},
-    {type: 'text', name: 'whoMadeIt', text: 'Who made it'}
+    {type: 'text', name: 'whoMadeIt', text: 'Who made it'},
+
+    {type: 'text', name: 'concentration', text: 'Concentration'},
+    {type: 'text', name: 'synBioID', text: 'SynBioID'},
 ];
 Type2.typeName = 'Code, Comments, Description, Species of Origin, Who Made it';
 Type2.type = 2;

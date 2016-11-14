@@ -3,11 +3,18 @@ const type = thinky.type;
 const Type3 = {};
 
 Type3.fields = [
+
+    {type: 'text', name: 'description', text: 'Description'},
+    {type: 'text', name: 'comments', text: 'Comments'},
+
     {type: 'text', name: 'FiveOH', text: '5′ OH on 5′ Strand'},
     {type: 'text', name: 'ThreeOH', text: '3′ OH on 5′ Strand'},
     {type: 'text', name: 'levelOne', text: 'Level 1 Position'},
     {type: 'text', name: 'selection', text: 'Selection'},
-    {type: 'text', name: 'source', text: 'Source'}
+    {type: 'text', name: 'source', text: 'Source'},
+
+    {type: 'text', name: 'concentration', text: 'Concentration'},
+    {type: 'text', name: 'synBioID', text: 'SynBioID'},
 ];
 Type3.typeName = 'Vector Name, Comments, Module Description, 5′ OH on 5′ Strand, 3′ OH on 5′ Strand, Level 1 Position, Selection, Source';
 Type3.type = 3;
