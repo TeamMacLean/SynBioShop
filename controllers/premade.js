@@ -350,8 +350,8 @@ premade.item.show = (req, res) => {
 
 
             const type = Type.getByTypeNumber(item.db.type);
-            const headings = ['Name', 'Description', 'Comments'];
-            const values = [type.name, type.description, type.comments];
+            const headings = ['Description', 'Comments'];
+            const values = [type.description, type.comments];
 
             type.fields.map(t => {
                 headings.push(t.text);
@@ -362,6 +362,8 @@ premade.item.show = (req, res) => {
                     values.push(item[tt.name])
                 }
             });
+
+            console.log('values', values);
 
 
             getDbs().then((dbs)=> {
