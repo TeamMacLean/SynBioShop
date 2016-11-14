@@ -20,6 +20,8 @@
     <tr>
         <th>Item</th>
         <th class="center">Large Scale</th>
+        <th class="center">Concentration</th>
+        <th class="center">SynBio ID</th>
     </tr>
 
     </thead>
@@ -29,6 +31,14 @@
         <td><%- item.type.name %></td>
         <td class="center">
             <%- item.largeScale %>
+        </td>
+
+        <td class="center">
+            <%- item.concentration %>
+        </td>
+
+        <td class="center">
+            <%- item.synBioID %>
         </td>
     </tr>
     <% }); %>
