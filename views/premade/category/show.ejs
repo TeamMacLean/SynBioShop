@@ -52,8 +52,8 @@
                 <td><a href="/premade/item/<%- item.id %>"><%- item.name %></a>
                 </td>
 
-                <% item.items.map(function(tt){ %>
-                <td>
+                <% item.items.map(function(tt, index){ %>
+                <td data-td="<%- headings[index] %>">
                     <%- tt %>
                 </td>
                 <% }) %>
