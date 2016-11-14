@@ -3,8 +3,7 @@ const config = require('../config.json');
 const fs = require('fs');
 const path = require('path');
 const File = require('../models/file');
-const r = require('../lib/thinky').r;
-
+const Flash = require('../lib/flash');
 const upload = {};
 
 upload.fileManager = (req, res)=> {
@@ -96,14 +95,15 @@ upload.deleteFile = (req, res)=> {
         .then((file)=> {
             file.delete()
                 .then(()=> {
+                    Flash.success(req, `${file.originalName} deleted successfully`);
                     return res.redirect('/filemanager');
                 })
                 .catch((err)=> {
-                    renderError(err, res);
+                    return renderError(err, res);
                 });
         })
         .catch((err)=> {
-            renderError(err, res);
+            return renderError(err, res);
         });
 };
 

@@ -3,19 +3,11 @@ const type = thinky.type;
 const Type1 = {};
 
 Type1.fields = [
-
-    {type: 'text', name: 'description', text: 'Description'},
-    {type: 'text', name: 'comments', text: 'Comments'},
-
     {type: 'text', name: 'insideOverhangLeft', text: 'Inside Overhang Left'},
     {type: 'text', name: 'insideOverhangRight', text: 'Inside Overhang Right'},
     {type: 'text', name: 'outsideOverhangLeft', text: 'Outside Overhang Left'},
     {type: 'text', name: 'outsideOverhangRight', text: 'Outside Overhang Right'},
-    {type: 'text', name: 'resistance', text: 'Resistance'},
-
-
-    {type: 'text', name: 'concentration', text: 'Concentration'},
-    {type: 'text', name: 'synBioID', text: 'SynBioID'},
+    {type: 'text', name: 'resistance', text: 'Resistance'}
 ];
 Type1.typeName = 'Comments, Inside Overhangs, Outside overhangs, Description, Resistance';
 Type1.type = 1;
