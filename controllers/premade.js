@@ -214,9 +214,9 @@ premade.category.show = (req, res) => {
                 //         x.items.push(t[tt.comments])
                 //     }
                 // });
-                if (x.items.length > 0) {
+                // if (x.items.length > 0) {
                     items.push(x);
-                }
+                // }
             });
 
 
