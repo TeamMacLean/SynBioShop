@@ -203,6 +203,11 @@ router.route('/filemanager')
     .get(upload.fileManager);
 //ORDERS
 
+router.route('filemanager/:id/delete')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(upload.deleteFile);
+
 router.route('/orders')
     .all(isAuthenticated)
     .all(isAdmin)

@@ -87,7 +87,27 @@ upload.uploadFilePost = (req, res) => {
 //
 // };
 
-upload.uploadImagePost = (req, res, next) => {
+
+upload.deleteFile = (req, res)=> {
+    const id = req.params.id;
+
+
+    File.get(id)
+        .then((file)=> {
+            file.delete()
+                .then(()=> {
+                    return res.redirect('/filemanager');
+                })
+                .catch((err)=> {
+                    renderError(err, res);
+                });
+        })
+        .catch((err)=> {
+            renderError(err, res);
+        });
+};
+
+upload.uploadImagePost = (req, res) => {
     console.log('uploaded files', req.files);
     const file = req.files.userfile;
     const newPath = path.join(config.uploadRoot, file.name);
