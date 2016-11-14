@@ -51,7 +51,8 @@
             <div class="form-group">
                 <label for="file">File</label>
                 <% if(type.file){ %>
-                <span><%- Currently type.file.originalName %></span>
+                <span>Currently: <%- type.file.originalName %></span>
+                <br>
                 <% } %>
                 <input type="file" id="file" name="file">
             </div>
