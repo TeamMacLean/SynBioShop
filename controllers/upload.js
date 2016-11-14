@@ -86,6 +86,17 @@ upload.uploadFilePost = (req, res) => {
 //
 // };
 
+upload.download = (req, res)=> {
+    const id = req.params.id;
+
+    File.get(id)
+        .then((file)=> {
+            return res.download(file.path, file.originalName);
+        })
+        .catch((err)=> {
+            return renderError(err, res);
+        })
+};
 
 upload.deleteFile = (req, res)=> {
     const id = req.params.id;

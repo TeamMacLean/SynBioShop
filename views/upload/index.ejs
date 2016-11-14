@@ -21,7 +21,7 @@
         <div class="col4 auto-clear">
             <div class="tile">
                 <% if(file.isImage()){ %>
-                <img class="tile-img-top short" src="<%- file.relativePath() %>">
+                <img class="tile-img-top short" src="<%- file.downloadPath() %>">
                 <% } else { %>
                 <div class="tile-img-top short">
                 </div>
@@ -29,7 +29,7 @@
                 <div class="tile-block">
                     <p><%- file.originalName %></p>
                     <div class="form-group has-feedback">
-                        <input type="text" class="has-button" id="<%- file.id %>" value="<%- file.relativePath() %>">
+                        <input type="text" class="has-button" id="<%- file.id %>" value="<%- file.downloadPath() %>">
                         <button class="inputbutton clipboard" data-clipboard-target="#<%- file.id %>">
                             <img src="/img/clippy.svg" alt="Copy to clipboard">
                         </button>

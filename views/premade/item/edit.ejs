@@ -51,7 +51,7 @@
             <div class="form-group">
                 <label for="file">File</label>
                 <% if(type.file){ %>
-                <span>Currently: <a href="<%- type.file.relativePath() %>"><%- type.file.originalName %></a></span>
+                <span>Currently: <a href="<%- type.file.downloadPath() %>"><%- type.file.originalName %></a></span>
                 <br>
                 <% } %>
                 <input type="file" id="file" name="file">

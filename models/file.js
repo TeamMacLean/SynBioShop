@@ -21,6 +21,10 @@ File.define('relativePath', function () {
     return `${config.uploadRootURL}/${this.name}`;
 });
 
+File.define('downloadPath', function(){
+    return `/file/${this.id}/download`;
+});
+
 File.define('isImage', function () {
     return isImage(this.path);
 });
