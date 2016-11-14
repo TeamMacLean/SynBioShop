@@ -28,6 +28,11 @@
         <p><span class="bold"><%- heading %>:</span> <%- values[i] %></p>
         <% }); %>
 
+        <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+        <p><span class="bold">Concentration:</span> <%- item.concentration %></p>
+        <p><span class="bold">SynBioID:</span> <%- item.synBioID %></p>
+        <% } %>
+
         <% if(item.file){ %>
         <a href="<%- item.file.relativePath() %>" class="button primary outline icon"><span
                     data-icon="&#xe004;"></span></a>
