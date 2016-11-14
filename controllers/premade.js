@@ -203,17 +203,17 @@ premade.category.show = (req, res) => {
 
             types.map(t => {
                 const x = {items: [], id: t.id, name: t.name, disabled: t.disabled, file: t.file};
-                type.fields.map(tt => {
-                    if (t[tt.name]) {
-                        x.items.push(t[tt.name])
-                    }
-                    if(t[tt.description]){
-                        x.items.push(t[tt.description])
-                    }
-                    if(t[tt.comments]){
-                        x.items.push(t[tt.comments])
-                    }
-                });
+                // type.fields.map(tt => {
+                //     if (t[tt.name]) {
+                //         x.items.push(t[tt.name])
+                //     }
+                //     if (t[tt.description]) {
+                //         x.items.push(t[tt.description])
+                //     }
+                //     if (t[tt.comments]) {
+                //         x.items.push(t[tt.comments])
+                //     }
+                // });
                 if (x.items.length > 0) {
                     items.push(x);
                 }
