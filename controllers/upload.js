@@ -11,7 +11,7 @@ upload.fileManager = (req, res)=> {
 
     File
         .filter(function (file) {
-            console.log(file);
+            console.log(file.('originalName'));
             return !file('originalName').contains('.gb')
         })
         .run().then((files)=> {
