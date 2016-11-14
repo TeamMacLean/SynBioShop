@@ -17,9 +17,7 @@ const File = thinky.createModel('File', {
 });
 module.exports = File;
 
-File.define('relativePath', function () {
-    return `${config.uploadRootURL}/${this.name}`;
-});
+File.define('relativePath', `${config.uploadRootURL}/${this.name}`);
 
 File.define('isImage', function () {
     return isImage(this.path);
