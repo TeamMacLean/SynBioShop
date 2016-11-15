@@ -3,10 +3,10 @@ const type = thinky.type;
 const Type1 = {};
 
 Type1.fields = [
-    {type: 'text', name: 'insideOverhangLeft', text: 'Inside o\hang L'},
-    {type: 'text', name: 'insideOverhangRight', text: 'Inside o\hang R'},
-    {type: 'text', name: 'outsideOverhangLeft', text: 'Outside o\hang L'},
-    {type: 'text', name: 'outsideOverhangRight', text: 'Outside o\hang R'},
+    {type: 'text', name: 'insideOverhangLeft', text: 'Inside o\\hang L'},
+    {type: 'text', name: 'insideOverhangRight', text: 'Inside o\\hang R'},
+    {type: 'text', name: 'outsideOverhangLeft', text: 'Outside o\\hang L'},
+    {type: 'text', name: 'outsideOverhangRight', text: 'Outside o\\hang R'},
     {type: 'text', name: 'resistance', text: 'Resistance'}
 ];
 Type1.typeName = 'Comments, Inside Overhangs, Outside overhangs, Description, Resistance';
