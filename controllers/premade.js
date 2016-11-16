@@ -282,9 +282,16 @@ premade.item.save = (req, res) => {
 
                 type.name = req.body.name;
 
+
                 TYPE.fields.map((f)=> {
                     type[f.name] = req.body[f.name];
                 });
+
+                type.comments = req.body.comments;
+                type.description = req.body.description;
+                type.concentration = req.body.concentration;
+                type.synBioID = req.body.synBioID;
+
 
                 type.save()
                     .then(()=> {
