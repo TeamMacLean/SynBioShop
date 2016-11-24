@@ -1,0 +1,67 @@
+.goldengate {
+  .part {
+    background-color: @blue;
+    color: @white;
+    width: 100%;
+    display: block;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    padding: 4px 4px 16px 4px;
+    text-align: center;
+
+
+    .name{
+      font-size:1.2rem;
+      font-weight: 100;
+    }
+
+    .controls {
+      position: relative;
+      width: 100%;
+      max-width: @container-width;
+      margin: 0 auto;
+      padding: 0 20px;
+      box-sizing: border-box;
+      &::after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+
+      .merge {
+        width: 20%;
+        border-radius: 4px;
+        height:@input-height;
+        line-height: @input-height;
+        &:hover {
+          cursor: pointer;
+          background-color: lighten(@blue, 5%);
+        }
+      }
+
+      select {
+        width: 50%;
+        margin: 0 5%;
+      }
+
+      .merge, select {
+        position: relative;
+        min-height: 1px;
+        float: left;
+
+        @media (max-width: @breakpoint) {
+          position: relative;
+          min-height: 1px;
+          width: 100%;
+          float: left;
+          box-sizing: border-box;
+          margin:5px 0;
+        }
+
+
+      }
+
+    }
+
+  }
+}

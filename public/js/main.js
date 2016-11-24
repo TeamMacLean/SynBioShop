@@ -3,6 +3,8 @@ $(function () {
     initFlashButtons();
     initAreYouSureButtons();
     initCartSocket();
+    initTinyMCE();
+    initSearch();
 });
 
 function initUserMenu() {
@@ -155,4 +157,92 @@ function animateCSS(el, name, cb) {
         });
 
     el.addClass(name + ' animated');
+}
+
+function initTinyMCE() {
+    if ($('#tinymce').length) {
+        tinymce.baseURL = "/components/tinymce/";
+        tinymce.init({
+            height: 500,
+            plugins: '<%- plugins %>',
+            selector: '#tinymce',
+            images_upload_url: '/imageupload',
+            images_upload_base_path: '/doc_images',
+            extended_valid_elements: "iframe[src|frameborder|style|scrolling|class|width|height|name|align]",
+            relative_urls: false,
+            file_picker_callback: function (callback, value, meta) {
+                console.log('1');
+                $('#my_form').find('input').click().on('change', function () {
+                    console.log('2');
+                    var formData = new FormData();
+                    formData.append('userfile', $('input[type=file]')[0].files[0]);
+
+                    console.log('FORM DATA', formData);
+                    $.ajax({
+                        url: '/imageupload',  //Server script to process data
+                        type: 'POST',
+                        success: function (data) {
+                            $('#my_form').find('input').val('');
+                            callback(data.location)
+                        },
+                        error: function (err) {
+                            $('#my_form').find('input').val('');
+                            alert(err);
+                        },
+                        // Form data
+                        data: formData,
+                        //Options to tell jQuery not to process data or worry about content-type.
+                        cache: false,
+                        contentType: false,
+                        processData: false
+                    });
+                });
+            }
+        });
+    }
+}
+
+function initSearch() {
+    var resultsDiv = $('#search-results');
+    var currentSearchString = '';
+
+    $('#seach-input').on('input', function () {
+        var text = $(this).val();
+        currentSearchString = text;
+
+        if (text.length > 0) {
+            sendSearch(text);
+        } else {
+            resultsDiv.addClass('hidden');
+            resultsDiv.empty();
+        }
+
+    })
+
+    socket.on('results', function (results) {
+
+        if (results.length > 0) {
+            resultsDiv.removeClass('hidden');
+            resultsDiv.empty();
+            results.map(function (result) {
+                resultsDiv.append('<i> <h5>' + result.heading + '</h5></i>');
+
+                result.items.map(function (item) {
+                    resultsDiv.append('<i><a href="' + item.link + '"><span data-icon="&#x35;"/>' + item.name + '</a></i>');
+                });
+            });
+        } else {
+//                resultsDiv.addClass('hidden');
+            resultsDiv.empty();
+            resultsDiv.removeClass('hidden');
+            resultsDiv.append('Nothing found for "' + currentSearchString + '"');
+
+        }
+
+
+    });
+
+    function sendSearch(text) {
+        socket.emit('search', text);
+    }
 }

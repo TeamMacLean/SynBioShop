@@ -1,68 +1,21 @@
-<script src="/js/main.js"></script>
+<script src="/components/tinymce/tinymce.min.js"></script>
+<script src="/components/tinymce/themes/modern/theme.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
     var socketURL = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
     var socket = io.connect(socketURL);
 </script>
-
-
-
-<script src="/components/tinymce/tinymce.min.js"></script>
-<script src="/components/tinymce/themes/modern/theme.min.js"></script>
-
-
 <% var plugins = 'image imagetools autolink hr link' %>
 <% plugins.split(' ').map(function(plugin){ %>
 <script src="/components/tinymce/plugins/<%- plugin %>/plugin.min.js"></script>
 <% }) %>
-
+<script src="/js/main.js"></script>
 
 
 <form id="my_form" style="width:0px;height:0;overflow:hidden">
     <input name="userfile" id="userfile" type="file">
 </form>
-<script>
-    tinymce.baseURL = "/components/tinymce/";
-    tinymce.init({
-        height: 500,
-        plugins: '<%- plugins %>',
-        selector: '#tinymce',
-        images_upload_url: '/imageupload',
-        images_upload_base_path: '/doc_images',
-        extended_valid_elements: "iframe[src|frameborder|style|scrolling|class|width|height|name|align]",
-        relative_urls: false,
-        file_picker_callback: function (callback, value, meta) {
-            console.log('1');
-            $('#my_form input').click().on('change', function () {
-                console.log('2');
-                var formData = new FormData();
-                formData.append('userfile', $('input[type=file]')[0].files[0]);
 
-                console.log('FORM DATA', formData);
-                $.ajax({
-                    url: '/imageupload',  //Server script to process data
-                    type: 'POST',
-                    success: function (data) {
-                        $('#my_form input').val('');
-                        callback(data.location)
-                    },
-                    error: function (err) {
-                        $('#my_form input').val('');
-                        alert(err);
-                    },
-                    // Form data
-                    data: formData,
-                    //Options to tell jQuery not to process data or worry about content-type.
-                    cache: false,
-                    contentType: false,
-                    processData: false
-                });
-            });
-        }
-    });
-
-
-</script>
 
 </body>
 </html>
