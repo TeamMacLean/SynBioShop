@@ -15,7 +15,6 @@ const File = thinky.createModel('File', {
     typeID: type.string()
     // relativePath: type.string().required()
 });
-module.exports = File;
 
 File.define('relativePath', function () {
     return `${config.uploadRootURL}/${this.name}`;
@@ -28,3 +27,5 @@ File.define('downloadPath', function(){
 File.define('isImage', function () {
     return isImage(this.path);
 });
+
+module.exports = File;
