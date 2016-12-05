@@ -35,7 +35,7 @@
         <% } %>
 
         <% if(item.file){ %>
-        <% console.log('ejs debug', item.file) %>
+        <% console.log('ejs debug', item.file.downloadPath) %>
         <a href="<%- item.file.downloadPath() %>" class="button primary outline icon"><span
                     data-icon="&#xe004;"></span></a>
         <% } %>
