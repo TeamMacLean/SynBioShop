@@ -375,7 +375,7 @@ premade.item.show = (req, res) => {
                 }
             });
 
-            console.log('DEBUG', headings, values, dbs, item);
+            console.log('DEBUG', headings, values, item);
 
 
             getDbs().then((dbs)=> {
