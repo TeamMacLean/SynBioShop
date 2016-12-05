@@ -360,7 +360,6 @@ premade.item.show = (req, res) => {
     Type.getByID(itemID)
         .then((item) => {
 
-
             const type = Type.getByTypeNumber(item.db.type);
             const headings = ['Description', 'Comments'];
             const values = [item.description, item.comments];
@@ -374,6 +373,8 @@ premade.item.show = (req, res) => {
                     values.push(item[tt.name])
                 }
             });
+
+            console.log('DEBUGGER', item.file.downloadPath());
 
             getDbs().then((dbs)=> {
                 return res.render('premade/item/show', {headings, values, dbs, item});
