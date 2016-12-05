@@ -23,7 +23,6 @@ Type3.model = thinky.createModel('Type3', {
     superSize: type.boolean().default(false),
     disabled: type.boolean().default(false),
     categoryID: type.string().required(),
-    file: type.string(),
 
     concentration: type.number().required().default(0),
     synBioID: type.string().required().default('unknown'),
