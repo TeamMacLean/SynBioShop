@@ -358,7 +358,6 @@ premade.item.show = (req, res) => {
     const itemID = req.params.itemID;
 
     Type.getByID(itemID)
-        .getJoin({file: true})
         .then((item) => {
 
 
@@ -375,6 +374,8 @@ premade.item.show = (req, res) => {
                     values.push(item[tt.name])
                 }
             });
+
+            console.log('DEBUG', headings, values, dbs, item);
 
 
             getDbs().then((dbs)=> {
