@@ -3,7 +3,6 @@ const type = thinky.type;
 const isImage = require('is-image');
 const config = require('../config.json');
 const r = thinky.r;
-// const util = require('../lib/util');
 
 
 const File = thinky.createModel('File', {
@@ -20,7 +19,7 @@ File.define('relativePath', function () {
     return `${config.uploadRootURL}/${this.name}`;
 });
 
-File.define('downloadPath', function(){
+File.defineStatic('downloadPath', function(){
     return `/filemanager/${this.id}/download`;
 });
 

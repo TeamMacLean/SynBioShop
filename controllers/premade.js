@@ -374,7 +374,7 @@ premade.item.show = (req, res) => {
                 }
             });
 
-            console.log('DEBUGGER', item.file.downloadPath());
+            console.log('DEBUGGER', item.file);
 
             getDbs().then((dbs)=> {
                 return res.render('premade/item/show', {headings, values, dbs, item});
