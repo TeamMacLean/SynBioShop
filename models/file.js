@@ -19,7 +19,7 @@ File.define('relativePath', function () {
     return `${config.uploadRootURL}/${this.name}`;
 });
 
-File.defineStatic('downloadPath', function(){
+File.define('downloadPath', function(){
     return `/filemanager/${this.id}/download`;
 });
 
