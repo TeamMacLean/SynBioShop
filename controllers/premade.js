@@ -323,7 +323,7 @@ premade.item.save = (req, res) => {
             const newType = type.model(obj);
             newType.name = req.body.name;
 
-            newType.file = 'TODO';
+            // newType.file = 'TODO';
             newType.save().then((savedType) => {
 
 
@@ -358,6 +358,7 @@ premade.item.show = (req, res) => {
     const itemID = req.params.itemID;
 
     Type.getByID(itemID)
+        .getJoin({file: true})
         .then((item) => {
 
 
