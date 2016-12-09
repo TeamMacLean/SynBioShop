@@ -267,6 +267,32 @@ premade.item.new = (req, res) => {
     }).catch(err => renderError(err, res));
 };
 
+function processFiles(savedType,req) {
+    return new Promise((good, bad)=> {
+        if (req.files && req.files.file) {
+            const file = req.files.file;
+            const newPath = path.join(config.uploadRoot, file.name);
+            fs.rename(file.path, newPath);
+            new File({
+                path: newPath,
+                name: file.name,
+                originalName: file.originalname,
+                typeID: savedType.id
+            })
+                .save()
+                .then(()=> {
+                    return good();
+                })
+                .catch((err)=> {
+                    return bad(err);
+                });
+
+        } else {
+            return good();
+        }
+    });
+}
+
 premade.item.save = (req, res) => {
     const dbID = req.body.dbID;
     const categoryID = req.params.categoryID;
@@ -296,8 +322,16 @@ premade.item.save = (req, res) => {
 
 
                 type.save()
-                    .then(()=> {
-                        return res.redirect(`/premade/item/${id}`);
+                    .then((savedType)=> {
+
+                        processFiles(savedType,req)
+                            .then(()=> {
+                                return res.redirect(`/premade/item/${id}`);
+                            })
+                            .catch((err)=> {
+                                return renderError(err, res);
+                            });
+
                     })
                     .catch((err)=> {
                         return renderError(err, res);
@@ -329,27 +363,13 @@ premade.item.save = (req, res) => {
             newType.save().then((savedType) => {
 
 
-                if (req.files && req.files.file) {
-                    const file = req.files.file;
-                    const newPath = path.join(config.uploadRoot, file.name);
-                    fs.rename(file.path, newPath);
-                    new File({
-                        path: newPath,
-                        name: file.name,
-                        originalName: file.originalname,
-                        typeID: savedType.id
+                processFiles(savedType,req)
+                    .then(()=> {
+                        return res.redirect(`/premade/item/${id}`);
                     })
-                        .save()
-                        .then(()=> {
-                            return res.redirect(`/premade/category/${categoryID}`)
-                        })
-                        .catch((err)=> {
-                            return renderError(err, res);
-                        });
-
-                } else {
-                    return res.redirect(`/premade/category/${categoryID}`)
-                }
+                    .catch((err)=> {
+                        return renderError(err, res);
+                    });
 
             }).catch(err => renderError(err, res))
         }).catch(err => renderError(err, res));

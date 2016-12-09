@@ -28,6 +28,7 @@
         <hr>
         <p><span class="bold">Concentration:</span> <%- item.concentration %></p>
         <p><span class="bold">SynBioID:</span> <%- item.synBioID %></p>
+        <hr>
         <% } %>
 
         <% headings.map(function(heading, i){ %>
@@ -45,11 +46,12 @@
         <fieldset>
             <a href="#" data-addToCart="true" data-typeID="<%- item.id %>" class="button success outline icon"><span
                         data-icon="<%- addToCartIcon %>"></span></a>
+
+            <% if(item.file){ %>
+            <a href="<%- item.file.downloadPath() %>" class="button primary outline icon"><span
+                        data-icon="&#xe004;"></span></a>
+            <% } %>
         </fieldset>
-        <% if(item.file){ %>
-        <a href="<%- item.file.downloadPath() %>" class="button primary outline icon"><span
-                    data-icon="&#xe004;"></span></a>
-        <% } %>
 
         <% if(item.documentation){ %>
 
