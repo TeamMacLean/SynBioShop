@@ -162,9 +162,10 @@ function animateCSS(el, name, cb) {
 function initTinyMCE() {
     if ($('#tinymce').length) {
         tinymce.baseURL = "/components/tinymce/";
+        tinymce.suffix = ".min";
         tinymce.init({
             height: 500,
-            plugins: '<%- plugins %>',
+            plugins: mcePlugins,
             selector: '#tinymce',
             images_upload_url: '/imageupload',
             images_upload_base_path: '/doc_images',

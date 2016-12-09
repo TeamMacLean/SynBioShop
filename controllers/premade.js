@@ -292,6 +292,8 @@ premade.item.save = (req, res) => {
                 type.concentration = req.body.concentration;
                 type.synBioID = req.body.synBioID;
 
+                type.documentation = req.body.documentation;
+
 
                 type.save()
                     .then(()=> {

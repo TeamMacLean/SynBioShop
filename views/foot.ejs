@@ -3,14 +3,16 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
     var socketURL = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
-    var socket = io.connect(socketURL);
+    socket = io.connect(socketURL);
 </script>
+
 <% var plugins = 'image imagetools autolink hr link' %>
+<script>mcePlugins = "<%- plugins %>"</script>
 <% plugins.split(' ').map(function(plugin){ %>
 <script src="/components/tinymce/plugins/<%- plugin %>/plugin.min.js"></script>
 <% }) %>
-<script src="/js/main.js"></script>
 
+<script src="/js/main.js"></script>
 
 <form id="my_form" style="width:0px;height:0;overflow:hidden">
     <input name="userfile" id="userfile" type="file">

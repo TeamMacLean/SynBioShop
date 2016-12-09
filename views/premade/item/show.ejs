@@ -28,6 +28,21 @@
         <p><span class="bold"><%- heading %>:</span> <%- values[i] %></p>
         <% }); %>
 
+        <%
+        var addToCartIcon = locals.signedInUser.cart.items
+                .filter(function (ci) {
+                    return ci.typeID == item.id;
+                })
+                .length ? "&#x4e;" : "&#x4c;";
+        %>
+
+        <fieldset>
+            <a href="#" data-addToCart="true" data-typeID="<%- item.id %>" class="button success outline icon"><span
+                        data-icon="<%- addToCartIcon %>"></span></a>
+        </fieldset>
+
+
+
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
         <hr>
         <p><span class="bold">Concentration:</span> <%- item.concentration %></p>
@@ -39,16 +54,16 @@
                     data-icon="&#xe004;"></span></a>
         <% } %>
 
-        <%
-        var addToCartIcon = locals.signedInUser.cart.items
-                .filter(function (ci) {
-                    return ci.typeID == item.id;
-                })
-                .length ? "&#x4e;" : "&#x4c;";
-        %>
 
-        <a href="#" data-addToCart="true" data-typeID="<%- item.id %>" class="button success outline icon"><span
-                    data-icon="<%- addToCartIcon %>"></span></a>
+
+        <% if(item.documentation){ %>
+
+        <hr>
+
+        <div class="document"><%- item.documentation %></div>
+
+        <% } %>
+
     </div>
 </div>
 <% include ../../foot.ejs %>
