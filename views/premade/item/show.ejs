@@ -24,6 +24,12 @@
 
         <h2><%- item.name %></h2>
 
+        <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+        <hr>
+        <p><span class="bold">Concentration:</span> <%- item.concentration %></p>
+        <p><span class="bold">SynBioID:</span> <%- item.synBioID %></p>
+        <% } %>
+
         <% headings.map(function(heading, i){ %>
         <p><span class="bold"><%- heading %>:</span> <%- values[i] %></p>
         <% }); %>
@@ -40,21 +46,10 @@
             <a href="#" data-addToCart="true" data-typeID="<%- item.id %>" class="button success outline icon"><span
                         data-icon="<%- addToCartIcon %>"></span></a>
         </fieldset>
-
-
-
-        <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-        <hr>
-        <p><span class="bold">Concentration:</span> <%- item.concentration %></p>
-        <p><span class="bold">SynBioID:</span> <%- item.synBioID %></p>
-        <% } %>
-
         <% if(item.file){ %>
         <a href="<%- item.file.downloadPath() %>" class="button primary outline icon"><span
                     data-icon="&#xe004;"></span></a>
         <% } %>
-
-
 
         <% if(item.documentation){ %>
 
