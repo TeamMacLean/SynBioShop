@@ -267,7 +267,7 @@ premade.item.new = (req, res) => {
     }).catch(err => renderError(err, res));
 };
 
-function processFiles(savedType,req) {
+function processFiles(savedType, req) {
     return new Promise((good, bad)=> {
         if (req.files && req.files.file) {
             const file = req.files.file;
@@ -324,7 +324,7 @@ premade.item.save = (req, res) => {
                 type.save()
                     .then((savedType)=> {
 
-                        processFiles(savedType,req)
+                        processFiles(savedType, req)
                             .then(()=> {
                                 return res.redirect(`/premade/item/${id}`);
                             })
@@ -363,8 +363,9 @@ premade.item.save = (req, res) => {
             newType.save().then((savedType) => {
 
 
-                processFiles(savedType,req)
+                processFiles(savedType, req)
                     .then(()=> {
+                        console.log(`trying to get to /premade/item/${id}`);
                         return res.redirect(`/premade/item/${id}`);
                     })
                     .catch((err)=> {
@@ -379,6 +380,7 @@ premade.item.save = (req, res) => {
 premade.item.show = (req, res) => {
     const itemID = req.params.itemID;
 
+    console.log(`trying to show${itemID}`);
     Type.getByID(itemID)
         .then((item) => {
 

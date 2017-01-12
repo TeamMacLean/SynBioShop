@@ -1,4 +1,4 @@
-const thinky = require( '../../lib/thinky');
+const thinky = require('../../lib/thinky');
 const type = thinky.type;
 const Type2 = {};
 
@@ -25,7 +25,7 @@ Type2.model = thinky.createModel('Type2', {
     documentation: type.string().default(''),
 
     //TYPE SPECIFIC
-    code: type.string().required(),
+    code: type.string(),
     speciesOfOrigin: type.string().required(),
     whoMadeIt: type.string().required()
 });
