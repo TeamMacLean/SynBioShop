@@ -18,12 +18,16 @@
         <h1 class="center">Pre Made</h1>
 
         <div class="simon-list">
-            <% dbs.map(function(db){ %>
+            <% dbs.sort(function (a, b) {
+                return a.position > b.position;
+            }).map(function(db){ %>
             <% if(db.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !db.disabled){ %>
             <!--<div class="indent">-->
             <h2 class="<% if(db.disabled){ %>disabled<% } %>"><%- db.name %></h2>
             <ul>
-                <% db.categories.map(function(category){ %>
+                <% db.categories.sort(function (a, b) {
+                    return a.position > b.position;
+                }).map(function(category){ %>
                 <% if(category.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !category.disabled){ %>
                 <div class="indent">
                     <li><a class="<% if(category.disabled){ %>disabled<% } %>"

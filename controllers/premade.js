@@ -35,10 +35,7 @@ premade.index = (req, res) => {
 premade.rearrange = (req, res) => {
     DB.getJoin({categories: true}).then(dbs=> {
 
-
-        // Type.getByCategory()
-
-
+        var getTypes = [];
         //TODO prune data
 
 
@@ -47,13 +44,31 @@ premade.rearrange = (req, res) => {
 
                 //TODO get items too
 
-                return {id: cat.id, position: cat.position, name: cat.name};
+                var out = {id: cat.id, position: cat.position, name: cat.name, items: []};
+
+                getTypes.push(
+                    new Promise((good, bad)=> {
+                        Type.getByCategory(cat.id)
+                            .then(t=> {
+                                t.map(tt=> {
+                                    out.items.push({id: tt.id, position: tt.position, name: tt.name});
+                                });
+                                good()
+                            })
+                            .catch(bad);
+                    })
+                );
+                return out;
             });
             return {categories: cats, id: db.id, name: db.name, position: db.position};
         });
+        Promise.all(getTypes)
+            .then(o=> {
+                return res.render('premade/rearrange', {dbs: pruned});
+            })
+            .catch(err => renderError(err, res))
 
 
-        return res.render('premade/rearrange', {dbs: pruned});
     }).catch(err => renderError(err, res));
 };
 
@@ -83,6 +98,28 @@ premade.rearrangeSave = (req, res)=> {
         );
 
         db.categories.map(c=> {
+
+
+
+            // console.log('items', c.items);
+
+            c.items.map(i=> {
+                toDo.push(
+                    new Promise((good, bad)=> {
+                        Type.getByID(i.id)
+                            .then(item=> {
+                                item.position = i.position;
+                                return item.save()
+                            })
+                            .then(savedDoc=> {
+                                good();
+                            })
+                            .catch(bad)
+                    })
+                );
+            })
+
+
             toDo.push(
                 new Promise((good, bad)=> {
                     Category.get(c.id)
@@ -291,7 +328,8 @@ premade.category.show = (req, res) => {
                     id: t.id,
                     name: t.name,
                     disabled: t.disabled,
-                    file: t.file
+                    file: t.file,
+                    position: t.position
                 };
                 type.fields.map(tt => {
                     if (t[tt.name]) {

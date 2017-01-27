@@ -25,6 +25,7 @@ Type1.model = thinky.createModel('Type1', {
     concentration: type.number().required().default(0),
     synBioID: type.string().required().default('unknown'),
     documentation: type.string().default(''),
+    position: type.number().default(0),
 
 
     //TYPE SPECIFIC

@@ -26,6 +26,7 @@ Type3.model = thinky.createModel('Type3', {
     concentration: type.number().required().default(0),
     synBioID: type.string().required().default('unknown'),
     documentation: type.string().default(''),
+    position: type.number().default(0),
 
     //TYPE SPECIFIC
     FiveOH: type.string(),

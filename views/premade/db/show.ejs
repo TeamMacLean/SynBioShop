@@ -34,7 +34,9 @@
             <%-db.description%>
         </div>
 
-        <% db.categories.map(function (category) { %>
+        <% db.categories.sort(function (a, b) {
+            return a.position > b.position;
+        }).map(function (category) { %>
 
         <h3><a href="/premade/category/<%- category.id %>"><%- category.name %></a></h3>
 
