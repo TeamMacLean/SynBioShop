@@ -7,7 +7,9 @@
             <span class="icon arrow_carrot-right"></span>
             <a href="/premade" class="name">Show All</a>
         </li>
-        <% dbs.sort().map(function(db){ %>
+        <% dbs.sort(function (a, b) {
+            return a.position > b.position;
+        }).map(function(db){ %>
         <% if(db.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !db.disabled){ %>
         <li>
             <span class="icon arrow_carrot-right"></span>

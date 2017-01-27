@@ -7,8 +7,9 @@
             <span class="icon arrow_carrot-right"></span>
             <a href="/docs" class="name">Show All</a>
         </li>
-
-        <% subjects.sort().map(function(subject){ %>
+        <% subjects.sort(function (a, b) {
+            return a.position > b.position;
+        }).map(function(subject){ %>
         <% if(subject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subject.disabled){ %>
         <li>
             <span class="icon arrow_carrot-right"></span>

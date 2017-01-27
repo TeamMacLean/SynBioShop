@@ -36,16 +36,21 @@ premade.rearrange = (req, res) => {
     DB.getJoin({categories: true}).then(dbs=> {
 
 
+        // Type.getByCategory()
+
+
         //TODO prune data
 
 
-        var pruned = dbs.map(db=>{
-            var cats = db.categories.map(cat=>{
-                return {id:cat.id,position:cat.position, name:cat.name};
-            })
-            return {categories:cats, id:db.id, name:db.name, position:db.position};
-        });
+        var pruned = dbs.map(db=> {
+            var cats = db.categories.map(cat=> {
 
+                //TODO get items too
+
+                return {id: cat.id, position: cat.position, name: cat.name};
+            });
+            return {categories: cats, id: db.id, name: db.name, position: db.position};
+        });
 
 
         return res.render('premade/rearrange', {dbs: pruned});
