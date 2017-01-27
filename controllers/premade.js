@@ -6,6 +6,8 @@ const File = require('../models/file');
 const config = require('../config.json');
 const path = require('path');
 const fs = require('fs');
+const Flash = require('../lib/flash');
+const Log = require('../lib/log');
 
 const premade = {};
 premade.db = {};
@@ -30,6 +32,69 @@ premade.index = (req, res) => {
     }).catch(err => renderError(err, res));
 };
 
+premade.rearrange = (req, res) => {
+    DB.getJoin({categories: true}).then(dbs=> {
+        return res.render('premade/rearrange', {dbs: dbs});
+    }).catch(err => renderError(err, res));
+};
+
+
+//TODO
+premade.rearrangeSave = (req, res)=> {
+
+    const newOrder = JSON.parse(req.body.newOrder);
+
+    const toDo = [];
+
+
+    newOrder.map(db=> {
+
+        toDo.push(
+            new Promise((good, bad)=> {
+                DB.get(db.id)
+                    .then(doc=> {
+                        doc.position = db.position;
+                        return doc.save()
+                    })
+                    .then(savedDoc=> {
+                        good();
+                    })
+                    .catch(bad)
+            })
+        );
+
+        db.categories.map(c=> {
+            toDo.push(
+                new Promise((good, bad)=> {
+                    Category.get(c.id)
+                        .then(doc=> {
+                            doc.position = c.position;
+                            return doc.save()
+                        })
+                        .then(savedDoc=> {
+                            good();
+                        })
+                        .catch(bad)
+                })
+            );
+        });
+    });
+
+
+    Promise.all(toDo)
+        .then(()=> {
+            Flash.success(req, 'Rearrange saved');
+            Log.error('Rearrange saved');
+            return res.sendStatus(200);
+        })
+        .catch(err=> {
+            Flash.error(req, err);
+            Log.error(err);
+            return res.sendStatus(400).json({error: err});
+        });
+
+};
+
 
 premade.db.new = (req, res) => {
     getDbs().then((dbs)=> {
@@ -37,7 +102,7 @@ premade.db.new = (req, res) => {
     }).catch(err => renderError(err, res));
 };
 
-premade.db.save = (req, res, next) => {
+premade.db.save = (req, res) => {
     const name = req.body.name;
     const type = req.body.type;
     const description = req.body.description;

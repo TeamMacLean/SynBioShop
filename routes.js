@@ -77,6 +77,11 @@ router.route('/docs/item/:itemID/edit')
 router.route('/premade')
     .all(isAuthenticated)
     .get(premade.index);
+router.route('/premade/rearrange')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.rearrange)
+    .post(premade.rearrangeSave);
 router.route('/premade/new')
     .all(isAuthenticated)
     .all(isAdmin)
