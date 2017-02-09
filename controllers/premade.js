@@ -323,6 +323,7 @@ premade.category.show = (req, res) => {
             });
 
             types.map(t => {
+                console.log("position", t.position);
                 const x = {
                     items: [t.description, t.comments],
                     id: t.id,
