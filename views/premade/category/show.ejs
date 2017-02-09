@@ -54,7 +54,9 @@
                 <td data-th="Name"><a href="/premade/item/<%- item.id %>"><%- item.name %></a>
                 </td>
 
-                <% item.items.map(function(tt, index){ %>
+                <% item.items.sort(function (a, b) {
+                    return a.position > b.position;
+                }).map(function(tt, index){ %>
                 <td data-th="<%- headings[index] %>">
                     <%- tt %>
                 </td>
