@@ -47,7 +47,7 @@
             <tbody>
 
             <% items.sort(function (a, b) {
-                return a.value - b.value;
+                return a.position - b.position;
             }).map(function(item){ %>
             <% console.log(item.position) %>
             <% if(item.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !item.disabled){ %>
