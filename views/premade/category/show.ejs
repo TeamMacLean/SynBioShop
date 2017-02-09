@@ -57,6 +57,7 @@
                 <% item.items.sort(function (a, b) {
                     return a.position > b.position;
                 }).map(function(tt, index){ %>
+                <%- tt.position %>
                 <td data-th="<%- headings[index] %>">
                     <%- tt %>
                 </td>
