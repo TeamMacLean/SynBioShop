@@ -47,7 +47,7 @@
             <tbody>
 
             <% items.map(function(item){ %>
-            <%console.log(item)%>
+            <%console.log(item.position)%>
             <% if(item.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !item.disabled){ %>
             <tr class="<% if(item.disabled){ %>disabled<% } %>">
                 <td data-th="Name"><a href="/premade/item/<%- item.id %>"><%- item.name %></a>

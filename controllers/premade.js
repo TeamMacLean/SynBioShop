@@ -318,10 +318,6 @@ premade.category.show = (req, res) => {
             const headings = ['Description', 'Comments'];
             const items = [];
 
-            types = types.sort(function (a, b) {
-                return a.position > b.position;
-            });
-
             type.fields.map(t => {
                 headings.push(t.text);
             });
