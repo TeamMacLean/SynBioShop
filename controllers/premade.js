@@ -27,30 +27,30 @@ function getDbs() {
 }
 
 premade.index = (req, res) => {
-    DB.getJoin({categories: true}).then((dbs)=> {
+    DB.getJoin({categories: true}).then((dbs) => {
         return res.render('premade/index', {dbs});
     }).catch(err => renderError(err, res));
 };
 
 premade.rearrange = (req, res) => {
-    DB.getJoin({categories: true}).then(dbs=> {
+    DB.getJoin({categories: true}).then(dbs => {
 
         var getTypes = [];
         //TODO prune data
 
 
-        var pruned = dbs.map(db=> {
-            var cats = db.categories.map(cat=> {
+        var pruned = dbs.map(db => {
+            var cats = db.categories.map(cat => {
 
                 //TODO get items too
 
                 var out = {id: cat.id, position: cat.position, name: cat.name, items: []};
 
                 getTypes.push(
-                    new Promise((good, bad)=> {
+                    new Promise((good, bad) => {
                         Type.getByCategory(cat.id)
-                            .then(t=> {
-                                t.map(tt=> {
+                            .then(t => {
+                                t.map(tt => {
                                     out.items.push({id: tt.id, position: tt.position, name: tt.name});
                                 });
                                 good()
@@ -63,7 +63,7 @@ premade.rearrange = (req, res) => {
             return {categories: cats, id: db.id, name: db.name, position: db.position};
         });
         Promise.all(getTypes)
-            .then(o=> {
+            .then(o => {
                 return res.render('premade/rearrange', {dbs: pruned});
             })
             .catch(err => renderError(err, res))
@@ -74,44 +74,44 @@ premade.rearrange = (req, res) => {
 
 
 //TODO
-premade.rearrangeSave = (req, res)=> {
+premade.rearrangeSave = (req, res) => {
 
     const newOrder = JSON.parse(req.body.newOrder);
 
     const toDo = [];
 
 
-    newOrder.map(db=> {
+    newOrder.map(db => {
 
         toDo.push(
-            new Promise((good, bad)=> {
+            new Promise((good, bad) => {
                 DB.get(db.id)
-                    .then(doc=> {
+                    .then(doc => {
                         doc.position = db.position;
                         return doc.save()
                     })
-                    .then(savedDoc=> {
+                    .then(savedDoc => {
                         good();
                     })
                     .catch(bad)
             })
         );
 
-        db.categories.map(c=> {
+        db.categories.map(c => {
 
 
 
             // console.log('items', c.items);
 
-            c.items.map(i=> {
+            c.items.map(i => {
                 toDo.push(
-                    new Promise((good, bad)=> {
+                    new Promise((good, bad) => {
                         Type.getByID(i.id)
-                            .then(item=> {
+                            .then(item => {
                                 item.position = i.position;
                                 return item.save()
                             })
-                            .then(savedDoc=> {
+                            .then(savedDoc => {
                                 good();
                             })
                             .catch(bad)
@@ -121,13 +121,13 @@ premade.rearrangeSave = (req, res)=> {
 
 
             toDo.push(
-                new Promise((good, bad)=> {
+                new Promise((good, bad) => {
                     Category.get(c.id)
-                        .then(doc=> {
+                        .then(doc => {
                             doc.position = c.position;
                             return doc.save()
                         })
-                        .then(savedDoc=> {
+                        .then(savedDoc => {
                             good();
                         })
                         .catch(bad)
@@ -138,12 +138,12 @@ premade.rearrangeSave = (req, res)=> {
 
 
     Promise.all(toDo)
-        .then(()=> {
+        .then(() => {
             Flash.success(req, 'Rearrange saved');
             Log.error('Rearrange saved');
             return res.sendStatus(200);
         })
-        .catch(err=> {
+        .catch(err => {
             Flash.error(req, err);
             Log.error(err);
             return res.sendStatus(400).json({error: err});
@@ -153,7 +153,7 @@ premade.rearrangeSave = (req, res)=> {
 
 
 premade.db.new = (req, res) => {
-    getDbs().then((dbs)=> {
+    getDbs().then((dbs) => {
         return res.render('premade/db/edit', {types: Type.TYPES, dbs});
     }).catch(err => renderError(err, res));
 };
@@ -167,17 +167,17 @@ premade.db.save = (req, res) => {
 
     if (id) {
         DB.get(id)
-            .then((db)=> {
+            .then((db) => {
                 db.name = name;
                 // db.type=type; //should not be allowed to change this!!!!
                 db.description = description;
-                db.save().then(()=> {
+                db.save().then(() => {
                     res.redirect('/premade');
-                }).catch((err)=> {
+                }).catch((err) => {
                     return renderError(err, res);
                 })
             })
-            .catch((err)=> {
+            .catch((err) => {
                 return renderError(err, res);
             })
 
@@ -187,9 +187,9 @@ premade.db.save = (req, res) => {
             type,
             description
         });
-        db.save().then(()=> {
+        db.save().then(() => {
             res.redirect('/premade');
-        }).catch((err)=> {
+        }).catch((err) => {
             return renderError(err, res);
         })
     }
@@ -200,50 +200,50 @@ premade.db.save = (req, res) => {
 premade.db.show = (req, res) => {
 
     DB.get(req.params.id).getJoin({categories: true}).then(db => {
-        getDbs().then((dbs)=> {
+        getDbs().then((dbs) => {
             return res.render('premade/db/show', {db, dbs});
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 premade.db.disable = (req, res) => {
     const id = req.params.id;
-    DB.get(id).then((db)=> {
+    DB.get(id).then((db) => {
         db.disabled = true;
-        db.save().then(()=> {
+        db.save().then(() => {
             return res.redirect(`/premade/${id}`);
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 premade.db.delete = (req, res) => {
     const id = req.params.id;
-    DB.get(id).then((db)=> {
-        db.delete().then(()=> {
+    DB.get(id).then((db) => {
+        db.delete().then(() => {
             return res.redirect('/premade/');
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 premade.db.enable = (req, res) => {
     const id = req.params.id;
-    DB.get(id).then((db)=> {
+    DB.get(id).then((db) => {
         db.disabled = false;
-        db.save().then(()=> {
+        db.save().then(() => {
             return res.redirect(`/premade/${id}`);
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 premade.db.edit = (req, res) => {
     const id = req.params.id;
     DB.get(id)
-        .then((db)=> {
-            getDbs().then((dbs)=> {
+        .then((db) => {
+            getDbs().then((dbs) => {
                 return res.render('premade/db/edit', {db, dbs, types: [Type.TYPES[db.type]]});
             }).catch(err => renderError(err, res));
         })
-        .catch((err)=> {
+        .catch((err) => {
             return renderError(err, res);
         });
 };
@@ -251,7 +251,7 @@ premade.db.edit = (req, res) => {
 premade.category.new = (req, res) => {
     const id = req.params.id;
     DB.get(id).then(db => {
-        getDbs().then((dbs)=> {
+        getDbs().then((dbs) => {
             return res.render('premade/category/edit', {dbs, db});
         }).catch(err => renderError(err, res));
     }).catch(err => renderError(err, res));
@@ -265,17 +265,17 @@ premade.category.save = (req, res) => {
 
     if (id) {
         Category.get(id)
-            .then((category)=> {
+            .then((category) => {
                 category.name = name;
                 // db.type=type; //should not be allowed to change this!!!!
                 category.description = description;
-                category.save().then(()=> {
+                category.save().then(() => {
                     res.redirect(`/premade/category/${id}`);
-                }).catch((err)=> {
+                }).catch((err) => {
                     return renderError(err, res);
                 })
             })
-            .catch((err)=> {
+            .catch((err) => {
                 return renderError(err, res);
             })
 
@@ -285,9 +285,9 @@ premade.category.save = (req, res) => {
             description,
             dbID
         });
-        category.save().then((newCategory)=> {
+        category.save().then((newCategory) => {
             res.redirect(`/premade/category/${newCategory.id}`);
-        }).catch((err)=> {
+        }).catch((err) => {
             return renderError(err, res);
         })
     }
@@ -296,12 +296,12 @@ premade.category.save = (req, res) => {
 premade.category.edit = (req, res) => {
     const id = req.params.categoryID;
     Category.get(id).getJoin({db: true})
-        .then((category)=> {
-            getDbs().then((dbs)=> {
+        .then((category) => {
+            getDbs().then((dbs) => {
                 return res.render('premade/category/edit', {category, dbs, db: category.db});
             }).catch(err => renderError(err, res));
         })
-        .catch((err)=> {
+        .catch((err) => {
             return renderError(err, res);
         });
 
@@ -311,19 +311,22 @@ premade.category.show = (req, res) => {
 
     const categoryID = req.params.categoryID;
 
-    Category.get(categoryID).getJoin({db: true}).then((category)=> {
+    Category.get(categoryID).getJoin({db: true}).then((category) => {
 
         Type.getByCategory(categoryID).then(types => {
             const type = Type.getByTypeNumber(category.db.type);
             const headings = ['Description', 'Comments'];
             const items = [];
 
+            types = types.sort(function (a, b) {
+                return a.position > b.position;
+            });
+
             type.fields.map(t => {
                 headings.push(t.text);
             });
 
             types.map(t => {
-                console.log("position", t.position);
                 const x = {
                     items: [t.description, t.comments],
                     id: t.id,
@@ -343,55 +346,55 @@ premade.category.show = (req, res) => {
             });
 
 
-            getDbs().then((dbs)=> {
+            getDbs().then((dbs) => {
                 return res.render('premade/category/show', {db: category.db, dbs, headings, items, category});
-            }).catch((err)=>renderError(err, res));
+            }).catch((err) => renderError(err, res));
         }).catch(err => renderError(err, res));
     }).catch(err => renderError(err, res));
 };
 
 premade.category.enable = (req, res) => {
     const id = req.params.categoryID;
-    Category.get(id).then((category)=> {
+    Category.get(id).then((category) => {
         category.disabled = false;
-        category.save().then(()=> {
+        category.save().then(() => {
             return res.redirect(`/premade/category/${id}`);
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 premade.category.disable = (req, res) => {
     const id = req.params.categoryID;
-    Category.get(id).then((category)=> {
+    Category.get(id).then((category) => {
         category.disabled = true;
-        category.save().then((saved)=> {
+        category.save().then((saved) => {
             return res.redirect(`/premade/category/${id}`);
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 premade.category.delete = (req, res) => {
     const id = req.params.categoryID;
-    Category.get(id).then((category)=> {
-        category.delete().then(()=> {
+    Category.get(id).then((category) => {
+        category.delete().then(() => {
             return res.redirect(`/premade/${category.dbID}`);
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 premade.item.new = (req, res) => {
     // const dbID = req.params.id;
     const categoryID = req.params.categoryID;
-    Category.get(categoryID).getJoin({db: true}).then((category)=> {
+    Category.get(categoryID).getJoin({db: true}).then((category) => {
         // DB.get(dbID).run().then(db => {
         const type = Type.getByTypeNumber(category.db.type);
-        getDbs().then((dbs)=> {
+        getDbs().then((dbs) => {
             return res.render('premade/item/edit', {dbs, db: category.db, category, type});
-        }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
         // }).catch(err => renderError(err, res));
     }).catch(err => renderError(err, res));
 };
 
 function processFiles(savedType, req) {
-    return new Promise((good, bad)=> {
+    return new Promise((good, bad) => {
         if (req.files && req.files.file) {
             const file = req.files.file;
             const newPath = path.join(config.uploadRoot, file.name);
@@ -403,10 +406,10 @@ function processFiles(savedType, req) {
                 typeID: savedType.id
             })
                 .save()
-                .then(()=> {
+                .then(() => {
                     return good();
                 })
-                .catch((err)=> {
+                .catch((err) => {
                     return bad(err);
                 });
 
@@ -426,13 +429,13 @@ premade.item.save = (req, res) => {
 
 
         Type.getByID(id)
-            .then((type)=> {
+            .then((type) => {
                 var TYPE = Type.getByTypeNumber(type.db.type);
 
                 type.name = req.body.name;
 
 
-                TYPE.fields.map((f)=> {
+                TYPE.fields.map((f) => {
                     type[f.name] = req.body[f.name];
                 });
 
@@ -445,29 +448,29 @@ premade.item.save = (req, res) => {
 
 
                 type.save()
-                    .then((savedType)=> {
+                    .then((savedType) => {
 
                         processFiles(savedType, req)
-                            .then(()=> {
+                            .then(() => {
                                 return res.redirect(`/premade/item/${id}`);
                             })
-                            .catch((err)=> {
+                            .catch((err) => {
                                 return renderError(err, res);
                             });
 
                     })
-                    .catch((err)=> {
+                    .catch((err) => {
                         return renderError(err, res);
                     });
 
 
-            }).catch((err)=> {
+            }).catch((err) => {
             return renderError(err, res);
         })
 
     } else {
 
-        DB.get(dbID).then((db)=> {
+        DB.get(dbID).then((db) => {
             const type = Type.getByTypeNumber(db.type);
             const obj = {};
             obj.dbID = dbID;
@@ -487,11 +490,11 @@ premade.item.save = (req, res) => {
 
 
                 processFiles(savedType, req)
-                    .then(()=> {
+                    .then(() => {
                         console.log(`trying to get to /premade/item/${savedType.id}`);
                         return res.redirect(`/premade/item/${savedType.id}`);
                     })
-                    .catch((err)=> {
+                    .catch((err) => {
                         return renderError(err, res);
                     });
 
@@ -522,53 +525,53 @@ premade.item.show = (req, res) => {
             });
 
 
-            getDbs().then((dbs)=> {
+            getDbs().then((dbs) => {
                 return res.render('premade/item/show', {headings, values, dbs, item});
             }).catch(err => renderError(err, res));
-        }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
 };
 
 premade.item.enable = (req, res) => {
     const id = req.params.itemID;
-    Type.getByID(id).then((type)=> {
+    Type.getByID(id).then((type) => {
         type.disabled = false;
-        type.save().then(()=> {
+        type.save().then(() => {
             return res.redirect(`/premade/item/${id}`);
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 premade.item.disable = (req, res) => {
     const id = req.params.itemID;
-    Type.getByID(id).then((type)=> {
+    Type.getByID(id).then((type) => {
         type.disabled = true;
-        type.save().then(()=> {
+        type.save().then(() => {
             return res.redirect(`/premade/item/${id}`);
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 premade.item.edit = (req, res) => {
     const id = req.params.itemID;
-    Type.getByID(id).then((type)=> {
+    Type.getByID(id).then((type) => {
 
         type.fields = Type.getByTypeNumber(type.db.type).fields;
 
         Category.get(type.categoryID)
-            .then((category)=> {
-                getDbs().then((dbs)=> {
+            .then((category) => {
+                getDbs().then((dbs) => {
                     // console.log(type);
                     return res.render('premade/item/edit.ejs', {type, dbs, category, db: type.db});
                 }).catch(err => renderError(err, res));
             })
-    }).catch((err)=>renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 premade.item.delete = (req, res) => {
     const id = req.params.itemID;
-    Type.getByID(id).then((type)=> {
-        type.delete().then(()=> {
+    Type.getByID(id).then((type) => {
+        type.delete().then(() => {
             return res.redirect(`/premade/category/${type.categoryID}`);
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 module.exports = premade;
