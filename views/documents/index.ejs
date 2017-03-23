@@ -18,14 +18,18 @@
 
         <div class="simon-list">
 
-            <% subjects.map(function(subject){ %>
+            <% subjects.sort(function (a, b) {
+                return a.position - b.position;
+            }).map(function(subject){ %>
             <% if(subject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subject.disabled){ %>
 
             <h2 class="<% if(subject.disabled){ %>disabled<% } %>">
                 <%- subject.name %>
             </h2>
 
-            <% subject.documents.map(function(document){ %>
+            <% subject.documents.sort(function (a, b) {
+                return a.position - b.position;
+            }).map(function(document){ %>
             <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
             <div class="indent">
 
@@ -38,12 +42,16 @@
             <% } %>
             <% }); %>
 
-            <% subject.subjects.map(function(subSubject){ %>
+            <% subject.subjects.sort(function (a, b) {
+                return a.position - b.position;
+            }).map(function(subSubject){ %>
             <% if(subject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subject.disabled){ %>
             <div class="indent">
                 <h3 class="<% if(subSubject.disabled){ %>disabled<% } %>"><%- subSubject.name %></h3>
 
-                <% subSubject.documents.map(function(document){ %>
+                <% subSubject.documents.sort(function (a, b) {
+                    return a.position - b.position;
+                }).map(function(document){ %>
                 <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
                 <div class="indent">
 

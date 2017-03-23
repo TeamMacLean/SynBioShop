@@ -9,14 +9,13 @@ docs.subject = {};
 docs.document = {};
 
 function getTopLevelSubjects() {
-    return Subject.filter((s)=> {
+    return Subject.filter((s) => {
         return s.hasFields('subjectID').not().or(s('subjectID').eq(''));
     })
 }
 
 docs.index = (req, res) => {
     getTopLevelSubjects().getJoin({documents: true, subjects: {documents: true}}).then(subjects => {
-        subjects = subjects.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         return res.render('documents/index', {subjects});
     }).catch(err => renderError(err, res));
 };
@@ -25,18 +24,17 @@ docs.rearrange = (req, res) => {
     getTopLevelSubjects().getJoin({documents: true, subjects: {documents: true}}).then(subjects => {
 
         const output = [];
-        subjects = subjects.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-        subjects.map((subject)=> {
+        subjects.map((subject) => {
             const obj = {id: subject.id, name: subject.name, position: subject.position, documents: [], subjects: []};
 
-            subject.documents.map((document)=> {
+            subject.documents.map((document) => {
                 obj.documents.push({id: document.id, name: document.title, position: document.position});
             });
-            subject.subjects.map((s)=> {
+            subject.subjects.map((s) => {
                 const ss = {id: s.id, name: s.name, position: s.position, documents: []};
                 obj.subjects.push(ss);
-                s.documents.map((d)=> {
+                s.documents.map((d) => {
                     ss.documents.push({id: d.id, name: d.title, position: d.position});
                 })
             });
@@ -48,7 +46,7 @@ docs.rearrange = (req, res) => {
     }).catch(err => renderError(err, res));
 };
 
-docs.rearrangeSave = (req, res)=> {
+docs.rearrangeSave = (req, res) => {
 
     const newOrder = JSON.parse(req.body.newOrder);
 
@@ -59,11 +57,11 @@ docs.rearrangeSave = (req, res)=> {
         function update(objType, item) {
             return new Promise((good, bad) => {
                 objType.get(item.id)
-                    .then((doc)=> {
+                    .then((doc) => {
                         doc.position = item.position;
-                        doc.save().then(good).catch(err=>bad);
+                        doc.save().then(good).catch(err => bad);
                     })
-                    .catch(err=>bad);
+                    .catch(err => bad);
             })
         }
 
@@ -73,7 +71,7 @@ docs.rearrangeSave = (req, res)=> {
             )
         } else {
             if (obj.subjects) {
-                obj.subjects.map((o)=> {
+                obj.subjects.map((o) => {
                     process(o)
                 });
                 toDo.push(
@@ -81,7 +79,7 @@ docs.rearrangeSave = (req, res)=> {
                 )
             }
             if (obj.documents) {
-                obj.documents.map((o)=> {
+                obj.documents.map((o) => {
                     process(o)
                 });
                 toDo.push(
@@ -93,17 +91,17 @@ docs.rearrangeSave = (req, res)=> {
 
     }
 
-    newOrder.map(no=> {
+    newOrder.map(no => {
         process(no);
     });
 
     Promise.all(toDo)
-        .then(()=> {
+        .then(() => {
             Flash.success(req, 'Rearrange saved');
             Log.error('Rearrange saved');
             return res.sendStatus(200);
         })
-        .catch(err=> {
+        .catch(err => {
             Flash.error(req, err);
             Log.error(err);
             return res.sendStatus(400).json({error: err});
@@ -115,7 +113,7 @@ docs.rearrangeSave = (req, res)=> {
 docs.subject.new = (req, res) => {
 
     const parentSubjectID = req.params.subjectID;
-    getTopLevelSubjects().then((subjects)=> {
+    getTopLevelSubjects().then((subjects) => {
         return res.render('documents/subject/new', {parentSubjectID, subjects});
     }).catch(err => renderError(err, res));
 };
@@ -124,8 +122,8 @@ docs.subject.rename = (req, res) => {
     const parentSubjectID = req.params.subjectID;
 
     Subject.get(parentSubjectID)
-        .then((subject)=> {
-            getTopLevelSubjects().then((subjects)=> {
+        .then((subject) => {
+            getTopLevelSubjects().then((subjects) => {
                 return res.render('documents/subject/rename', {subject, subjects});
             }).catch(err => renderError(err, res));
         })
@@ -135,7 +133,7 @@ docs.subject.rename = (req, res) => {
 docs.subject.show = (req, res) => {
     const subjectID = req.params.subjectID;
     Subject.get(subjectID).getJoin({documents: true, subjects: {documents: true}}).then((subject) => {
-        getTopLevelSubjects().then((subjects)=> {
+        getTopLevelSubjects().then((subjects) => {
             return res.render('documents/subject/show', {subject, subjects});
         }).catch(err => renderError(err, res));
     }).catch((err) => renderError(err, res));
@@ -143,31 +141,31 @@ docs.subject.show = (req, res) => {
 
 docs.subject.disable = (req, res) => {
     const id = req.params.subjectID;
-    Subject.get(id).then((subject)=> {
+    Subject.get(id).then((subject) => {
         subject.disabled = true;
-        subject.save().then((saved)=> {
+        subject.save().then((saved) => {
             return res.redirect(`/docs/${id}`);
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 docs.subject.enable = (req, res) => {
     const id = req.params.subjectID;
-    Subject.get(id).then((subject)=> {
+    Subject.get(id).then((subject) => {
         subject.disabled = false;
-        subject.save().then((saved)=> {
+        subject.save().then((saved) => {
             return res.redirect(`/docs/${id}`);
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 docs.subject.delete = (req, res) => {
     const id = req.params.subjectID;
-    Subject.get(id).then((subject)=> {
-        subject.deleteAll({documents: true, subjects: true}).then(()=> {
+    Subject.get(id).then((subject) => {
+        subject.deleteAll({documents: true, subjects: true}).then(() => {
             return res.redirect('/docs/');
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 docs.subject.save = (req, res) => {
@@ -177,11 +175,11 @@ docs.subject.save = (req, res) => {
 
     if (subjectID) {
         Subject.get(subjectID)
-            .then((subject)=> {
+            .then((subject) => {
                 subject.name = name;
 
                 subject.save()
-                    .then(()=> {
+                    .then(() => {
                         return res.redirect(`/docs/${subject.id}`);
                     })
                     .catch((err) => renderError(err, res));
@@ -201,40 +199,40 @@ docs.subject.save = (req, res) => {
 
 docs.document.show = (req, res) => {
     const itemID = req.params.itemID;
-    Document.get(itemID).getJoin({subject: true}).then((document)=> {
-        getTopLevelSubjects().then((subjects)=> {
+    Document.get(itemID).getJoin({subject: true}).then((document) => {
+        getTopLevelSubjects().then((subjects) => {
             return res.render('documents/item/show', {document, subjects});
         }).catch((err) => renderError(err, res));
-    }).catch((err)=> renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 docs.document.disable = (req, res) => {
     const id = req.params.itemID;
-    Document.get(id).then((document)=> {
+    Document.get(id).then((document) => {
         document.disabled = true;
-        document.save().then((saved)=> {
+        document.save().then((saved) => {
             return res.redirect(`/docs/item/${id}`);
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 docs.document.enable = (req, res) => {
     const id = req.params.itemID;
-    Document.get(id).then((document)=> {
+    Document.get(id).then((document) => {
         document.disabled = false;
-        document.save().then((saved)=> {
+        document.save().then((saved) => {
             return res.redirect(`/docs/item/${id}`);
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 docs.document.delete = (req, res) => {
     const id = req.params.itemID;
-    Document.get(id).then((document)=> {
-        document.delete().then(()=> {
+    Document.get(id).then((document) => {
+        document.delete().then(() => {
             return res.redirect(`/docs/item/${document.subjectID}`);
-        }).catch((err)=>renderError(err, res));
-    }).catch((err)=>renderError(err, res));
+        }).catch((err) => renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 
@@ -246,17 +244,17 @@ docs.document.save = (req, res) => {
 
     Subject.get(subjectID).getJoin({documents: true}).then(subject => {
             if (id) {
-                Document.get(id).then((document)=> {
+                Document.get(id).then((document) => {
                     document.title = req.body.title;
                     document.content = req.body.content;
-                    document.save().then(()=> {
+                    document.save().then(() => {
                         // document.subject = subject;
                         return res.redirect(`/docs/item/${document.id}`);
                     })
-                        .catch((error)=> {
+                        .catch((error) => {
                             return renderError(error, res);
                         });
-                }).catch((error)=> {
+                }).catch((error) => {
                     return renderError(error, res);
                 });
             } else {
@@ -265,26 +263,26 @@ docs.document.save = (req, res) => {
                     title,
                     content
                 });
-                doc.save().then((saved)=> {
+                doc.save().then((saved) => {
                     saved.subject = subject;
-                    getTopLevelSubjects().then((subjects)=> {
+                    getTopLevelSubjects().then((subjects) => {
                         return res.render('documents/item/show', {document: saved, subjects});
                     }).catch((err) => renderError(err, res));
-                }).catch((error)=> renderError(error, res));
+                }).catch((error) => renderError(error, res));
             }
         }
-    ).catch((error)=> renderError(error, res));
+    ).catch((error) => renderError(error, res));
 };
 
 docs.document.new = (req, res) => {
 
     const subjectID = req.params.subjectID;
 
-    Subject.get(subjectID).then((subject)=> {
-        getTopLevelSubjects().then((subjects)=> {
+    Subject.get(subjectID).then((subject) => {
+        getTopLevelSubjects().then((subjects) => {
             return res.render('documents/item/edit', {subject, subjects});
         }).catch((err) => renderError(err, res));
-    }).catch((error)=> renderError(error, res));
+    }).catch((error) => renderError(error, res));
 
 };
 
@@ -292,11 +290,11 @@ docs.document.edit = (req, res) => {
     const itemID = req.params.itemID;
 
 
-    Document.get(itemID).getJoin({subject: true}).then((document)=> {
-        getTopLevelSubjects().then((subjects)=> {
+    Document.get(itemID).getJoin({subject: true}).then((document) => {
+        getTopLevelSubjects().then((subjects) => {
             return res.render('documents/item/edit', {subject: document.subject, document, subjects});
         }).catch((err) => renderError(err, res));
-    }).catch((err)=> renderError(err, res));
+    }).catch((err) => renderError(err, res));
 };
 
 
