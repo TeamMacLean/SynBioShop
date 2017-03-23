@@ -11,14 +11,6 @@ const Subject = thinky.createModel('Subject', {
     disabled: type.boolean().default(false)
 });
 
-a.sort((a,b)=>{
-    return a.position - b.position
-})
-
-a.sort(function (a, b) {
-    return a.position - b.position;
-})
-
 module.exports = Subject;
 const Document = require('./document');
 
