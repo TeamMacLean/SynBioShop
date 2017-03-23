@@ -25,7 +25,8 @@ docs.rearrange = (req, res) => {
     getTopLevelSubjects().getJoin({documents: true, subjects: {documents: true}}).then(subjects => {
 
         const output = [];
-
+        subjects = subjects.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        
         subjects.map((subject)=> {
             const obj = {id: subject.id, name: subject.name, position: subject.position, documents: [], subjects: []};
 
