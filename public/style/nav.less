@@ -115,7 +115,6 @@
 
   .search-results {
 
-    width: 50%;
     .pillow;
     border-radius: 4px;
     position: fixed;
@@ -128,12 +127,24 @@
     margin: 0 20px;
     display: block;
     //left: 180px;
+
+    max-width: 100%;
+    overflow: auto;
+
     &.hidden {
       display: none;
     }
 
-    li a {
-      padding: 4px 0;
+    li {
+      display: block;
+      &, a {
+        :hover {
+          background-color: @grey;
+        }
+      }
+      a {
+        padding: 4px 0;
+      }
     }
   }
 
