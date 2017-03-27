@@ -10,7 +10,7 @@
         <p class="center">None</p>
         <% } else { %>
         <% orders.open.sort(function (a, b) {
-            return a.createdAt - b.createdAt;
+            return b.createdAt - a.createdAt;
         }).map(function(order){ %>
         <div class="col4 auto-clear">
             <div class="tile">
@@ -44,7 +44,7 @@
         <tbody>
 
         <% orders.closed.sort(function (a, b) {
-            return a.createdAt - b.createdAt;
+            return b.createdAt - a.createdAt;
         }).map(function(order){ %>
 
         <tr>
