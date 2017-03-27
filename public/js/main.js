@@ -226,7 +226,7 @@ function initSearch() {
             resultsDiv.removeClass('hidden');
             resultsDiv.empty();
             results.map(function (result) {
-                resultsDiv.append('<i> <h5>' + result.heading + '</h5></i>');
+                resultsDiv.append('<li> <h5>' + result.heading + '</h5></li>');
 
                 result.items.map(function (item) {
                     resultsDiv.append('<i><a href="' + item.link + '"><span data-icon="&#x35;"/>' + item.name + '</a></i>');
