@@ -2,7 +2,7 @@ const thinky = require('../lib/thinky');
 const type = thinky.type;
 const r = thinky.r;
 const moment = require('moment');
-moment.locale('uk');
+moment.locale('en-gb');
 
 
 const Order = thinky.createModel('Order', {
