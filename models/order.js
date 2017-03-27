@@ -2,6 +2,7 @@ const thinky = require('../lib/thinky');
 const type = thinky.type;
 const r = thinky.r;
 const moment = require('moment');
+moment.locale('uk');
 
 
 const Order = thinky.createModel('Order', {
@@ -21,26 +22,26 @@ Order.define('completedHumanDate', function () {
 
 Order.define('getTypes', function () {
 
-    return new Promise((good, bad)=> {
+    return new Promise((good, bad) => {
         const gettingTypes = [];
 
-        Order.get(this.id).getJoin({items: true}).then((orderWithItems)=> {
+        Order.get(this.id).getJoin({items: true}).then((orderWithItems) => {
             orderWithItems.items.map((item) => {
                 gettingTypes.push(item.getType());
             });
 
-            Promise.all(gettingTypes).then((types)=> {
+            Promise.all(gettingTypes).then((types) => {
 
-                orderWithItems.items.map((item, i)=> {
+                orderWithItems.items.map((item, i) => {
                     item.type = types[i];
                 });
 
                 return good(orderWithItems);
 
-            }).catch((err)=> {
+            }).catch((err) => {
                 return bad(err);
             })
-        }).catch((err)=> {
+        }).catch((err) => {
             return bad(err);
         })
 

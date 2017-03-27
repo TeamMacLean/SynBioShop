@@ -9,11 +9,13 @@
         <% if(orders.open.length == 0){ %>
         <p class="center">None</p>
         <% } else { %>
-        <% orders.open.map(function(order){ %>
+        <% orders.open.sort(function (a, b) {
+            return a.createdAt - b.createdAt;
+        }).map(function(order){ %>
         <div class="col4 auto-clear">
             <div class="tile">
                 <div class="tile-block">
-                    <p>Orderd: <%- order.createdHumanDate() %></p>
+                    <p>Ordered: <%- order.createdHumanDate() %></p>
                     <p>Status: <%- order.complete ? 'Complete' : 'In Progress' %></p>
                     <p>Customer: <%- order.username %></p>
                 </div>
@@ -26,7 +28,7 @@
 
     <h3 class="center">Closed</h3>
 
-    <% if(orders.open.length == 0){ %>
+    <% if(orders.closed.length == 0){ %>
     <p class="center">None</p>
     <% } else { %>
 
@@ -41,7 +43,9 @@
         </thead>
         <tbody>
 
-        <% orders.closed.map(function(order){ %>
+        <% orders.closed.sort(function (a, b) {
+            return a.createdAt - b.createdAt;
+        }).map(function(order){ %>
 
         <tr>
             <td><%- order.createdHumanDate() %></td>
