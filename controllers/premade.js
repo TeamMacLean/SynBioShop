@@ -520,6 +520,11 @@ premade.item.show = (req, res) => {
                 }
             });
 
+            //todo get files, select most recent
+
+            if (type.file && type.file.length) {
+                type.file = type.file[0];
+            }
 
             getDbs().then((dbs) => {
                 return res.render('premade/item/show', {headings, values, dbs, item});
