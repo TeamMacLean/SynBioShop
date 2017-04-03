@@ -524,7 +524,9 @@ premade.item.show = (req, res) => {
 
             //get files, select most recent
             if (item.file && item.file.length) {
-                item.file = item.file[0];
+                item.file = item.file.sort(function (a, b) {
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                })[0];
             }
 
             getDbs().then((dbs) => {
@@ -561,9 +563,11 @@ premade.item.edit = (req, res) => {
         Category.get(type.categoryID)
             .then((category) => {
 
-                //todo get files, select most recent
+                //get files, select most recent
                 if (type.file && type.file.length) {
-                    type.file = type.file[0];
+                    type.file = type.file.sort(function (a, b) {
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    })[0];
                 }
 
                 getDbs().then((dbs) => {
