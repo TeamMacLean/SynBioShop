@@ -383,10 +383,6 @@ premade.item.new = (req, res) => {
         // DB.get(dbID).run().then(db => {
         const type = Type.getByTypeNumber(category.db.type);
 
-        //get files, select most recent
-        if (type.file && type.file.length) {
-            type.file = type.file[0];
-        }
 
         getDbs().then((dbs) => {
             return res.render('premade/item/edit', {dbs, db: category.db, category, type});
@@ -564,6 +560,12 @@ premade.item.edit = (req, res) => {
 
         Category.get(type.categoryID)
             .then((category) => {
+
+                //todo get files, select most recent
+                if (type.file && type.file.length) {
+                    type.file = type.file[0];
+                }
+
                 getDbs().then((dbs) => {
                     // console.log(type);
                     return res.render('premade/item/edit.ejs', {type, dbs, category, db: type.db});
