@@ -8,15 +8,11 @@ $(function () {
 });
 
 function initUserMenu() {
-    var user = $('.user');
-
-    user.on('mouseenter', function () {
+    $('.user').hover(function () {
         $('.user-menu').removeClass('hidden');
-
-    });
-    user.on('mouseleave', function () {
+    }, function () {
         $('.user-menu').addClass('hidden');
-    });
+    })
 }
 
 function initFlashButtons() {
