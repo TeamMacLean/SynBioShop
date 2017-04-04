@@ -527,6 +527,8 @@ premade.item.show = (req, res) => {
                 item.file = item.file.sort(function (a, b) {
                     return new Date(b.createdAt) - new Date(a.createdAt);
                 })[0];
+            } else {
+                item.file = null;
             }
 
             getDbs().then((dbs) => {
@@ -568,6 +570,8 @@ premade.item.edit = (req, res) => {
                     type.file = type.file.sort(function (a, b) {
                         return new Date(b.createdAt) - new Date(a.createdAt);
                     })[0];
+                } else {
+                    type.file = null;
                 }
 
                 getDbs().then((dbs) => {
