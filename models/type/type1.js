@@ -10,7 +10,7 @@ Type1.fields = [
     {type: 'text', name: 'resistance', text: 'Resistance'},
     {type: 'text', name: 'whoMadeIt', text: 'Who made it'},
 ];
-Type1.typeName = 'Comments, Inside Overhangs, Outside overhangs, Description, Resistance';
+Type1.typeName = 'Comments, Inside Overhangs, Outside overhangs, Description, Resistance, Who Made it';
 Type1.type = 1;
 Type1.model = thinky.createModel('Type1', {
 
@@ -35,7 +35,7 @@ Type1.model = thinky.createModel('Type1', {
     outsideOverhangLeft: type.string().required(),
     outsideOverhangRight: type.string().required(),
     resistance: type.string().required(),
-    whoMadeIt: type.string().required().default('')
+    whoMadeIt: type.string().required().default('Mark Youles (TSL)')
 });
 
 
