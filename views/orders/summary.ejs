@@ -1,0 +1,38 @@
+<% include ../head.ejs %>
+
+<table>
+    <tr>
+        <th>#</th>
+        <th>createdAt</th>
+        <th>username</th>
+        <th>items</th>
+    </tr>
+
+    <% orders.map(order=>{ %>
+
+    <style>
+        ul, li{
+            list-style: none;
+        }
+    </style>
+
+    <tr>
+        <td><%- order.id %></td>
+        <td><%- order.createdAt %></td>
+        <td><%- order.username %></td>
+        <td>
+            <ul>
+                <% order.items.map(item=>{ %>
+                <%console.log(item.type.name)%>
+                <li><%- item.type.name %> X<%- item.quantity %></li>
+
+                <% }) %>
+            </ul>
+        </td>
+    </tr>
+
+    <% }) %>
+
+</table>
+
+<% include ../foot.ejs %>

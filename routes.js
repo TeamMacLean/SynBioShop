@@ -222,6 +222,11 @@ router.route('/orders')
     .all(isAdmin)
     .get(orders.showAll);
 
+router.route('/order/summary')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(orders.simonSummary);
+
 router.route('/order/:id')
     .all(isAuthenticated)
     .all(isAdmin)
