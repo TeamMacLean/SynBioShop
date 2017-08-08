@@ -1,1 +1,14 @@
 A new order is ready.
+
+<% locals.order.items.map(function(item){ %>
+
+Name: <%- item.type.name %>
+Quantity: <%- item.quantity %> μL
+Concentration: <%- item.type.concentration %><
+ID: <%- item.type.synBioID %>
+
+----------------------------
+
+<% }); %>
+
+View the order here: <%- baseURL %>/order/<%- locals.order.id %>

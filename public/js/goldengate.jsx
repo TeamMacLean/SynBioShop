@@ -1,4 +1,7 @@
-var initParts = [
+const React = require('react');
+const ReactDOM = require('react-dom');
+
+const initParts = [
     {
         id: 'A1',
         size: 1,
@@ -72,7 +75,7 @@ var initParts = [
 
 ];
 
-var otherParts = [
+const otherParts = [
     {
         id: 'DISTPROX',
         size: 2,
@@ -279,50 +282,134 @@ var otherParts = [
 
 ];
 
-var allParts = initParts.concat(otherParts);
+const allParts = initParts.concat(otherParts);
 
 
-const Part = React.createClass({
-    displayName: 'part',
+class Part extends React.Component {
+    constructor(props) {
+        super(props);
 
-    render: function render() {
+        console.log('part props', this);
+
+    }
+
+    render() {
         return (
-            <div className="part">
-                <div className="name">DIST</div>
+            <div className="part" onClick={() => {
+                this.props.setSelected(this.props.part)
+            }}>
+                <div className="name">{this.props.part.label}</div>
+                <div className="">Unselected</div>
+            </div>
+        )
+    }
+}
 
-                <div className="controls">
-                    <div className="merge">Merge Up</div>
-                    <select>
-                        <option>Test</option>
+function getPartByID(id) {
+    return allParts.filter(p => {
+        return p.id === id;
+    })
+}
+
+function compatibleParts(id) {
+    return allParts.filter(p => {
+        return p.compatible.indexOf(id) > -1;
+    })
+}
+
+class Options extends React.Component {
+    render() {
+
+        let compatible = compatibleParts(this.props.selectedPart.id);
+
+        let mergeLeft = null;
+        let mergeRight = null;
+
+        if (compatible[0]) {
+            mergeLeft = <div className="button pull-left">merge with {compatible[0].label}</div>
+        }
+        if (compatible[1]) {
+            mergeRight = <div className="button pull-right">merge with {compatible[1].label}</div>
+        }
+
+        return (
+            <div className="tile">
+                <div className="tile-block">
+                    <h2>{this.props.selectedPart.label}</h2>
+
+                    <div className="row">
+                        <div className="col12">
+                            {mergeLeft}{mergeRight}
+                        </div>
+                    </div>
+
+
+                    <label htmlFor="compatibleParts">Compatible Parts</label>
+                    <select id="compatibleParts">
+                        {compatible.map(function (part, i) {
+                            return <option key={part.id}>{part.label}</option>;
+                        })}
                     </select>
-                    <div className="merge">Merge Down</div>
                 </div>
             </div>
         )
     }
-});
+}
 
 
-const App = React.createClass({
-    displayName: 'app',
-    componentDidMount: function componentDidMount() {
-    },
-    getInitialState: function getInitialState() {
-        return {}
-    },
-    render: function render() {
+class App extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            selectedPart: initParts[0]
+        };
+
+        this.setSelected = this.setSelected.bind(this)
+    }
+
+    setSelected(item) {
+        this.setState({
+            selectedPart: item
+        });
+    }
+
+    componentDidMount() {
+        $('.owl-carousel').owlCarousel({
+            loop: false,
+            margin: 10,
+            nav: false,
+            center: true,
+            // merge: true,
+            items: initParts.length,
+            // navText : ["<i class='fa fa-chevron-left'></i>","<i class='fa fa-chevron-right'></i>"],
+            responsive: {
+                0: {
+                    items: 2
+                },
+                600: {
+                    items: 4
+                },
+                1024: {
+                    items: 6
+                }
+            }
+        });
+    }
+
+    render() {
         const self = this;
-
         return (
             <div>
-
-                {initParts.map(function (object, i) {
-                    return <Part key={i}>{object}</Part>;
-                })}
-
+                <div className="owl-carousel owl-theme">
+                    {initParts.map(function (object, i) {
+                        return <Part key={i} part={object} setSelected={self.setSelected}/>;
+                    })}
+                </div>
+                <Options selectedPart={this.state.selectedPart}/>
             </div>
         )
     }
-});
+}
 
 ReactDOM.render(React.createElement(App), document.getElementById('app'));

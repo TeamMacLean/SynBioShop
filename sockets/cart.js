@@ -4,16 +4,16 @@ const CartItem = require('../models/cartItem');
 
 module.exports = socket => {
 
-    socket.on('addToCart', (data)=> {
-        var typeID = data.typeID;
-        var username = data.username;
+    socket.on('addToCart', (data) => {
+        const typeID = data.typeID;
+        const username = data.username;
 
         if (typeID && username) {
             Type.getByID(typeID).then((type) => {
-                ShoppingCarts.ensureCart(username, {items: true}).then((cart)=> {
+                ShoppingCarts.ensureCart(username, {items: true}).then((cart) => {
                     // socket.emit('cartItemCount', cart.items.length);
                     cart.contains(typeID)
-                        .then((alreadyInCart)=> {
+                        .then((alreadyInCart) => {
                             if (alreadyInCart) {
                                 console.log('already in cart');
                                 return socket.emit('alreadyInCart', type);
@@ -24,10 +24,10 @@ module.exports = socket => {
                                     socket.emit('error', err);
                                 })
                             }
-                        }).catch((err)=> {
+                        }).catch((err) => {
                         socket.emit('error', err);
                     });
-                }).catch((err)=> {
+                }).catch((err) => {
                     socket.emit('error', err);
                 });
             }).catch((err) => {
@@ -37,38 +37,39 @@ module.exports = socket => {
 
     });
 
-    socket.on('removeFromCart', (data)=> {
+    socket.on('removeFromCart', (data) => {
         CartItem.get(data.id)
-            .then((item)=> {
+            .then((item) => {
                 item.delete()
-                    .then(()=> {
+                    .then(() => {
                         socket.emit('removedFromCart', {
                             id: data.id
                         });
                     })
-                    .catch((err)=> {
+                    .catch((err) => {
                         socket.emit('error', err);
                     });
             })
-            .catch((err)=> {
+            .catch((err) => {
                 socket.emit('error', err);
             })
     });
 
-    socket.on('changeQuantity', (data)=> {
+    socket.on('changeQuantity', (data) => {
         CartItem.get(data.id)
-            .then((item)=> {
-                item.largeScale = !item.largeScale;
+            .then((item) => {
+            console.log('server got',data);
+                item.quantity = data.quantity;
                 item.save()
-                    .then((savedItem)=> {
+                    .then((savedItem) => {
                         //send done
-                        socket.emit('quantityUpdated', {id: savedItem.id, large: savedItem.largeScale});
+                        socket.emit('quantityUpdated', {id: savedItem.id, quantity: savedItem.quantity});
                     })
-                    .catch((err)=> {
+                    .catch((err) => {
                         socket.emit('error', err);
                     })
             })
-            .catch((err)=> {
+            .catch((err) => {
                 socket.emit('error', err);
             });
 

@@ -1,7 +1,7 @@
-var gulp = require('gulp');
-var babel = require('gulp-babel');
-var rename = require('gulp-rename');
-var uglify = require('gulp-uglify');
+const gulp = require('gulp');
+const babel = require('gulp-babel');
+const rename = require('gulp-rename');
+const uglify = require('gulp-uglify');
 
 const jsPath = 'public/js';
 const appPath = `${jsPath}/goldengate.jsx`;

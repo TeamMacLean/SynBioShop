@@ -43,7 +43,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use((req, res, next) => {
-    if (req.user != null) {
+
+    if (req.user) {
         res.locals.signedInUser = {};
         res.locals.signedInUser.username = req.user.username;
         res.locals.signedInUser.name = req.user.name;
@@ -53,7 +54,7 @@ app.use((req, res, next) => {
             res.locals.signedInUser.iconURL = req.user.iconURL;
         }
         Cart.filter({username: res.locals.signedInUser.username}).getJoin({items: true}).then(carts => {
-            if (carts.length == 1) {
+            if (carts.length === 1) {
                 res.locals.signedInUser.cart = carts[0];
             } else {
                 res.locals.signedInUser.cart = {};

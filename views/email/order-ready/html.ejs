@@ -12,27 +12,9 @@
 <img class="center" src="<%- baseURL %>/img/logo.png" style="max-width: 80px; margin-bottom:20px;">
 
 <h1 class="center">SynBio Order Ready</h1>
-<p class="center">Your order is now ready to collect from SynBio.</p>
+<p class="center">You have an order ready to collect from SynBio.</p>
 
 <h2 class="center">Order Details</h2>
-<table class="cart">
-    <thead>
-    <tr>
-        <th>Item</th>
-        <th class="center">Large Scale</th>
-    </tr>
 
-    </thead>
-    <tbody>
-    <% locals.order.items.map(function(item){ %>
-    <tr>
-        <td><%- item.type.name %></td>
-        <td class="center">
-            <%- item.largeScale %>
-        </td>
-    </tr>
-    <% }); %>
-    </tbody>
-</table>
 </body>
 </html>

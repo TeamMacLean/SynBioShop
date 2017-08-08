@@ -19,7 +19,7 @@
     <thead>
     <tr>
         <th>Item</th>
-        <th class="center">Large Scale</th>
+        <th class="center">Quantity</th>
         <th class="center">Concentration</th>
         <th class="center">SynBio ID</th>
     </tr>
@@ -29,17 +29,9 @@
     <% locals.order.items.map(function(item){ %>
     <tr>
         <td><%- item.type.name %></td>
-        <td class="center">
-            <%- item.largeScale %>
-        </td>
-
-        <td class="center">
-            <%- item.type.concentration %>
-        </td>
-
-        <td class="center">
-            <%- item.type.synBioID %>
-        </td>
+        <td class="center"><%- item.quantity %> μL</td>
+        <td class="center"><%- item.type.concentration %></td>
+        <td class="center"><%- item.type.synBioID %></td>
     </tr>
     <% }); %>
     </tbody>

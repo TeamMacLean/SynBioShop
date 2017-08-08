@@ -11,7 +11,7 @@
     <% orders.map(order=>{ %>
 
     <style>
-        ul, li{
+        ul, li {
             list-style: none;
         }
     </style>
@@ -23,9 +23,8 @@
         <td>
             <ul>
                 <% order.items.map(item=>{ %>
-                <%console.log(item.type.name)%>
+                <% console.log(item.type.name) %>
                 <li><%- item.type.name %> X<%- item.quantity %></li>
-
                 <% }) %>
             </ul>
         </td>

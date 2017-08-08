@@ -17,7 +17,7 @@
         <thead>
         <tr>
             <th>Item</th>
-            <th class="center">Large Scale</th>
+            <th class="center">Quantity</th>
             <th class="center">Concentration</th>
             <th class="center">SynBio ID</th>
         </tr>
@@ -27,15 +27,17 @@
         <% locals.order.items.map(function(item){ %>
         <tr>
             <td><a href="/premade/item/<%- item.type.id %>" target="_blank"><%- item.type.name %></a></td>
-            <td class="center">
-                <%- item.largeScale %>
-            </td>
-            <td class="center">
-                <%- item.type.concentration %>
-            </td>
-            <td class="center">
-                <%- item.type.synBioID %>
-            </td>
+            <% if(item.quantity){ %>
+            <td class="center"><%- item.quantity %> μL</td>
+            <% } else { %>
+            <% if(item.largeScale){ %>
+            <td class="center">large scale</td>
+            <% } else { %>
+            <td class="center">normal</td>
+            <% } %>
+            <% } %>
+            <td class="center"><%- item.type.concentration %></td>
+            <td class="center"><%- item.type.synBioID %></td>
         </tr>
         <% }); %>
         </tbody>
