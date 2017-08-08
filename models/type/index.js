@@ -11,33 +11,16 @@ types.getByTypeNumber = id => {
     return types.TYPES.filter(t => t.type == id)[0];
 };
 
-// types.filterAll = (key, filter) => {
-//     return new Promise((good, bad)=> {
-//         return Promise.all(
-//             types.TYPES.map((type)=> {
-//                 return type.model.filter(doc => doc(key).match(filter));
-//             })).then((nonFlat)=> {
-//             const flat = [].concat(...nonFlat);
-//             return good(flat);
-//         }).catch((err)=> {
-//             return bad(err)
-//         });
-//     });
-// };
-
-types.filterAll = function (key, filter) {
-    return new Promise(function (good, bad) {
-        return Promise.all(types.TYPES.map(function (type) {
-            return type.model.filter(function (doc) {
-                return doc(key).match(filter);
-            });
-        })).then(function (nonFlat) {
-            var _ref;
-
-            var flat = (_ref = []).concat.apply(_ref, _toConsumableArray(nonFlat));
+types.filterAll = (key, filter) => {
+    return new Promise((good, bad)=> {
+        return Promise.all(
+            types.TYPES.map((type)=> {
+                return type.model.filter(doc => doc(key).match(filter));
+            })).then((nonFlat)=> {
+            const flat = [].concat(...nonFlat);
             return good(flat);
-        }).catch(function (err) {
-            return bad(err);
+        }).catch((err)=> {
+            return bad(err)
         });
     });
 };
