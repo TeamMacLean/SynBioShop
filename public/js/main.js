@@ -214,7 +214,7 @@ function initSearch() {
             resultsDiv.empty();
         }
 
-    })
+    });
 
     socket.on('results', function (results) {
 

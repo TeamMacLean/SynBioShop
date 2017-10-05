@@ -36,9 +36,6 @@ function filterBy(key, filter) {
         }));
         Promise.all(promises)
             .then((results)=> {
-
-                // console.log('found', results);
-
                 const mergedResults = [].concat(...results);
                 return resolve(mergedResults);
             })

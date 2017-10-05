@@ -12,6 +12,7 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 require('./sockets')(io); //index file
 const Cart = require('./models/cart');
+const Order = require('./models/order');
 const flash = require('express-flash');
 
 const util = require('./lib/util.js');
@@ -53,15 +54,36 @@ app.use((req, res, next) => {
         if (req.user.iconURL) {
             res.locals.signedInUser.iconURL = req.user.iconURL;
         }
-        Cart.filter({username: res.locals.signedInUser.username}).getJoin({items: true}).then(carts => {
-            if (carts.length === 1) {
-                res.locals.signedInUser.cart = carts[0];
-            } else {
-                res.locals.signedInUser.cart = {};
-                res.locals.signedInUser.cart.items = [];
-            }
+
+        new Promise((good, bad) => {
+            Cart.filter({username: res.locals.signedInUser.username}).getJoin({items: true})
+                .then(carts => {
+                    if (carts.length === 1) {
+                        res.locals.signedInUser.cart = carts[0];
+                    } else {
+                        res.locals.signedInUser.cart = {};
+                        res.locals.signedInUser.cart.items = [];
+                    }
+                    return good();
+                }).catch(err => bad(err));
+        })
+            .then(() => {
+                return new Promise((good, bad) => {
+                    Order.filter({complete: false})
+                        .count()
+                        .execute()
+                        .then(incompleteCount => {
+                            res.locals.incompleteCount = incompleteCount;
+                            return good();
+                        })
+                        .catch(err => bad(err))
+                })
+
+
+            }).then(() => {
             return next(null, req, res);
-        }).error(err => next(err, req, res))
+        })
+            .catch(err => next(err, req, res))
     } else {
         next();
     }

@@ -31,6 +31,9 @@
             <!--<a href="/whoami">-->
             <div class="image">
                 <img src="<%- locals.signedInUser.iconURL %>">
+                <% if(locals.signedInUser.isAdmin){ %>
+                <span class="badge"><%- locals.incompleteCount %></span>
+                <% } %>
             </div>
             <div class="name">
                 <span><%- locals.signedInUser.name %></span>
