@@ -27,23 +27,23 @@ Order.define('getTypes', function () {
         Order.get(this.id).getJoin({items: true}).then((orderWithItems) => {
 
             Promise.all(
-                orderWithItems.items.map(item => {
+                orderWithItems.items.map((item, i) => {
                     return new Promise((g2, b2) => {
                         item.getType()
                             .then(type => {
-                                item.type = type;
-                                return g2(item);
+                                orderWithItems.items[i].type = type;
+                                return g2();
                             })
-                            .catch(err=>{
+                            .catch(err => {
                                 //no types, possibly deleted
-                                item.type = {};
-                                return g2(item)
+                                orderWithItems.items[i].type = {};
+                                return g2()
                             })
-                            // .catch(err => b2(err));
+                        // .catch(err => b2(err));
                     })
                 })
             )
-                .then(orderWithItemsAndTypes => good(orderWithItemsAndTypes))
+                .then(nothing => good(orderWithItems))
                 .catch(err => bad(err))
 
         }).catch((err) => {
