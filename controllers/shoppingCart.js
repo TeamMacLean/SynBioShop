@@ -28,11 +28,7 @@ ShoppingCart.index = (req, res) => {
             }));
             Promise.all(promises).then((updatedItems)=> {
 
-                // console.log('ui',updatedItems);
-
                 cart.items = [].concat(...updatedItems);
-
-                // console.log(cart.items);
 
                 return res.render('cart/index', {cart});
             }).catch((err)=> {

@@ -99,10 +99,6 @@ premade.rearrangeSave = (req, res) => {
 
         db.categories.map(c => {
 
-
-
-            // console.log('items', c.items);
-
             c.items.map(i => {
                 toDo.push(
                     new Promise((good, bad) => {
@@ -575,7 +571,6 @@ premade.item.edit = (req, res) => {
                 }
 
                 getDbs().then((dbs) => {
-                    // console.log(type);
                     return res.render('premade/item/edit.ejs', {type, dbs, category, db: type.db});
                 }).catch(err => renderError(err, res));
             })

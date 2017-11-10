@@ -23,7 +23,6 @@
         <td>
             <ul>
                 <% order.items.map(item=>{ %>
-                <% console.log(item.type.name) %>
                 <li><%- item.type.name %> X<%- item.quantity %></li>
                 <% }) %>
             </ul>
