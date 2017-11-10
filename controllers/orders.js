@@ -53,18 +53,20 @@ orders.showAll = (req, res) => {
 orders.simonSummary = (req, res) => {
     Order
         .getJoin({items: true})
+        .getTypes()
+        .run()
         .then(orders => {
 
-            Promise.all(
-                orders.map(order => {
-                    return order.getTypes();
-                })
-            )
-                .then(ordersWithTypes => {
-                    return res.render('orders/summary', {orders: ordersWithTypes});
+            // Promise.all(
+            //     orders.map(order => {
+            //         return order.getTypes();
+            //     })
+            // )
+            //     .then(ordersWithTypes => {
+                    return res.render('orders/summary', {orders: orders});
 
-                })
-                .catch((err) => renderError(err, res));
+                // })
+                // .catch((err) => renderError(err, res));
         })
         .catch((err) => renderError(err, res));
 };
