@@ -5,7 +5,7 @@
 
     <% if(typeof error != 'undefined'){ %>
     <div class="well code error">
-        <span><%- error %></span>
+        <span><%- JSON.stringify(error) %></span>
     </div>
     <a href="mailto:martin.page@tsl.ac.uk?subject=I found a bug with the Syn Bio site&body=<%- encodeURI(error) %>"
        class="button primary center" target="_blank"><span data-icon="&#xe010;"></span> Report

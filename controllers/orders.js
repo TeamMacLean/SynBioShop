@@ -61,6 +61,7 @@ orders.simonSummary = (req, res) => {
                 })
             )
                 .then(ordersWithTypes => {
+
                     return res.render('orders/summary', {orders: ordersWithTypes});
 
                 })
