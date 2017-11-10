@@ -23,10 +23,8 @@ Order.define('completedHumanDate', function () {
 Order.define('getTypes', function () {
 
     return new Promise((good, bad) => {
-        // const gettingTypes = [];
 
         Order.get(this.id).getJoin({items: true}).then((orderWithItems) => {
-
 
             Promise.all(
                 orderWithItems.items.map(item => {
@@ -36,29 +34,17 @@ Order.define('getTypes', function () {
                                 item.type = type;
                                 return g2(item);
                             })
-                            .catch(err => b2(err));
+                            .catch(err=>{
+                                //no types, possibly deleted
+                                return b2(item)
+                            })
+                            // .catch(err => b2(err));
                     })
                 })
             )
                 .then(orderWithItemsAndTypes => good(orderWithItemsAndTypes))
                 .catch(err => bad(err))
 
-
-            // orderWithItems.items.map((item) => {
-            //     gettingTypes.push(item.getType());
-            // });
-            //
-            // Promise.all(gettingTypes).then((types) => {
-            //
-            //     orderWithItems.items.map((item, i) => {
-            //         item.type = types[i];
-            //     });
-            //
-            //     return good(orderWithItems);
-            //
-            // }).catch((err) => {
-            //     return bad(err);
-            // })
         }).catch((err) => {
             return bad(err);
         })
