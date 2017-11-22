@@ -36,7 +36,7 @@ Order.define('getTypes', function () {
                             })
                             .catch(err => {
                                 //no types, possibly deleted
-                                orderWithItems.items[i].type = {};
+                                orderWithItems.items[i].type = {name: 'type not found, possibly deleted'};
                                 return g2()
                             })
                         // .catch(err => b2(err));
