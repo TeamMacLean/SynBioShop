@@ -100,7 +100,12 @@ orders.simonRepeatOrders = (req, res) => {
                     const obj = itemsByUser[key];
                     for (const prop in obj) {
                         if (obj.hasOwnProperty(prop)) {
-                            console.log(prop, obj[prop]);
+
+                            if(obj[prop] < 2){
+                                delete itemsByUser[key][prop];
+                            }
+
+                            // console.log(prop, obj[prop]);
                         }
                     }
                 }
