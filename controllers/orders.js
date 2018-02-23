@@ -93,7 +93,7 @@ orders.simonRepeatOrders = (req, res) => {
 
                     promises.push(new Promise((good, bad) => {
                         item.getType().then((type) => {
-                            // console.log('type', type);
+                            console.log('type', type.name);
                             addItem(o.username, type.name);
                             good();
                         }).catch(err => {
