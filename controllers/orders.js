@@ -88,7 +88,7 @@ orders.simonRepeatOrders = (req, res) => {
         .then(orders => {
             orders.map(o => {
                 o.items.map(item => {
-                    addItem(o.username, item.id);
+                    addItem(o.username, item.typeID);
                     //TODO get unique
                 });
             });
