@@ -98,7 +98,7 @@ app.use((req, res, next) => {
 // });
 
 util.setupPassport();
-
+app.set('json spaces', 2);
 app.use('/', routes);
 
 
