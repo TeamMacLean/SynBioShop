@@ -79,8 +79,6 @@ orders.simonRepeatOrders = (req, res) => {
 
         if(!itemsByUser[username][item]){
             itemsByUser[username][item] = 1;
-        } else {
-            itemsByUser[username][item] = itemsByUser[username][item]+1;
         }
 
         // if(itemsByUser[username].indexOf(item) < 0){
