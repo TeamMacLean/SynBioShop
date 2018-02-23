@@ -227,6 +227,11 @@ router.route('/order/summary')
     .all(isAdmin)
     .get(orders.simonSummary);
 
+router.route('/dupes')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(orders.simonRepeatOrders);
+
 router.route('/order/:id')
     .all(isAuthenticated)
     .all(isAdmin)

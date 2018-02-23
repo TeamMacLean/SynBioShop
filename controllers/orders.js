@@ -47,7 +47,6 @@ orders.showAll = (req, res) => {
 
     }).catch((err) => renderError(err, res));
 
-
 };
 
 orders.simonSummary = (req, res) => {
@@ -66,6 +65,34 @@ orders.simonSummary = (req, res) => {
                 .catch((err) => renderError(err, res));
         })
         .catch((err) => renderError(err, res));
+};
+
+orders.simonRepeatOrders = (req, res) => {
+
+    const itemsByUser = {}; //username:sdfsd, items:[]
+
+    function addItem(username, item) {
+
+        if (!itemsByUser[username]) {
+            itemsByUser[username] = [];
+        }
+        itemsByUser[username].push(item);
+
+
+    }
+
+    Order.getJoin({items: true})
+        .then(orders => {
+            orders.map(o => {
+                o.items.map(item => {
+                    addItem(o.username, item.id);
+                });
+            });
+            res.json(itemsByUser);
+        })
+        .catch((err) => renderError(err, res));
+
+
 };
 
 orders.markAsComplete = (req, res) => {
