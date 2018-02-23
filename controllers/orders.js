@@ -96,10 +96,12 @@ orders.simonRepeatOrders = (req, res) => {
 
             //TODO remove < 1
             for (const key in itemsByUser) {
-                const obj = itemsByUser[key];
-                for (const prop in obj) {
-                    if(obj.hasOwnProperty(prop)){
-                        console.log(prop, obj[prop]);
+                if (itemsByUser.hasOwnProperty(key)) {
+                    const obj = itemsByUser[key];
+                    for (const prop in obj) {
+                        if (obj.hasOwnProperty(prop)) {
+                            console.log(prop, obj[prop]);
+                        }
                     }
                 }
             }
