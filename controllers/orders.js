@@ -93,7 +93,7 @@ orders.simonRepeatOrders = (req, res) => {
 
                     promises.push(new Promise((good, bad) => {
                         item.getType().then((type) => {
-                            console.log('type', type.name);
+                            // console.log('type', type.name);
                             addItem(o.username, type.name);
                             good();
                         }).catch(err => {
@@ -104,10 +104,10 @@ orders.simonRepeatOrders = (req, res) => {
                 });
             });
 
-            console.log(promises.length, 'promises');
+            // console.log(promises.length, 'promises');
 
             Promise.all(promises).then(() => {
-                console.log('FINISHED PROMISES');
+                // console.log('FINISHED PROMISES');
                 for (const key in itemsByUser) {
                     if (itemsByUser.hasOwnProperty(key)) {
                         const obj = itemsByUser[key];
@@ -119,6 +119,10 @@ orders.simonRepeatOrders = (req, res) => {
                                 }
                             }
                         }
+                    }
+                    //TODO now check if its empty
+                    if(itemsByUser[key] === {}){
+                        delete itemsByUser[key]
                     }
                 }
 
