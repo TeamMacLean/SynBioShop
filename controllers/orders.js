@@ -77,13 +77,11 @@ orders.simonRepeatOrders = (req, res) => {
             itemsByUser[username] = {};
         }
 
-        if(!itemsByUser[username][id]){
+        if (!itemsByUser[username][id]) {
             itemsByUser[username][id] = 1;
+        } else {
+            itemsByUser[username][id] += 1;
         }
-        itemsByUser[username][id]+=1;
-        // if(itemsByUser[username].indexOf(item) < 0){
-        //     itemsByUser[username].push(item);
-        // }
     }
 
     Order.getJoin({items: true})
@@ -97,8 +95,23 @@ orders.simonRepeatOrders = (req, res) => {
 
 
             //TODO remove < 1
+            for (const key in itemsByUser) {
+                // skip loop if the property is from prototype
+                if (!itemsByUser.hasOwnProperty(key)) continue;
 
-            res.json(JSON.stringify(itemsByUser, null, 2));
+                const obj = itemsByUser[key];
+                for (const prop in obj) {
+                    // skip loop if the property is from prototype
+                    if(!obj.hasOwnProperty(prop)){
+
+                        console.log(prop, obj[prop]);
+
+                    }
+
+                }
+            }
+
+            res.json(itemsByUser);
         })
         .catch((err) => renderError(err, res));
 
