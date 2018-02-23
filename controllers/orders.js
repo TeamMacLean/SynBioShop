@@ -92,11 +92,10 @@ orders.simonRepeatOrders = (req, res) => {
                 o.items.map(item => {
 
                     promises.push(new Promise((good, bad) => {
-                        item.getType()
-                            .then(type => {
-                                addItem(o.username, type.name);
-                            })
-                            .catch(err => bad(err));
+                        item.getType().then((type) => {
+                            addItem(o.username, type.name);
+                        }).catch(err => {
+                        });
                     }));
                 });
             });
