@@ -93,6 +93,7 @@ orders.simonRepeatOrders = (req, res) => {
 
                     promises.push(new Promise((good, bad) => {
                         item.getType().then((type) => {
+                            console.log('type', type);
                             addItem(o.username, type.name);
                         }).catch(err => {
                             //TODO if not found it probebly doesnt exist any more
@@ -100,6 +101,8 @@ orders.simonRepeatOrders = (req, res) => {
                     }));
                 });
             });
+
+            console.log(promises.length, 'promises');
 
             Promise.all(promises).then(() => {
                 for (const key in itemsByUser) {
