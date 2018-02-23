@@ -84,34 +84,42 @@ orders.simonRepeatOrders = (req, res) => {
         }
     }
 
+    const promises = [];
+
     Order.getJoin({items: true})
         .then(orders => {
             orders.map(o => {
                 o.items.map(item => {
-                    addItem(o.username, item.typeID);
-                    //TODO get unique
+
+                    promises.push(new Promise((good, bad) => {
+                        item.getType()
+                            .then(type => {
+                                addItem(o.username, type.name);
+                            })
+                            .catch(err => bad(err));
+                    }));
                 });
             });
 
+            Promise.all(promises).then(() => {
+                for (const key in itemsByUser) {
+                    if (itemsByUser.hasOwnProperty(key)) {
+                        const obj = itemsByUser[key];
+                        for (const prop in obj) {
+                            if (obj.hasOwnProperty(prop)) {
 
-            //TODO remove < 1
-            for (const key in itemsByUser) {
-                if (itemsByUser.hasOwnProperty(key)) {
-                    const obj = itemsByUser[key];
-                    for (const prop in obj) {
-                        if (obj.hasOwnProperty(prop)) {
-
-                            if(obj[prop] < 2){
-                                delete itemsByUser[key][prop];
+                                if (obj[prop] < 2) {
+                                    delete itemsByUser[key][prop];
+                                }
                             }
-
-                            // console.log(prop, obj[prop]);
                         }
                     }
                 }
-            }
 
-            res.json(itemsByUser);
+                res.json(itemsByUser);
+            })
+                .catch((err) => renderError(err, res));
+
         })
         .catch((err) => renderError(err, res));
 
