@@ -74,7 +74,7 @@ orders.simonRepeatOrders = (req, res) => {
     function addItem(username, id) {
 
         if (!itemsByUser[username]) {
-            itemsByUser[username] = [];
+            itemsByUser[username] = {};
         }
 
         if(!itemsByUser[username][id]){
