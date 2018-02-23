@@ -71,23 +71,27 @@ orders.simonRepeatOrders = (req, res) => {
 
     const itemsByUser = {}; //username:sdfsd, items:[]
 
-    function addItem(username, item) {
+    function uniqueAddItem(username, item) {
 
         if (!itemsByUser[username]) {
             itemsByUser[username] = [];
         }
-        itemsByUser[username].push(item);
 
-
+        if(itemsByUser[username].indexOf(item) < 0){
+            itemsByUser[username].push(item);
+        }
     }
 
     Order.getJoin({items: true})
         .then(orders => {
             orders.map(o => {
                 o.items.map(item => {
-                    addItem(o.username, item.id);
+                    uniqueAddItem(o.username, item.id);
+                    //TODO get unique
                 });
             });
+
+
             res.json(itemsByUser);
         })
         .catch((err) => renderError(err, res));
