@@ -95,6 +95,7 @@ orders.simonRepeatOrders = (req, res) => {
                         item.getType().then((type) => {
                             // console.log('type', type);
                             addItem(o.username, type.name);
+                            good();
                         }).catch(err => {
                             //TODO if not found it probebly doesnt exist any more
                         });
