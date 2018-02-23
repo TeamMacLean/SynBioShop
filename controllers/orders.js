@@ -121,7 +121,7 @@ orders.simonRepeatOrders = (req, res) => {
                         }
                     }
                     //TODO now check if its empty
-                    if(itemsByUser[key] === {}){
+                    if (Object.keys(itemsByUser[key]).length === 0 && itemsByUser[key].constructor === Object) {
                         delete itemsByUser[key]
                     }
                 }
