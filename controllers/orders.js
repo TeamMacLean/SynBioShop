@@ -80,7 +80,7 @@ orders.simonRepeatOrders = (req, res) => {
         if(!itemsByUser[username][id]){
             itemsByUser[username][id] = 1;
         }
-        itemsByUser[username][id] = 1;
+        itemsByUser[username][id]+=1;
         // if(itemsByUser[username].indexOf(item) < 0){
         //     itemsByUser[username].push(item);
         // }
@@ -96,7 +96,9 @@ orders.simonRepeatOrders = (req, res) => {
             });
 
 
-            res.json(itemsByUser);
+            //TODO remove < 1
+
+            res.json(JSON.stringify(itemsByUser, null, 2));
         })
         .catch((err) => renderError(err, res));
 
