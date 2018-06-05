@@ -8,9 +8,18 @@ const auth = require('./controllers/auth');
 const shoppingCart = require('./controllers/shoppingCart');
 const orders = require('./controllers/orders');
 const upload = require('./controllers/upload');
+const admin = require('./controllers/admin');
 
 router.route('/')
     .get((req, res) => res.render('index'));
+
+//ADMIN
+
+router.route('/admin/billboard')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(admin.billboard.edit)
+    .post(admin.billboard.editPost);
 
 //DOCS
 router.route('/docs')

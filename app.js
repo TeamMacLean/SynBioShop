@@ -1,5 +1,6 @@
 const path = require('path');
 const multer = require('multer');
+const renderError = require('./lib/renderError');
 const bodyParser = require('body-parser');
 const express = require('express');
 const app = express();
@@ -14,6 +15,7 @@ require('./sockets')(io); //index file
 const Cart = require('./models/cart');
 const Order = require('./models/order');
 const flash = require('express-flash');
+const Billboard = require('./models/billboard');
 
 const util = require('./lib/util.js');
 const routes = require('./routes');
@@ -88,6 +90,20 @@ app.use((req, res, next) => {
         next();
     }
 });
+
+app.use((req, res, next) => {
+    Billboard.run()
+        .then(billboards => {
+            if (billboards.length) {
+                res.locals.billboard = billboards[0];
+            } else {
+            }
+
+            return next()
+
+        })
+        .catch(err => renderError(err));
+})
 
 //FLASH TEST
 // app.use(function (req, res, next) {

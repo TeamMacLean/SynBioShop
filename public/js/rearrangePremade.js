@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 198);
+/******/ 	return __webpack_require__(__webpack_require__.s = 201);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -22470,470 +22470,263 @@ module.exports = __webpack_require__(18);
 
 /***/ }),
 /* 184 */,
-/* 185 */
+/* 185 */,
+/* 186 */,
+/* 187 */,
+/* 188 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
 var React = __webpack_require__(183);
 var ReactDOM = __webpack_require__(99);
 
-var initParts = [{
-    id: 'A1',
-    size: 1,
-    label: 'DIST',
-    compatible: ['A2'],
-    childParts: []
-}, {
-    id: 'A2',
-    size: 1,
-    label: 'PROX',
-    compatible: ['A1', 'A3'],
-    childParts: []
-}, {
-    id: 'A3',
-    size: 1,
-    label: 'CORE',
-    compatible: ['A2', 'B1'],
-    childParts: []
-}, {
-    id: 'B1',
-    size: 1,
-    label: '5UTR',
-    compatible: ['A3', 'B2'],
-    childParts: []
-}, {
-    id: 'B2',
-    size: 1,
-    label: 'NTAG',
-    compatible: ['B1', 'B3'],
-    childParts: []
-}, {
-    id: 'B3',
-    size: 1,
-    label: 'CDS1',
-    compatible: ['B2', 'B4'],
-    childParts: []
-}, {
-    id: 'B4',
-    size: 1,
-    label: 'CDS2',
-    compatible: ['B3', 'B5'],
-    childParts: []
-}, {
-    id: 'B5',
-    size: 1,
-    label: 'CTAG',
-    compatible: ['B4', 'B6'],
-    childParts: []
-}, {
-    id: 'B6',
-    size: 1,
-    label: '3UTR',
-    compatible: ['B5', 'C1'],
-    childParts: []
-}, {
-    id: 'C1',
-    size: 1,
-    label: 'TERM',
-    compatible: ['B6'],
-    childParts: []
-}];
-
-var otherParts = [{
-    id: 'DISTPROX',
-    size: 2,
-    label: 'DIST + PROX',
-    compatible: [],
-    childParts: ['A1', 'A2']
-}, {
-    id: 'DISTPROXCORE',
-    size: 3,
-    label: 'DIST + PROX + CORE',
-    compatible: [],
-    childParts: ['DISTPROX', 'A3']
-}, {
-    id: 'DISTPROXCORE5UTR',
-    size: 4,
-    label: 'DIST + PROX + CORE + 5UTR',
-    compatible: [],
-    childParts: ['DISTPROXCORE', 'B1']
-}, {
-    id: 'DISTPROXCORE5UTRNTAG',
-    size: 5,
-    label: 'DIST + PROX + CORE + 5UTR + NTAG',
-    compatible: [],
-    childParts: ['DISTPROXCORE5UTR', 'B2']
-}, {
-    id: 'DISTPROXCORE5UTRNTAGCDS1',
-    size: 6,
-    label: 'DIST + PROX + CORE + 5UTR + NTAG + CDS1',
-    compatible: [],
-    childParts: ['DISTPROXCORE5UTRNTAG', 'B3']
-}, {
-    id: 'DISTPROXCORE5UTRNTAGCDS1CDS2',
-    size: 7,
-    label: 'DIST + PROX + CORE + 5UTR + NTAG + CDS1 + CDS2',
-    compatible: [],
-    childParts: ['DISTPROXCORE5UTRNTAGCDS1', 'B4']
-}, {
-    id: 'DISTPROXCORE5UTRNTAGCDS1CDS2CTAG',
-    size: 8,
-    label: 'DIST + PROX + CORE + 5UTR + NTAG + CDS1 + CDS2 + CTAG',
-    compatible: [],
-    childParts: ['DISTPROXCORE5UTRNTAGCDS1CDS2', 'B5']
-}, {
-    id: 'DISTPROXCORE5UTRNTAGCDS1CDS2CTAG3UTR',
-    size: 9,
-    label: 'DIST + PROX + CORE + 5UTR + NTAG + CDS1 + CDS2 + CTAG + 3UTR',
-    compatible: [],
-    childParts: ['DISTPROXCORE5UTRNTAGCDS1CDS2CTAG', 'B6']
-}, {
-    id: 'DISTPROXCORE5UTRNTAGCDS1CDS2CTAG3UTRTERM',
-    size: 10,
-    label: 'DIST + PROX + CORE + 5UTR + NTAG + CDS1 + CDS2 + CTAG + 3UTR + TERM',
-    compatible: [],
-    childParts: ['DISTPROXCORE5UTRNTAGCDS1CDS2CTAG3UTR', 'C1']
-}, {
-    id: 'PROXCORE',
-    size: 2,
-    label: 'PROX + CORE',
-    compatible: [],
-    childParts: ['A2', 'A3']
-}, {
-    id: 'CORE5UTR',
-    size: 2,
-    label: 'CORE + 5UTR',
-    compatible: [],
-    childParts: ['A3', 'B1']
-}, {
-    id: '5UTRNTAG',
-    size: 2,
-    label: '5UTR + NTAG',
-    compatible: [],
-    childParts: ['B1', 'B2']
-}, {
-    id: 'NTAGCDS1',
-    size: 2,
-    label: 'NTAG + CDS1',
-    compatible: [],
-    childParts: ['B2', 'B3']
-}, {
-    id: 'CDS1CDS2',
-    size: 2,
-    label: 'CDS1 + CDS2',
-    compatible: [],
-    childParts: ['B3', 'B4']
-}, {
-    id: 'CDS2CTAG',
-    size: 2,
-    label: 'CDS2 + CTAG',
-    compatible: [],
-    childParts: ['B4', 'B5']
-}, {
-    id: 'CTAG3UTR',
-    size: 2,
-    label: 'CTAG + 3UTR',
-    compatible: [],
-    childParts: ['B5', 'B6']
-}, {
-    id: '3UTRTERM',
-    size: 2,
-    label: '3UTR + TERM',
-    compatible: [],
-    childParts: ['B6', 'C1']
-}, {
-    id: 'DISTPROXCORE5URT',
-    size: 4,
-    label: 'DIST+PROX+CORE+5URT',
-    compatible: [],
-    childParts: ['DISTPROX', 'CORE5UTR']
-}, {
-    id: 'NTAGCDS1CDS2CTAG',
-    size: 4,
-    label: 'NTAG+CDS1+CDS2+CTAG',
-    compatible: [],
-    childParts: ['NTAGCDS1', 'CDS2CTAG']
-}, {
-    id: 'DISTPROXCORE5URTNTAGCDS1CDS2CTAG',
-    size: 8,
-    label: 'DIST+PROX+CORE+5URT+NTAG+CDS1+CDS2+CTAG',
-    compatible: [],
-    childParts: ['DISTPROXCORE5URT', 'NTAGCDS1CDS2CTAG']
-}, {
-    id: 'DISTPROXCORE5URTNTAGCDS1CDS2CTAG3UTRTERM',
-    size: 10,
-    label: 'DIST+PROX+CORE+5URT+NTAG+CDS1+CDS2+CTAG+3UTR+TERM',
-    compatible: [],
-    childParts: ['DISTPROXCORE5URTNTAGCDS1CDS2CTAG', '3UTRTERM']
-}, {
-    id: 'CTAG3UTRTERM',
-    size: 3,
-    label: 'CTAG + 3UTR + TERM',
-    compatible: [],
-    childParts: ['B5', '3UTRTERM']
-}, {
-    id: 'CDS2CTAG3UTRTERM',
-    size: 4,
-    label: 'CDS2 + CTAG + 3UTR + TERM',
-    compatible: [],
-    childParts: ['B4', 'CTAG3UTRTERM']
-}, {
-    id: 'CDS1CDS2CTAG3UTRTERM',
-    size: 5,
-    label: 'CDS1 + CDS2 + CTAG + 3UTR + TERM',
-    compatible: [],
-    childParts: ['B3', 'CDS2CTAG3UTRTERM']
-}, {
-    id: 'NTAGCDS1CDS2CTAG3UTRTERM',
-    size: 6,
-    label: 'NTAG + CDS1 + CDS2 + CTAG + 3UTR + TERM',
-    compatible: [],
-    childParts: ['B2', 'CDS1CDS2CTAG3UTRTERM']
-}, {
-    id: '5UTRNTAGCDS1CDS2CTAG3UTRTERM',
-    size: 7,
-    label: '5UTR + NTAG + CDS1 + CDS2 + CTAG + 3UTR + TERM',
-    compatible: [],
-    childParts: ['B1', 'NTAGCDS1CDS2CTAG3UTRTERM']
-}, {
-    id: 'CORE5UTRNTAGCDS1CDS2CTAG3UTRTERM',
-    size: 8,
-    label: 'CORE + 5UTR + NTAG + CDS1 + CDS2 + CTAG + 3UTR + TERM',
-    compatible: [],
-    childParts: ['A3', '5UTRNTAGCDS1CDS2CTAG3UTRTERM']
-}, {
-    id: 'PROXCORE5UTRNTAGCDS1CDS2CTAG3UTRTERM',
-    size: 9,
-    label: 'PROX + CORE + 5UTR + NTAG + CDS1 + CDS2 + CTAG + 3UTR + TERM',
-    compatible: [],
-    childParts: ['A2', 'CORE5UTRNTAGCDS1CDS2CTAG3UTRTERM']
-}, {
-    id: 'DISTPROXCORE5UTRNTAGCDS1CDS2CTAG3UTRTERM',
-    size: 10,
-    label: 'DIS + PROX + CORE + 5UTR + NTAG + CDS1 + CDS2 + CTAG + 3UTR + TERM',
-    compatible: [],
-    childParts: ['A1', 'PROXCORE5UTRNTAGCDS1CDS2CTAG3UTRTERM']
-}];
-
-var allParts = initParts.concat(otherParts);
-
-var Part = function (_React$Component) {
-    _inherits(Part, _React$Component);
-
-    function Part(props) {
-        _classCallCheck(this, Part);
-
-        var _this = _possibleConstructorReturn(this, (Part.__proto__ || Object.getPrototypeOf(Part)).call(this, props));
-
-        console.log('part props', _this);
-
-        return _this;
-    }
-
-    _createClass(Part, [{
-        key: 'render',
-        value: function render() {
-            var _this2 = this;
-
-            return React.createElement(
-                'div',
-                { className: 'part', onClick: function onClick() {
-                        _this2.props.setSelected(_this2.props.part);
-                    } },
-                React.createElement(
-                    'div',
-                    { className: 'name' },
-                    this.props.part.label
-                ),
-                React.createElement(
-                    'div',
-                    { className: '' },
-                    'Unselected'
-                )
-            );
+Array.prototype.move = function (old_index, new_index) {
+    if (new_index >= this.length) {
+        var k = new_index - this.length;
+        while (k-- + 1) {
+            this.push(undefined);
         }
-    }]);
+    }
+    this.splice(new_index, 0, this.splice(old_index, 1)[0]);
+    return this;
+};
 
-    return Part;
-}(React.Component);
-
-function getPartByID(id) {
-    return allParts.filter(function (p) {
-        return p.id === id;
+function updatePositions(array) {
+    return array.map(function (a, i) {
+        return a.position = i;
     });
 }
 
-function compatibleParts(id) {
-    return allParts.filter(function (p) {
-        return p.compatible.indexOf(id) > -1;
-    });
-}
+var ReorderButtons = React.createClass({
+    displayName: 'ReorderButtons',
 
-var Options = function (_React$Component2) {
-    _inherits(Options, _React$Component2);
-
-    function Options() {
-        _classCallCheck(this, Options);
-
-        return _possibleConstructorReturn(this, (Options.__proto__ || Object.getPrototypeOf(Options)).apply(this, arguments));
+    onClick: function onClick(amount) {
+        this.props.action(amount);
+    },
+    render: function render() {
+        return React.createElement(
+            'div',
+            { className: 'inline' },
+            React.createElement(
+                'button',
+                { className: 'inline small', onClick: this.onClick.bind(this, -1) },
+                React.createElement('span', {
+                    'data-icon': '2' })
+            ),
+            React.createElement(
+                'button',
+                { className: 'inline small', onClick: this.onClick.bind(this, 1) },
+                React.createElement('span', {
+                    'data-icon': '3' })
+            )
+        );
     }
+});
 
-    _createClass(Options, [{
-        key: 'render',
-        value: function render() {
+var DB = React.createClass({
+    displayName: 'DB',
 
-            var compatible = compatibleParts(this.props.selectedPart.id);
-
-            var mergeLeft = null;
-            var mergeRight = null;
-
-            if (compatible[0]) {
-                mergeLeft = React.createElement(
-                    'div',
-                    { className: 'button pull-left' },
-                    'merge with ',
-                    compatible[0].label
-                );
-            }
-            if (compatible[1]) {
-                mergeRight = React.createElement(
-                    'div',
-                    { className: 'button pull-right' },
-                    'merge with ',
-                    compatible[1].label
-                );
-            }
-
-            return React.createElement(
-                'div',
-                { className: 'tile' },
-                React.createElement(
-                    'div',
-                    { className: 'tile-block' },
-                    React.createElement(
-                        'h2',
-                        null,
-                        this.props.selectedPart.label
-                    ),
-                    React.createElement(
-                        'div',
-                        { className: 'row' },
-                        React.createElement(
-                            'div',
-                            { className: 'col12' },
-                            mergeLeft,
-                            mergeRight
-                        )
-                    ),
-                    React.createElement(
-                        'label',
-                        { htmlFor: 'compatibleParts' },
-                        'Compatible Parts'
-                    ),
-                    React.createElement(
-                        'select',
-                        { id: 'compatibleParts' },
-                        compatible.map(function (part, i) {
-                            return React.createElement(
-                                'option',
-                                { key: part.id },
-                                part.label
-                            );
-                        })
-                    )
-                )
-            );
-        }
-    }]);
-
-    return Options;
-}(React.Component);
-
-var App = function (_React$Component3) {
-    _inherits(App, _React$Component3);
-
-    function App(props) {
-        _classCallCheck(this, App);
-
-        var _this4 = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
-
-        _this4.state = {
-            selectedPart: initParts[0]
+    getInitialState: function getInitialState() {
+        return {
+            dbs: this.props.dbs ? this.props.dbs.sort(function (a, b) {
+                return a.position - b.position;
+            }) : [],
+            categories: this.props.categories ? this.props.categories.sort(function (a, b) {
+                return a.position - b.position;
+            }) : []
         };
-
-        _this4.setSelected = _this4.setSelected.bind(_this4);
-        return _this4;
-    }
-
-    _createClass(App, [{
-        key: 'setSelected',
-        value: function setSelected(item) {
-            this.setState({
-                selectedPart: item
-            });
+    },
+    onReorder: function onReorder(amount) {
+        this.props.move(this.props.index, amount);
+    },
+    moveCategory: function moveCategory(index, amount) {
+        var mod = this.state.categories;
+        if (index + amount < mod.length && index + amount > -1) {
+            mod.move(index, index + amount);
+            updatePositions(mod);
+            this.setState({ categories: mod });
         }
-    }, {
-        key: 'componentDidMount',
-        value: function componentDidMount() {
-            $('.owl-carousel').owlCarousel({
-                loop: false,
-                margin: 10,
-                nav: false,
-                center: true,
-                // merge: true,
-                items: initParts.length,
-                // navText : ["<i class='fa fa-chevron-left'></i>","<i class='fa fa-chevron-right'></i>"],
-                responsive: {
-                    0: {
-                        items: 2
-                    },
-                    600: {
-                        items: 4
-                    },
-                    1024: {
-                        items: 6
-                    }
-                }
-            });
-        }
-    }, {
-        key: 'render',
-        value: function render() {
-            var self = this;
-            return React.createElement(
-                'div',
+    },
+    render: function render() {
+        return React.createElement(
+            'div',
+            { className: 'db' },
+            React.createElement(
+                'h2',
                 null,
+                this.props.name,
+                ' ',
+                React.createElement(ReorderButtons, { action: this.onReorder })
+            ),
+            React.createElement(
+                'div',
+                { className: 'indent' },
                 React.createElement(
                     'div',
-                    { className: 'owl-carousel owl-theme' },
-                    initParts.map(function (object, i) {
-                        return React.createElement(Part, { key: i, part: object, setSelected: self.setSelected });
-                    })
-                ),
-                React.createElement(Options, { selectedPart: this.state.selectedPart })
-            );
+                    { 'data-id': this.props.id },
+                    this.state.categories.map(function (item, i) {
+                        return React.createElement(Category, {
+                            id: item.id,
+                            name: item.name,
+                            key: item.id,
+                            index: i,
+                            move: this.moveCategory,
+                            items: item.items
+                        });
+                    }, this)
+                )
+            )
+        );
+    }
+});
+
+var Category = React.createClass({
+    displayName: 'Category',
+
+    onReorder: function onReorder(amount) {
+        this.props.move(this.props.index, amount);
+    },
+    moveItem: function moveItem(index, amount) {
+        var mod = this.state.items;
+        if (index + amount < mod.length && index + amount > -1) {
+            mod.move(index, index + amount);
+            updatePositions(mod);
+            this.setState({ items: mod });
         }
-    }]);
+    },
+    getInitialState: function getInitialState() {
+        return {
+            items: this.props.items ? this.props.items.sort(function (a, b) {
+                return a.position - b.position;
+            }) : []
+        };
+    },
+    render: function render() {
+        return React.createElement(
+            'div',
+            { className: 'indent' },
+            React.createElement(
+                'div',
+                { 'data-id': this.props.id },
+                this.props.name,
+                ' ',
+                React.createElement(ReorderButtons, { action: this.onReorder })
+            ),
+            React.createElement(
+                'div',
+                { className: 'indent' },
+                React.createElement(
+                    'div',
+                    { 'data-id': this.props.id },
+                    this.state.items.map(function (item, i) {
+                        return React.createElement(Item, {
+                            id: item.id,
+                            name: item.name,
+                            key: item.id,
+                            index: i,
+                            move: this.moveItem
+                        });
+                    }, this)
+                )
+            )
+        );
+    }
+});
 
-    return App;
-}(React.Component);
+var Item = React.createClass({
+    displayName: 'Item',
 
-ReactDOM.render(React.createElement(App), document.getElementById('app'));
+    onReorder: function onReorder(amount) {
+        this.props.move(this.props.index, amount);
+    },
+    getInitialState: function getInitialState() {
+        return {
+            items: this.props.items ? this.props.items.sort(function (a, b) {
+                return a.position - b.position;
+            }) : []
+        };
+    },
+
+    render: function render() {
+        console.log(this.state);
+        return React.createElement(
+            'div',
+            { className: 'indent' },
+            React.createElement(
+                'div',
+                { 'data-id': this.props.id },
+                this.props.name,
+                ' ',
+                React.createElement(ReorderButtons, { action: this.onReorder })
+            )
+        );
+    }
+});
+
+var App = React.createClass({
+    displayName: 'App',
+
+    getInitialState: function getInitialState() {
+        return {
+            dbs: this.props.dbs.sort(function (a, b) {
+                return a.position - b.position;
+            })
+        };
+    },
+    save: function save() {
+
+        var POST_URL = '/premade/rearrange';
+
+        var dataJSON = JSON.stringify(this.state.dbs);
+
+        $.post(POST_URL, { newOrder: dataJSON }).done(function () {
+            location.reload();
+        }).fail(function (resData) {
+            console.error("error", resData);
+            alert(resData);
+        });
+    },
+    move: function move(index, amount) {
+        var mod = this.state.dbs;
+        if (index + amount < mod.length && index + amount > -1) {
+            mod.move(index, index + amount);
+            updatePositions(mod);
+            this.setState({ dbs: mod });
+        }
+    },
+    render: function render() {
+        var self = this;
+        return React.createElement(
+            'div',
+            { className: 'simon-list' },
+            this.state.dbs.map(function (item, i) {
+                return React.createElement(DB, {
+                    id: item.id,
+                    name: item.name,
+                    dbs: item.dbs,
+                    categories: item.categories,
+                    key: item.id,
+                    index: i,
+                    isRoot: true,
+                    move: this.move
+                });
+            }, this),
+            React.createElement('hr', null),
+            React.createElement(
+                'button',
+                { className: 'button primary', onClick: self.save },
+                'Save Arrangement'
+            )
+        );
+    }
+});
+
+//    console.log('init data', dbs);
+ReactDOM.render(React.createElement(App, { dbs: dbs }), document.getElementById('app'));
 
 /***/ }),
-/* 186 */,
-/* 187 */,
-/* 188 */,
 /* 189 */,
 /* 190 */,
 /* 191 */,
@@ -22943,10 +22736,13 @@ ReactDOM.render(React.createElement(App), document.getElementById('app'));
 /* 195 */,
 /* 196 */,
 /* 197 */,
-/* 198 */
+/* 198 */,
+/* 199 */,
+/* 200 */,
+/* 201 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(185);
+module.exports = __webpack_require__(188);
 
 
 /***/ })

@@ -1,0 +1,23 @@
+<% include ../../head.ejs %>
+
+<div class="container">
+    <h1 class="center">Billboard</h1>
+
+    <form action="/admin/billboard" method="post">
+        <label for="body">Text</label>
+        <textarea id="text" name="text" class="wide"><%- billboard.text %></textarea>
+
+        <label for="body">Enabled</label>
+        <% let checked = billboard.enabled ? "checked" : "" %>
+        <input type="checkbox" id="enabled" name="enabled" <%= checked %>>
+
+        <hr>
+        <div class="block">
+            <button type="submit" class="success">Save</button>
+        </div>
+    </form>
+
+
+</div>
+
+<% include ../../foot.ejs %>

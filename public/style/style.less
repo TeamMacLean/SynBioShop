@@ -1,4 +1,5 @@
-@import "../components/normalize-css/normalize.css";
+@import (inline) "../../node_modules/normalize.css/normalize.css";
+@import (inline) "./elegant-icons/style.css";
 
 //colors
 @font-color: #3a3f51;
@@ -33,6 +34,23 @@
 
 .areyousure {
   //just IDEA autocompletes this class
+}
+
+.billboard {
+  margin-top: -19px;
+  display: block;
+  width: 100%;
+  background: @danger;
+  padding: 8px;
+  color: @white;
+  text-align: center;
+  margin-bottom: 19px;
+
+  p {
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+  }
 }
 
 @import "parts/base";
