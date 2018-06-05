@@ -356,15 +356,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function initUserMenu() {
 
-    (0, _jquery2.default)(".user").hover(function () {
-        (0, _jquery2.default)('.user-menu').toggleClass("hidden");
+    (0, _jquery2.default)('.user').hover(function () {
+        (0, _jquery2.default)('.user-menu').removeClass('hidden');
+    }, function () {
+        (0, _jquery2.default)('.user-menu').addClass('hidden');
     });
-
-    // $('.user').hover(function () {
-    //     $('.user-menu').removeClass('hidden');
-    // }, function () {
-    //     $('.user-menu').addClass('hidden');
-    // })
 }
 
 function initFlashButtons() {

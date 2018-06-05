@@ -19,15 +19,11 @@ $(function () {
 
 function initUserMenu() {
 
-    $(".user").hover(function () {
-        $('.user-menu').toggleClass("hidden");
-    });
-
-    // $('.user').hover(function () {
-    //     $('.user-menu').removeClass('hidden');
-    // }, function () {
-    //     $('.user-menu').addClass('hidden');
-    // })
+    $('.user').hover(function () {
+        $('.user-menu').removeClass('hidden');
+    }, function () {
+        $('.user-menu').addClass('hidden');
+    })
 }
 
 function initFlashButtons() {
