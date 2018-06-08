@@ -17,6 +17,8 @@ const Order = require('./models/order');
 const flash = require('express-flash');
 const Billboard = require('./models/billboard');
 
+const validator = require('validator');
+
 const util = require('./lib/util.js');
 const routes = require('./routes');
 app.set('views', path.join(__dirname, 'views'));
@@ -49,9 +51,9 @@ app.use((req, res, next) => {
 
     if (req.user) {
         res.locals.signedInUser = {};
-        res.locals.signedInUser.username = req.user.username;
-        res.locals.signedInUser.name = req.user.name;
-        res.locals.signedInUser.mail = req.user.mail;
+        res.locals.signedInUser.username = validator.escape(req.user.username);
+        res.locals.signedInUser.name = validator.escape(req.user.name);
+        res.locals.signedInUser.mail = validator.escape(req.user.mail);
         res.locals.signedInUser.isAdmin = util.isAdmin(req.user.username);
         if (req.user.iconURL) {
             res.locals.signedInUser.iconURL = req.user.iconURL;
