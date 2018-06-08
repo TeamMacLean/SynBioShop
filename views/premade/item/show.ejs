@@ -35,21 +35,16 @@
         <p><span class="bold"><%- heading %>:</span> <%- values[i] %></p>
         <% }); %>
 
-        <%
-        var addToCartIcon = locals.signedInUser.cart.items
-                .filter(function (ci) {
-                    return ci.typeID == item.id;
-                })
-                .length ? "&#x4e;" : "&#x4c;";
-        %>
 
         <fieldset>
-            <a href="#" data-addToCart="true" data-typeID="<%- item.id %>" class="button success outline icon"><span
-                        data-icon="<%- addToCartIcon %>"></span></a>
+            <a href="#" data-addToCart="true" data-typeID="<%- item.id %>" class="button success">
+                Add to cart
+            </a>
 
             <% if(item.file){ %>
-            <a href="<%- item.file.downloadPath() %>" class="button primary outline icon"><span
-                        data-icon="&#xe004;"></span></a>
+            <a href="<%- item.file.downloadPath() %>" class="button primary">
+                Download
+            </a>
             <% } %>
         </fieldset>
 
