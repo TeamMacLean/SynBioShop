@@ -142,7 +142,7 @@ var App = React.createClass({
 
         var POST_URL = '/docs/rearrange';
 
-        console.log(this.state.subjects);
+        // console.log(this.state.subjects);
 
         var dataJSON = JSON.stringify(this.state.subjects);
 //
@@ -195,7 +195,7 @@ var App = React.createClass({
 
 
 
-console.log('init data', subjects);
+// console.log('init data', subjects);
 ReactDOM.render(
     <App subjects={subjects}/>, document.getElementById('app')
 );

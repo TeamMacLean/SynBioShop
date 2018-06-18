@@ -150,7 +150,7 @@ var Item = React.createClass({
     },
 
     render: function () {
-        console.log(this.state);
+        // console.log(this.state);
         return (
             <div className="indent">
                 <div data-id={this.props.id}>

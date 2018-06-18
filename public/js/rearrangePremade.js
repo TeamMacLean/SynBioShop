@@ -33027,7 +33027,7 @@ var Item = React.createClass({
     },
 
     render: function render() {
-        console.log(this.state);
+        // console.log(this.state);
         return React.createElement(
             'div',
             { className: 'indent' },
