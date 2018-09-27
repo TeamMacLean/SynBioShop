@@ -62,12 +62,16 @@ orders.simonSummary = (req, res) => {
                     return order.getTypes();
                 })
             )
-                .then(ordersWithTypes => {
+                .then(ordersWithTypes => { //get their full names from ldap
                     return Promise.all(ordersWithTypes.map(owt => {
                             return new Promise((good, bad) => {
                                 ldap.getNameFromUsername(owt.username)
-                                    .then(name => {
-                                        owt.fullName = name;
+                                    .then(users => {
+
+                                        if (users.length >= 1) {
+                                            const user = users[0];
+                                            owt.fullName = user.name;
+                                        }
                                         good(owt);
                                     })
                                     .catch(() => {
