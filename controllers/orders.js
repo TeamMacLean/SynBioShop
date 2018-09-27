@@ -3,6 +3,8 @@ const Order = require('../models/order');
 const Email = require('../lib/email');
 const Flash = require('../lib/flash');
 const Util = require('../lib/util');
+const thinky = require('../lib/thinky');
+const ldap = require('../lib/ldap');
 
 const orders = {};
 
@@ -51,6 +53,7 @@ orders.showAll = (req, res) => {
 
 orders.simonSummary = (req, res) => {
     Order
+        .orderBy(thinky.r.desc('createdAt'))
         .getJoin({items: true})
         .then(orders => {
 
@@ -59,6 +62,23 @@ orders.simonSummary = (req, res) => {
                     return order.getTypes();
                 })
             )
+                .then(ordersWithTypes => {
+                    return Promise.all(ordersWithTypes.map(owt => {
+                            return new Promise((good, bad) => {
+                                ldap.getNameFromUsername(owt.username)
+                                    .then(name => {
+                                        owt.name = name;
+                                        good(owt);
+                                    })
+                                    .catch(() => {
+                                        owt.name = owt.username;//fallback
+                                        good(owt);
+                                    })
+                            })
+                        })
+                    )
+
+                })
                 .then(ordersWithTypes => {
                     return res.render('orders/summary', {orders: ordersWithTypes});
                 })
