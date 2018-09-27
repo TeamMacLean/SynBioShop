@@ -60,4 +60,4 @@ const CartItem = require('./cartItem');
 Order.hasMany(CartItem, 'items', 'id', 'orderID');
 
 Order.ensureIndex("createdAt");
-Order.ensureIndex("items");
+// Order.ensureIndex("items");
