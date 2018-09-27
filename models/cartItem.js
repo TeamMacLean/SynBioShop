@@ -20,3 +20,4 @@ const Cart = require('./cart');
 CartItem.belongsTo(Cart, 'cart', 'id', 'cartID');
 
 CartItem.ensureIndex("type");
+CartItem.ensureIndex("typeID");
