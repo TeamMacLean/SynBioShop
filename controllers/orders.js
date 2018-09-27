@@ -67,11 +67,11 @@ orders.simonSummary = (req, res) => {
                             return new Promise((good, bad) => {
                                 ldap.getNameFromUsername(owt.username)
                                     .then(name => {
-                                        owt.name = name;
+                                        owt.fullName = name;
                                         good(owt);
                                     })
                                     .catch(() => {
-                                        owt.name = owt.username;//fallback
+                                        owt.fullName = owt.username;//fallback
                                         good(owt);
                                     })
                             })
