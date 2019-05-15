@@ -4,12 +4,13 @@
 
     <h1 class="center">Order</h1>
 
+    <p>Order no: <%- order.janCode %></p>
     <p>Ordered: <%- order.createdHumanDate() %></p>
     <p>Status: <%- order.complete ? 'Complete' : 'Pending' %></p>
     <p>Customer: <%- order.username %></p>
 
     <% if(order.completedAt){ %>
-    <p>Completed: <%- order.completedHumanDate() %></p>
+        <p>Completed: <%- order.completedHumanDate() %></p>
     <% } %>
 
     <h2 class="center">Order Details</h2>
@@ -25,28 +26,28 @@
         </thead>
         <tbody>
         <% locals.order.items.map(function(item){ %>
-        <tr>
-            <td><a href="/premade/item/<%- item.type.id %>" target="_blank"><%- item.type.name %></a></td>
-            <% if(item.quantity){ %>
-            <td class="center"><%- item.quantity %> μL</td>
-            <% } else { %>
-            <% if(item.largeScale){ %>
-            <td class="center">large scale</td>
-            <% } else { %>
-            <td class="center">normal</td>
-            <% } %>
-            <% } %>
-            <td class="center"><%- item.type.concentration %></td>
-            <td class="center"><%- item.type.synBioID %></td>
-        </tr>
+            <tr>
+                <td><a href="/premade/item/<%- item.type.id %>" target="_blank"><%- item.type.name %></a></td>
+                <% if(item.quantity){ %>
+                    <td class="center"><%- item.quantity %> μL</td>
+                <% } else { %>
+                    <% if(item.largeScale){ %>
+                        <td class="center">large scale</td>
+                    <% } else { %>
+                        <td class="center">normal</td>
+                    <% } %>
+                <% } %>
+                <td class="center"><%- item.type.concentration %></td>
+                <td class="center"><%- item.type.synBioID %></td>
+            </tr>
         <% }); %>
         </tbody>
     </table>
 
     <% if(!order.complete){ %>
-    <a href="/order/<%- order.id %>/complete" class="button primary areyousure">Mark as complete</a>
+        <a href="/order/<%- order.id %>/complete" class="button primary areyousure">Mark as complete</a>
     <% } else { %>
-    <a href="/order/<%- order.id %>/incomplete" class="button primary areyousure">Mark as incomplete</a>
+        <a href="/order/<%- order.id %>/incomplete" class="button primary areyousure">Mark as incomplete</a>
     <% } %>
 
 </div>
