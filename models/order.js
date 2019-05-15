@@ -15,7 +15,7 @@ const Order = thinky.createModel('Order', {
 });
 
 function makeJanCode() {
-    const date = moment().format('YYMMDDHHMM');
+    const date = moment().format('YYMMDDHHmm');
     return this.username + '-' + date;
 }
 
