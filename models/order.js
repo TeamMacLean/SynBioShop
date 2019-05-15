@@ -11,13 +11,8 @@ const Order = thinky.createModel('Order', {
     complete: type.boolean().required().default(false),
     createdAt: type.date().default(r.now()),
     completedAt: type.date(),
-    janCode: type.string().required().default(makeJanCode)
+    janCode: type.string().required()
 });
-
-function makeJanCode() {
-    const date = moment().format('YYMMDDHHmm');
-    return this.username + '-' + date;
-}
 
 
 Order.define('createdHumanDate', function () {
@@ -62,17 +57,36 @@ Order.define('getTypes', function () {
 });
 
 
-// Order.pre('save', function (next) {
-//     const order = this;
-//     if (!order.uniqueNo) {
-//
-//         // this.uniqueNo =
-//
-//     }
-//
-//     next();
-//
-// });
+Order.pre('save', function (next) {
+    const order = this;
+    if (!order.janCode) {
+
+        Order.count()
+            .execute()
+            .then(count => {
+                order.janCode = count + 1;
+            })
+            .catch(err => {
+                next(err);
+            })
+
+    } else {
+        next();
+    }
+
+});
+
+
+Order.orderBy(r.asc('createdAt')).then(orders=>{
+
+    orders.map((order,ind)=>{
+
+                order.janCode = ""+ind;
+                order.save()
+
+    })
+
+});
 
 
 module.exports = Order;
