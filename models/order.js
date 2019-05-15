@@ -10,8 +10,15 @@ const Order = thinky.createModel('Order', {
     username: type.string().required(),
     complete: type.boolean().required().default(false),
     createdAt: type.date().default(r.now()),
-    completedAt: type.date()
+    completedAt: type.date(),
+    janCode: type.string().required().default(makeJanCode)
 });
+
+function makeJanCode() {
+    const date = moment().format('YYMMDDHHMM');
+    return this.username + '-' + date;
+}
+
 
 Order.define('createdHumanDate', function () {
     return moment(this.createdAt).calendar();
@@ -53,6 +60,19 @@ Order.define('getTypes', function () {
     });
 
 });
+
+
+// Order.pre('save', function (next) {
+//     const order = this;
+//     if (!order.uniqueNo) {
+//
+//         // this.uniqueNo =
+//
+//     }
+//
+//     next();
+//
+// });
 
 
 module.exports = Order;
