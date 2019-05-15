@@ -12,7 +12,8 @@
 <img class="center" src="<%- baseURL %>/img/logo.png" style="max-width: 80px; margin-bottom:20px;">
 
 <h1 class="center">New SynBio Order</h1>
-<p class="center">Placed by <a href="mailto:<%- locals.user.mail %>"><%- locals.user.name %></a></p>
+<p class="center"><%- locals.order.janCode %> placed by <a
+            href="mailto:<%- locals.user.mail %>"><%- locals.user.name %></a></p>
 
 <h2 class="center">Order Details</h2>
 <table class="cart">
@@ -27,12 +28,12 @@
     </thead>
     <tbody>
     <% locals.order.items.map(function(item){ %>
-    <tr>
-        <td><%- item.type.name %></td>
-        <td class="center"><%- item.quantity %> μL</td>
-        <td class="center"><%- item.type.concentration %></td>
-        <td class="center"><%- item.type.synBioID %></td>
-    </tr>
+        <tr>
+            <td><%- item.type.name %></td>
+            <td class="center"><%- item.quantity %> μL</td>
+            <td class="center"><%- item.type.concentration %></td>
+            <td class="center"><%- item.type.synBioID %></td>
+        </tr>
     <% }); %>
     </tbody>
 </table>

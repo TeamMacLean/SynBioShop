@@ -1,5 +1,7 @@
 A new order is ready.
 
+<%- locals.order.janCode %>
+
 <% locals.order.items.map(function(item){ %>
 
 Name: <%- item.type.name %>
