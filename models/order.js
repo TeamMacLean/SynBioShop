@@ -65,6 +65,7 @@ Order.pre('save', function (next) {
             .execute()
             .then(count => {
                 order.janCode = count + 1;
+                next();
             })
             .catch(err => {
                 next(err);
@@ -77,12 +78,12 @@ Order.pre('save', function (next) {
 });
 
 
-Order.orderBy(r.asc('createdAt')).then(orders=>{
+Order.orderBy(r.asc('createdAt')).then(orders => {
 
-    orders.map((order,ind)=>{
+    orders.map((order, ind) => {
 
-                order.janCode = ""+ind;
-                order.save()
+        order.janCode = "" + ind;
+        order.save()
 
     })
 
