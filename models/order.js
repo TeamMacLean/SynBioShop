@@ -64,7 +64,7 @@ Order.pre('save', function (next) {
         Order.count()
             .execute()
             .then(count => {
-                order.janCode = count + 1;
+                order.janCode = "" + count + 1;
                 next();
             })
             .catch(err => {
