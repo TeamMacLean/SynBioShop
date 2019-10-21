@@ -230,15 +230,15 @@ router.route('/orders')
     .all(isAdmin)
     .get(orders.showAll);
 
-//router.route('/order/summary')
-//    .all(isAuthenticated)
-//   .all(isAdmin)
-//    .get(orders.simonSummary);
+router.route('/order/summary')
+    .all(isAuthenticated)
+   .all(isAdmin)
+    .get(orders.simonSummary);
 
-//router.route('/dupes')
-//    .all(isAuthenticated)
-//    .all(isAdmin)
-//    .get(orders.simonRepeatOrders);
+router.route('/dupes')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(orders.simonRepeatOrders);
 
 router.route('/order/:id')
     .all(isAuthenticated)
