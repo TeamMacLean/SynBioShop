@@ -38,55 +38,47 @@ premade.index = (req, res) => {
 premade.export = (req, res) => {
 
 
-
   Category.getJoin({db: true}).then((categories) => {
-
-
     return Promise.all(categories.map(category => {
 
+      return Type.getByCategory(category.id).then(types => {
+        const type = Type.getByTypeNumber(category.db.type);
+        console.log(type.id);
+        const headings = ['Description', 'Comments'];
+        const items = [];
 
-        return Type.getByCategory(category.id).then(types => {
-          const type = Type.getByTypeNumber(category.db.type);
-          const headings = ['Description', 'Comments'];
-          const items = [];
 
+        type.fields.map(t => {
+          headings.push(t.text);
+        });
 
-          type.fields.map(t => {
-            headings.push(t.text);
-          });
-
-          types.map(t => {
-            const x = {
-              items: [t.description, t.comments],
-              id: t.id,
-              name: t.name,
-              disabled: t.disabled,
-              file: t.file,
-              position: t.position
-            };
-            type.fields.map(tt => {
-              if (t[tt.name]) {
-                x.items.push(t[tt.name])
-              }
-            });
-            if (x.items.length > 0) {
-              items.push(x);
+        types.map(t => {
+          const x = {
+            items: [t.description, t.comments],
+            id: t.id,
+            name: t.name,
+            disabled: t.disabled,
+            file: t.file,
+            position: t.position
+          };
+          type.fields.map(tt => {
+            if (t[tt.name]) {
+              x.items.push(t[tt.name])
             }
           });
+          if (x.items.length > 0) {
+            items.push(x);
+          }
+        });
 
-          Promise.resolve(items);
-
-        })
-
+        return {items};
 
       })
-    )
-      .catch(err => renderError(err, res));
-
+    }))
 
   })
-    .then(out=>{
-      res.json({output:out})
+    .then(out => {
+      res.json({output: out})
     })
     .catch(err => renderError(err, res));
 
