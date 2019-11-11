@@ -71,8 +71,11 @@ premade.export = (req, res) => {
           }
         });
 
-        return {items};
 
+        return items.map(i => {
+          return {name: i.name, description: i.items[0]}
+        });
+        
       })
     }))
 
@@ -83,7 +86,6 @@ premade.export = (req, res) => {
     .catch(err => renderError(err, res));
 
 };
-
 
 
 
