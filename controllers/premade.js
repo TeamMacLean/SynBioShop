@@ -32,6 +32,68 @@ premade.index = (req, res) => {
     }).catch(err => renderError(err, res));
 };
 
+
+
+//TEST
+premade.export = (req, res) => {
+
+  const categoryID = req.params.categoryID;
+
+
+  Category.get().getJoin({db: true}).then((categories) => {
+
+    Promise.all(categories.map(category => {
+
+        return Type.getByCategory(categoryID).then(types => {
+          const type = Type.getByTypeNumber(category.db.type);
+          const headings = ['Description', 'Comments'];
+          const items = [];
+
+          type.fields.map(t => {
+            headings.push(t.text);
+          });
+
+          types.map(t => {
+            const x = {
+              items: [t.description, t.comments],
+              id: t.id,
+              name: t.name,
+              disabled: t.disabled,
+              file: t.file,
+              position: t.position
+            };
+            type.fields.map(tt => {
+              if (t[tt.name]) {
+                x.items.push(t[tt.name])
+              }
+            });
+            if (x.items.length > 0) {
+              items.push(x);
+            }
+          });
+
+          Promise.resolve(types);
+
+        })
+
+
+      })
+    )
+      .then((out) => {
+
+        res.json({output:out})
+        
+      })
+      .catch(err => renderError(err, res));
+
+
+  }).catch(err => renderError(err, res));
+
+};
+
+
+
+
 premade.rearrange = (req, res) => {
     DB.getJoin({categories: true}).then(dbs => {
 
