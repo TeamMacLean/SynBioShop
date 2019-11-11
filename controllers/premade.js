@@ -37,7 +37,7 @@ premade.index = (req, res) => {
 //TEST
 premade.export = (req, res) => {
 
-  Category.filter().getJoin({db: true}).then((categories) => {
+  Category.getJoin({db: true}).then((categories) => {
 
       console.log('got', categories.length, 'categories');
       
