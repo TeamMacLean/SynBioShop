@@ -86,6 +86,9 @@ router.route('/docs/item/:itemID/edit')
 router.route('/premade')
     .all(isAuthenticated)
     .get(premade.index);
+router.route('/export')
+    .all(isAuthenticated)
+    .get(premade.export);
 router.route('/premade/rearrange')
     .all(isAuthenticated)
     .all(isAdmin)
