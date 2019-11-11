@@ -39,13 +39,21 @@ premade.export = (req, res) => {
 
   Category.get().getJoin({db: true}).then((categories) => {
 
+      console.log('got', categories.length, 'categories');
+      
     Promise.all(categories.map(category => {
 
+            console.log(category.id);
+        
         return Type.getByCategory(category.id).then(types => {
           const type = Type.getByTypeNumber(category.db.type);
           const headings = ['Description', 'Comments'];
           const items = [];
 
+            console.log('types', types);
+          
+
+            
           type.fields.map(t => {
             headings.push(t.text);
           });
