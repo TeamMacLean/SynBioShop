@@ -37,14 +37,11 @@ premade.index = (req, res) => {
 //TEST
 premade.export = (req, res) => {
 
-  const categoryID = req.params.categoryID;
-
-
   Category.get().getJoin({db: true}).then((categories) => {
 
     Promise.all(categories.map(category => {
 
-        return Type.getByCategory(categoryID).then(types => {
+        return Type.getByCategory(category.id).then(types => {
           const type = Type.getByTypeNumber(category.db.type);
           const headings = ['Description', 'Comments'];
           const items = [];
