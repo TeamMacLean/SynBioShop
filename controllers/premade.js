@@ -72,10 +72,11 @@ premade.export = (req, res) => {
         });
 
 
-        return items.map(i => {
-          return {name: i.name, description: i.items[0]}
-        });
-        
+        return {
+          category: category.name, items: items.map(i => {
+            return {name: i.name, description: i.items[0]}
+          })
+        }
       })
     }))
 
