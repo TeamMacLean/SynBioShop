@@ -37,19 +37,20 @@ premade.index = (req, res) => {
 //TEST
 premade.export = (req, res) => {
 
-    
-    
-  Category.getJoin({db: true}).then((categories) => {
-      
-    Promise.all(categories.map(category => {
 
-       
+
+  Category.getJoin({db: true}).then((categories) => {
+
+
+    return Promise.all(categories.map(category => {
+
+
         return Type.getByCategory(category.id).then(types => {
           const type = Type.getByTypeNumber(category.db.type);
           const headings = ['Description', 'Comments'];
           const items = [];
-        
-            
+
+
           type.fields.map(t => {
             headings.push(t.text);
           });
@@ -80,17 +81,17 @@ premade.export = (req, res) => {
 
       })
     )
-      .then((out) => {
-
-        res.json({output:out})
-        
-      })
       .catch(err => renderError(err, res));
 
 
-  }).catch(err => renderError(err, res));
+  })
+    .then(out=>{
+      res.json({output:out})
+    })
+    .catch(err => renderError(err, res));
 
 };
+
 
 
 
