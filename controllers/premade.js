@@ -94,7 +94,8 @@ premade.export = (req, res) => {
      
       
       res.contentType('text/csv');
-      res.send(csv, { 'Content-Disposition': 'attachment; filename=premade_items.csv' }); 
+      res.set("Content-Disposition", "attachment;filename=premade_items.csv");
+      res.send(csv); 
     })
     .catch(err => renderError(err, res));
 
