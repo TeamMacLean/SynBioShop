@@ -82,7 +82,19 @@ premade.export = (req, res) => {
 
   })
     .then(out => {
-      res.json({output: out})
+      
+      //to csv
+      let csv = '';
+      out.map(o=>{
+          csv = csv + o.category+'\n';
+          o.items.map(i=>{
+            csv = csv + i.name + ', ' + i.description + '\n';  
+          })
+          csv = csv + '\n';
+      });
+      
+      res.send(csv);
+      //res.json({output: out})
     })
     .catch(err => renderError(err, res));
 
