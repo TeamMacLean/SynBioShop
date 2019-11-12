@@ -93,8 +93,8 @@ premade.export = (req, res) => {
           csv = csv + '\n';
       });
       
+      res.set({"Content-Disposition":"attachment; filename=\"premade_items.csv\""});
       res.send(csv);
-      //res.json({output: out})
     })
     .catch(err => renderError(err, res));
 
