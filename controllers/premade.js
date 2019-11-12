@@ -43,7 +43,6 @@ premade.export = (req, res) => {
 
       return Type.getByCategory(category.id).then(types => {
         const type = Type.getByTypeNumber(category.db.type);
-        console.log(type.id);
         const headings = ['Description', 'Comments'];
         const items = [];
 
@@ -92,10 +91,10 @@ premade.export = (req, res) => {
           })
           csv = csv + '\n';
       });
-         
+     
       
       res.contentType('text/csv');
-       res.send(csv, { 'Content-Disposition': 'attachment; filename=premade_items.csv' }); 
+      res.send(csv, { 'Content-Disposition': 'attachment; filename=premade_items.csv' }); 
     })
     .catch(err => renderError(err, res));
 
