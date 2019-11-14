@@ -71,8 +71,7 @@ premade.export = (req, res) => {
         });
 
 
-        return {
-                   category: category.name,position:(category.db.position*100)+category.position), items: items.map(i => {
+        return {category: category.name,position:(category.db.position*100)+category.position), items: items.map(i => {
             return {name: i.name, description: i.items[0], position:i.position}
           })
         }
