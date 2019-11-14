@@ -82,23 +82,26 @@ premade.export = (req, res) => {
   })
     .then(out => {
       
-      //to csv
+        //to csv
       let csv = '';
-      out.map(o=>{
+      out
+        .sort((a,b) => a.position - b.position)
+       	.map(o=>{
           csv = csv + o.category+'\n';
-          o.items.map(i=>{
-            csv = csv + i.name + ', ' + i.description + '\n';  
+          o.items
+               	.sort((a,b)=> a.position - b.position)
+               	.map(i=>{
+            csv = csv + i.name + ', ' + i.description + '\n';
           })
           csv = csv + '\n';
       });
-     
-      
+
+
       res.contentType('text/csv');
       res.set("Content-Disposition", "attachment;filename=premade_items.csv");
-      res.send(csv); 
+      res.send(csv);
     })
     .catch(err => renderError(err, res));
-
 };
 
 
