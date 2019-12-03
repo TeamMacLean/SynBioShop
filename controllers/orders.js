@@ -55,7 +55,7 @@ orders.simonSummary = (req, res) => {
 
     let page = req.query.page || 0;
     page = parseInt(page, 10);
-    const perPage = 100;
+    const perPage = 50;
 
     Order
         .orderBy(thinky.r.desc('createdAt'))

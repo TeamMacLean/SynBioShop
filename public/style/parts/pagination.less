@@ -1,7 +1,20 @@
-.pagination{
+.pagination {
+  display: flex;
+  justify-content: center;
 
-  .pagination-link{
+  padding: 16px;
 
+  .pagination-link {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid grey;
+    min-width: 2.5em;
+    text-align: center;
+
+    &.active {
+      color: white;
+      background: #2b669c;
+    }
   }
 
 }
