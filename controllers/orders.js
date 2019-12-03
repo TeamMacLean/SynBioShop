@@ -54,7 +54,7 @@ orders.showAll = (req, res) => {
 orders.simonSummary = (req, res) => {
 
     let page = req.query.page || 0;
-    parseInt(page, 10);
+    page = parseInt(page, 10);
     const perPage = 100;
 
     Order
