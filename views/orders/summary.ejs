@@ -9,30 +9,37 @@
 
     <% orders.map(order=>{ %>
 
-    <style>
-        ul, li {
-            list-style: none;
-        }
-    </style>
+        <style>
+            ul, li {
+                list-style: none;
+            }
+        </style>
 
-    <tr>
-        <td><%- order.createdAt %></td>
-        <td><%- order.fullName %></td>
-        <td>
-            <ul>
-                <% order.items.map(item=>{ %>
-                <% if(item.type.name){ %>
-                <li><%- item.type.name %> X<%- item.quantity %></li>
-                <% } else { %>
-                <li>type not found, possibly deleted</li>
-                <% } %>
-                <% }) %>
-            </ul>
-        </td>
-    </tr>
+        <tr>
+            <td><%- order.createdAt %></td>
+            <td><%- order.fullName %></td>
+            <td>
+                <ul>
+                    <% order.items.map(item=>{ %>
+                        <% if(item.type.name){ %>
+                            <li><%- item.type.name %> X<%- item.quantity %></li>
+                        <% } else { %>
+                            <li>type not found, possibly deleted</li>
+                        <% } %>
+                    <% }) %>
+                </ul>
+            </td>
+        </tr>
 
     <% }) %>
 
 </table>
 
+<% var pages = count / perPage; %>
+<div class="pagination">
+    <% for(var i = 1; i < pages; i++){ %>
+        <a href="/order/summary?page=<%- i %>" class="pagination-link <%- i === page ? 'active' : '' %>"
+           aria-label="page-<%- i %>"><%- i %></a>
+    <% } %>
+</div>
 <% include ../foot.ejs %>

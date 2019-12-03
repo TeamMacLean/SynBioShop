@@ -52,41 +52,51 @@ orders.showAll = (req, res) => {
 };
 
 orders.simonSummary = (req, res) => {
+
+    const page = req.query.page || 0;
+    const perPage = 100;
+
     Order
         .orderBy(thinky.r.desc('createdAt'))
+        .slice(page, page + perPage)
         .getJoin({items: true})
         .then(orders => {
 
-            Promise.all(
+            return Promise.all(
                 orders.map(order => {
                     return order.getTypes();
                 })
             )
-                .then(ordersWithTypes => { //get their full names from ldap
-                    return Promise.all(ordersWithTypes.map(owt => {
-                            return new Promise((good, bad) => {
-                                ldap.getNameFromUsername(owt.username)
-                                    .then(users => {
+        })
+        .then(ordersWithTypes => { //get their full names from ldap
+            return Promise.all(ordersWithTypes.map(owt => {
+                    return new Promise((good, bad) => {
+                        ldap.getNameFromUsername(owt.username)
+                            .then(users => {
 
-                                        if (users.length >= 1) {
-                                            const user = users[0];
-                                            owt.fullName = user.name;
-                                        }
-                                        good(owt);
-                                    })
-                                    .catch(() => {
-                                        owt.fullName = owt.username;//fallback
-                                        good(owt);
-                                    })
+                                if (users.length >= 1) {
+                                    const user = users[0];
+                                    owt.fullName = user.name;
+                                }
+                                good(owt);
                             })
-                        })
-                    )
+                            .catch(() => {
+                                owt.fullName = owt.username;//fallback
+                                good(owt);
+                            })
+                    })
+                })
+            )
 
-                })
-                .then(ordersWithTypes => {
-                    return res.render('orders/summary', {orders: ordersWithTypes});
-                })
-                .catch((err) => renderError(err, res));
+        })
+        .then(ordersWithTypes => {
+
+            Order.count()
+                .execute()
+                .then(count => {
+                    res.render('orders/summary', {orders: ordersWithTypes, count: count, page: page, perPage: perPage});
+                });
+
         })
         .catch((err) => renderError(err, res));
 };
