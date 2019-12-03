@@ -52,14 +52,14 @@ orders.showAll = (req, res) => {
 };
 
 orders.simonSummary = (req, res) => {
-
+    const perPage = 50;
     let page = req.query.page || 0;
     page = parseInt(page, 10);
-    const perPage = 50;
+
 
     Order
         .orderBy(thinky.r.desc('createdAt'))
-        .slice(page, page + perPage)
+        .slice(page * perPage, (page * perPage) + perPage)
         .getJoin({items: true})
         .then(orders => {
 
