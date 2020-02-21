@@ -28,6 +28,8 @@ Type3.model = thinky.createModel('Type3', {
     documentation: type.string().default(''),
     position: type.number().default(0),
 
+    note: type.string(),
+
     //TYPE SPECIFIC
     FiveOH: type.string(),
     ThreeOH: type.string(),

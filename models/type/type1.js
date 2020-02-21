@@ -28,6 +28,8 @@ Type1.model = thinky.createModel('Type1', {
     documentation: type.string().default(''),
     position: type.number().default(0),
 
+    note: type.string(),
+
 
     //TYPE SPECIFIC
     insideOverhangLeft: type.string().required(),

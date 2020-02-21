@@ -25,6 +25,8 @@ Type2.model = thinky.createModel('Type2', {
     documentation: type.string().default(''),
     position: type.number().default(0),
 
+    note: type.string(),
+
     //TYPE SPECIFIC
     code: type.string(),
     speciesOfOrigin: type.string().required(),
