@@ -27,8 +27,8 @@ function getDbs() {
 }
 
 premade.index = (req, res) => {
-    DB.getJoin({categories: true}).then((dbs) => {
-        return res.render('premade/index', {dbs});
+    DB.getJoin({ categories: true }).then((dbs) => {
+        return res.render('premade/index', { dbs });
     }).catch(err => renderError(err, res));
 };
 
@@ -38,76 +38,77 @@ premade.index = (req, res) => {
 premade.export = (req, res) => {
 
 
-  Category.getJoin({db: true}).then((categories) => {
-    return Promise.all(categories.map(category => {
+    Category.getJoin({ db: true }).then((categories) => {
+        return Promise.all(categories.map(category => {
 
-      return Type.getByCategory(category.id).then(types => {
-        const type = Type.getByTypeNumber(category.db.type);
-        const headings = ['Description', 'Comments'];
-        const items = [];
-
-
-        type.fields.map(t => {
-          headings.push(t.text);
-        });
-
-        types.map(t => {
-          const x = {
-            items: [t.description, t.comments],
-            id: t.id,
-            name: t.name,
-            disabled: t.disabled,
-            file: t.file,
-            position: t.position
-          };
-          type.fields.map(tt => {
-            if (t[tt.name]) {
-              x.items.push(t[tt.name])
-            }
-          });
-          if (x.items.length > 0) {
-            items.push(x);
-          }
-        });
+            return Type.getByCategory(category.id).then(types => {
+                const type = Type.getByTypeNumber(category.db.type);
+                const headings = ['Description', 'Comments'];
+                const items = [];
 
 
-        return {category: category.name,position:(category.db.position*100)+category.position, items: items.map(i => {
-            return {name: i.name, description: i.items[0], position:i.position}
-          })
-        }
-      })
-    }))
+                type.fields.map(t => {
+                    headings.push(t.text);
+                });
 
-  })
-    .then(out => {
-      
-        //to csv
-      let csv = '';
-      out
-        .sort((a,b) => a.position - b.position)
-       	.map(o=>{
-          csv = csv + o.category+'\n';
-          o.items
-               	.sort((a,b)=> a.position - b.position)
-               	.map(i=>{
-            csv = csv + i.name + ', ' + i.description + '\n';
-          })
-          csv = csv + '\n';
-      });
+                types.map(t => {
+                    const x = {
+                        items: [t.description, t.comments],
+                        id: t.id,
+                        name: t.name,
+                        disabled: t.disabled,
+                        file: t.file,
+                        position: t.position
+                    };
+                    type.fields.map(tt => {
+                        if (t[tt.name]) {
+                            x.items.push(t[tt.name])
+                        }
+                    });
+                    if (x.items.length > 0) {
+                        items.push(x);
+                    }
+                });
 
 
-      res.contentType('text/csv');
-      res.set("Content-Disposition", "attachment;filename=premade_items.csv");
-      res.send(csv);
+                return {
+                    category: category.name, position: (category.db.position * 100) + category.position, items: items.map(i => {
+                        return { name: i.name, description: i.items[0], position: i.position }
+                    })
+                }
+            })
+        }))
+
     })
-    .catch(err => renderError(err, res));
+        .then(out => {
+
+            //to csv
+            let csv = '';
+            out
+                .sort((a, b) => a.position - b.position)
+                .map(o => {
+                    csv = csv + o.category + '\n';
+                    o.items
+                        .sort((a, b) => a.position - b.position)
+                        .map(i => {
+                            csv = csv + i.name + ', ' + i.description + '\n';
+                        })
+                    csv = csv + '\n';
+                });
+
+
+            res.contentType('text/csv');
+            res.set("Content-Disposition", "attachment;filename=premade_items.csv");
+            res.send(csv);
+        })
+        .catch(err => renderError(err, res));
 };
 
 
 
 
 premade.rearrange = (req, res) => {
-    DB.getJoin({categories: true}).then(dbs => {
+    DB.getJoin({ categories: true }).then(dbs => {
 
         var getTypes = [];
         //TODO prune data
@@ -118,14 +119,14 @@ premade.rearrange = (req, res) => {
 
                 //TODO get items too
 
-                var out = {id: cat.id, position: cat.position, name: cat.name, items: []};
+                var out = { id: cat.id, position: cat.position, name: cat.name, items: [] };
 
                 getTypes.push(
                     new Promise((good, bad) => {
                         Type.getByCategory(cat.id)
                             .then(t => {
                                 t.map(tt => {
-                                    out.items.push({id: tt.id, position: tt.position, name: tt.name});
+                                    out.items.push({ id: tt.id, position: tt.position, name: tt.name });
                                 });
                                 good()
                             })
@@ -134,11 +135,11 @@ premade.rearrange = (req, res) => {
                 );
                 return out;
             });
-            return {categories: cats, id: db.id, name: db.name, position: db.position};
+            return { categories: cats, id: db.id, name: db.name, position: db.position };
         });
         Promise.all(getTypes)
             .then(o => {
-                return res.render('premade/rearrange', {dbs: pruned});
+                return res.render('premade/rearrange', { dbs: pruned });
             })
             .catch(err => renderError(err, res))
 
@@ -216,7 +217,7 @@ premade.rearrangeSave = (req, res) => {
         .catch(err => {
             Flash.error(req, err);
             Log.error(err);
-            return res.sendStatus(400).json({error: err});
+            return res.sendStatus(400).json({ error: err });
         });
 
 };
@@ -224,7 +225,7 @@ premade.rearrangeSave = (req, res) => {
 
 premade.db.new = (req, res) => {
     getDbs().then((dbs) => {
-        return res.render('premade/db/edit', {types: Type.TYPES, dbs});
+        return res.render('premade/db/edit', { types: Type.TYPES, dbs });
     }).catch(err => renderError(err, res));
 };
 
@@ -269,9 +270,9 @@ premade.db.save = (req, res) => {
 
 premade.db.show = (req, res) => {
 
-    DB.get(req.params.id).getJoin({categories: true}).then(db => {
+    DB.get(req.params.id).getJoin({ categories: true }).then(db => {
         getDbs().then((dbs) => {
-            return res.render('premade/db/show', {db, dbs});
+            return res.render('premade/db/show', { db, dbs });
         }).catch((err) => renderError(err, res));
     }).catch((err) => renderError(err, res));
 };
@@ -310,7 +311,7 @@ premade.db.edit = (req, res) => {
     DB.get(id)
         .then((db) => {
             getDbs().then((dbs) => {
-                return res.render('premade/db/edit', {db, dbs, types: [Type.TYPES[db.type]]});
+                return res.render('premade/db/edit', { db, dbs, types: [Type.TYPES[db.type]] });
             }).catch(err => renderError(err, res));
         })
         .catch((err) => {
@@ -322,7 +323,7 @@ premade.category.new = (req, res) => {
     const id = req.params.id;
     DB.get(id).then(db => {
         getDbs().then((dbs) => {
-            return res.render('premade/category/edit', {dbs, db});
+            return res.render('premade/category/edit', { dbs, db });
         }).catch(err => renderError(err, res));
     }).catch(err => renderError(err, res));
 };
@@ -365,10 +366,10 @@ premade.category.save = (req, res) => {
 
 premade.category.edit = (req, res) => {
     const id = req.params.categoryID;
-    Category.get(id).getJoin({db: true})
+    Category.get(id).getJoin({ db: true })
         .then((category) => {
             getDbs().then((dbs) => {
-                return res.render('premade/category/edit', {category, dbs, db: category.db});
+                return res.render('premade/category/edit', { category, dbs, db: category.db });
             }).catch(err => renderError(err, res));
         })
         .catch((err) => {
@@ -381,7 +382,7 @@ premade.category.show = (req, res) => {
 
     const categoryID = req.params.categoryID;
 
-    Category.get(categoryID).getJoin({db: true}).then((category) => {
+    Category.get(categoryID).getJoin({ db: true }).then((category) => {
 
         Type.getByCategory(categoryID).then(types => {
             const type = Type.getByTypeNumber(category.db.type);
@@ -413,7 +414,7 @@ premade.category.show = (req, res) => {
 
 
             getDbs().then((dbs) => {
-                return res.render('premade/category/show', {db: category.db, dbs, headings, items, category});
+                return res.render('premade/category/show', { db: category.db, dbs, headings, items, category });
             }).catch((err) => renderError(err, res));
         }).catch(err => renderError(err, res));
     }).catch(err => renderError(err, res));
@@ -449,13 +450,13 @@ premade.category.delete = (req, res) => {
 premade.item.new = (req, res) => {
     // const dbID = req.params.id;
     const categoryID = req.params.categoryID;
-    Category.get(categoryID).getJoin({db: true}).then((category) => {
+    Category.get(categoryID).getJoin({ db: true }).then((category) => {
         // DB.get(dbID).run().then(db => {
         const type = Type.getByTypeNumber(category.db.type);
 
 
         getDbs().then((dbs) => {
-            return res.render('premade/item/edit', {dbs, db: category.db, category, type});
+            return res.render('premade/item/edit', { dbs, db: category.db, category, type });
         }).catch((err) => renderError(err, res));
         // }).catch(err => renderError(err, res));
     }).catch(err => renderError(err, res));
@@ -535,8 +536,8 @@ premade.item.save = (req, res) => {
 
 
             }).catch((err) => {
-            return renderError(err, res);
-        })
+                return renderError(err, res);
+            })
 
     } else {
 
@@ -604,7 +605,7 @@ premade.item.show = (req, res) => {
             }
 
             getDbs().then((dbs) => {
-                return res.render('premade/item/show', {headings, values, dbs, item});
+                return res.render('premade/item/show', { headings, values, dbs, item });
             }).catch(err => renderError(err, res));
         }).catch((err) => renderError(err, res));
 };
@@ -647,7 +648,7 @@ premade.item.edit = (req, res) => {
                 }
 
                 getDbs().then((dbs) => {
-                    return res.render('premade/item/edit.ejs', {type, dbs, category, db: type.db});
+                    return res.render('premade/item/edit.ejs', { type, dbs, category, db: type.db });
                 }).catch(err => renderError(err, res));
             })
     }).catch((err) => renderError(err, res));
