@@ -514,6 +514,8 @@ premade.item.save = (req, res) => {
 
                 type.documentation = req.body.documentation;
 
+                type.note = req.body.note;
+
 
                 type.save()
                     .then((savedType) => {
