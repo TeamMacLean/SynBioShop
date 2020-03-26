@@ -47,6 +47,15 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+
+app.use((req, res, next) => {
+
+    res.locals.disablePremade = config.disablePremade;
+    res.locals.disableCart = config.disableCart;
+    next();
+
+})
+
 app.use((req, res, next) => {
 
     if (req.user) {
