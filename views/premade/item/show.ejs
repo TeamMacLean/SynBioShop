@@ -39,9 +39,11 @@
 
 
         <fieldset>
+            <% if(!locals.disablePremade){ %>
             <a href="#" data-addToCart="true" data-typeID="<%- item.id %>" class="button success">
                 Add to cart
             </a>
+            <% } %>
 
             <% if(item.file){ %>
             <a href="<%- item.file.downloadPath() %>" class="button primary">
