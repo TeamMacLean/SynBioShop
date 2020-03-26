@@ -10,6 +10,8 @@
     <div class="pull-right nav-top-right">
 
         <% if(locals.signedInUser){ %>
+        
+        <% if(!locals.disablePremade){ %>
         <div class="search">
             <input id="seach-input" type="text" placeholder="Search">
         </div>
@@ -17,12 +19,16 @@
         <div id="search-results" class="search-results hidden">
             <ul></ul>
         </div>
+        <% } %>
 
-
+        <% if(!locals.disablePremade){ %>
         <a href="/cart" class="nav-cart">
             <span class="icon" data-icon="&#xe015;"></span>
             <span class="count"><%- locals.signedInUser.cart.items.length %></span>
         </a>
+           <% } %>
+        
+        
         <% } %>
 
         <div class="user">
