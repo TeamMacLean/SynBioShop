@@ -9,6 +9,7 @@ const shoppingCart = require('./controllers/shoppingCart');
 const orders = require('./controllers/orders');
 const upload = require('./controllers/upload');
 const admin = require('./controllers/admin');
+const config = require('./config.json');
 
 router.route('/')
     .get((req, res) => res.render('index'));
@@ -83,6 +84,7 @@ router.route('/docs/item/:itemID/edit')
     .post(docs.document.save);
 
 //PREMADE
+if(!config.disablePremade){
 router.route('/premade')
     .all(isAuthenticated)
     .get(premade.index);
@@ -171,6 +173,7 @@ router.route('/premade/item/:itemID/delete')
     .all(isAuthenticated)
     .all(isAdmin)
     .get(premade.item.delete);
+}
 
 
 //CUSTOM
@@ -179,6 +182,7 @@ router.route('/custom')
     .get(custom.index);
 
 //CART
+if(!config.disableCart){
 router.route('/cart')
     .all(isAuthenticated)
     .get(shoppingCart.index);
@@ -197,6 +201,9 @@ router.route('/cart/order')
 
 // router.route('/cart/add/:typeID')
 //     .get(shoppingCart.add);
+
+}
+
 
 
 //FILE UPLOAD
