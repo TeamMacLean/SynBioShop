@@ -7,5 +7,4 @@ const Billboard = thinky.createModel('Billboard', {
     enabled: type.boolean().required()
 });
 
-
 module.exports = Billboard;

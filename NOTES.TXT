@@ -1,0 +1,26 @@
+/ if user is from TSL (determine globally, accessible from anywhere)
+* checkout page needs nominal text input, display a total price, show a per item price (i.e. 5 uL = £5), checkbox to confirm purchase
+* when you view an order, display above additional info (any view pages)
+* when you email, display above additional info (any emails)
+* Database changes
+* make price configurable (admin set how much each item is? synbio dont but might change to this) (modularity is good) (put in config)
+
+//TODO
+* Plan client code
+* Setup 
+
+
+--------------------------
+item_name    |   [5]ul  | £5
+--------------------------
+item_name    |   [63]ul | £63
+--------------------------
+item_name    |   [35]ul | £35
+--------------------------
+item_name    |   [65]ul | £65
+--------------------------
+    [nominal](required if !TSL)            £TOTAL
+--------------------------
+    [X] confirm (tick required !tsl)
+--------------------------
+| cancel | checkout 

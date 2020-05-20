@@ -49,7 +49,6 @@ app.use(passport.session());
 
 
 app.use((req, res, next) => {
-
     res.locals.disablePremade = config.disablePremade;
     res.locals.disableCart = config.disableCart;
     next();
@@ -64,6 +63,7 @@ app.use((req, res, next) => {
         res.locals.signedInUser.name = validator.escape(req.user.name);
         res.locals.signedInUser.mail = validator.escape(req.user.mail);
         res.locals.signedInUser.isAdmin = util.isAdmin(req.user.username);
+        res.locals.signedInUser.company = validator.escape(req.user.company);
         if (req.user.iconURL) {
             res.locals.signedInUser.iconURL = req.user.iconURL;
         }

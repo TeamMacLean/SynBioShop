@@ -11,6 +11,7 @@ const Admin = {
 
 Admin.billboard.edit = ((req, res) => {
 
+
     Billboard.run()
         .then(billboards => {
             console.log(billboards);
