@@ -11,7 +11,8 @@ const Order = thinky.createModel('Order', {
     complete: type.boolean().required().default(false),
     createdAt: type.date().default(r.now()),
     completedAt: type.date(),
-    janCode: type.string().required()
+    janCode: type.string().required(),
+    costCode: type.string().min(3).max(20),
 });
 
 

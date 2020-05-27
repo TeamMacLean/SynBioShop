@@ -25,8 +25,11 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(require('less-middleware')(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+// bodyparser is the most important plugin for express
+// to get the body out of the request is usually regex garbage
+// this formats and puts in req body for you. super useful!
+app.use(bodyParser.json()); 
+app.use(bodyParser.urlencoded({extended: false})); 
 app.use(cookieParser());
 app.use(flash());
 app.use(multer({
@@ -116,7 +119,7 @@ app.use((req, res, next) => {
         .catch(err => renderError(err));
 })
 
-//FLASH TEST
+// FLASH TEST
 // app.use(function (req, res, next) {
 //     req.flash('success_messages', 'success test');
 //     req.flash('info_messages', 'info test');

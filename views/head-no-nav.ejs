@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -20,23 +21,23 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 
-</head>
+    <script src="/components/jquery/dist/jquery.min.js"></script>
 
 <body>
 
-<script>
-    document.signedInUser = '';
-    <% if(locals.signedInUser){ %>
-    document.signedInUser = JSON.parse('<%- JSON.stringify(locals.signedInUser) %>');
+    <script>
+        document.signedInUser = '';
+    <% if (locals.signedInUser) { %>
+            document.signedInUser = JSON.parse('<%- JSON.stringify(locals.signedInUser) %>');
     <% } %>
-</script>
+    </script>
 
-<% if(locals.billboard && locals.billboard.enabled && locals.billboard.text){ %>
-<div class="billboard">
-    <div class="container">
-        <p><%- billboard.text %></p>
+    <% if(locals.billboard && locals.billboard.enabled && locals.billboard.text){ %>
+    <div class="billboard">
+        <div class="container">
+            <p><%- billboard.text %></p>
+        </div>
     </div>
-</div>
-<% } %>
+    <% } %>
 
-<% include flashes.ejs %>
+    <% include flashes.ejs %>

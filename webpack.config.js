@@ -16,7 +16,7 @@ module.exports = {
             path.resolve(path.join(__dirname, "public", "js", "src", 'goldengate.jsx'))
         ],
     },
-    watch: true,
+    watch: false,
     module: {
         loaders: [
             {

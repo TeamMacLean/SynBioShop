@@ -23,6 +23,9 @@
     <tr>
         <th>Item</th>
         <th class="center">Quantity</th>
+        <% if (locals.order.costCode) { %>
+            <th class="center">Price</th>
+        <% } %>
         <th class="center">Concentration</th>
         <th class="center">SynBio ID</th>
     </tr>
@@ -33,13 +36,27 @@
         <tr>
             <td><%- item.type.name %></td>
             <td class="center"><%- item.quantity %> μL</td>
+            <% if (locals.order.costCode) { %>
+                <td class="center">£<%- item.quantity * pricePerUnit %></td>
+            <% } %
             <td class="center"><%- item.type.concentration %></td>
             <td class="center"><%- item.type.synBioID %></td>
         </tr>
     <% }); %>
+    <tr>
+        <td><b>Total</b></td>
+        <td class="center"><b><%- locals.order.totalQuantity %> μL</b></td>
+        <% if (locals.order.costCode) { %>
+            <td class="center"><b>£<%- locals.order.totalPrice %></b></td>
+        <% } %>
+    </tr>
     </tbody>
 </table>
-
+<% if (locals.order.costCode) { %>
+    <div>
+        Cost code: <div class="center"><%= locals.order.costCode %></div>
+    </div>
+<% } %>
 
 </body>
 </html>

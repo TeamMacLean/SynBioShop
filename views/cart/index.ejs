@@ -1,46 +1,174 @@
 <% include ../head.ejs %>
 
+<% 
+    const externalView = locals.signedInUser.company !== 'TSL' || locals.signedInUser.isAdmin;
+%>
+
+<script>
+
+    const pricePerUnit = "<%=pricePerUnit%>";
+    const externalView = "<%=externalView%>";
+
+    window.onload = function () {
+
+        const allItemQuantityElements = document.getElementsByName("itemQuantity");
+
+        allItemQuantityElements.forEach((element, index) => {
+            const quantityEl = document.getElementById("quantity_" + index);
+            const priceEl = document.getElementById("price_" + index);
+
+            priceEl.innerHTML = quantityEl.value * pricePerUnit;
+
+            quantityEl.addEventListener('change', e => {
+                const priceElement = document.getElementById("price_" + index);
+                priceElement.innerHTML = e.target.value * pricePerUnit;
+
+                updateTotals();
+            });
+        });
+
+        updateTotals();
+
+        function updateTotals() {
+            if (allItemQuantityElements.length) {
+                const sum = [...allItemQuantityElements]
+                    .map(e => Number(e.value))
+                    .reduce(function (a, b) { return a + b });
+
+                document.querySelectorAll('#totalQuantity')[0].innerHTML = sum;
+                const totalPrice = sum * pricePerUnit;
+                document.querySelectorAll('#totalPrice')[0].innerHTML = totalPrice || "n/a";
+
+            }
+        }
+
+        document.getElementsByName("removeItem").forEach(element => {
+            element.addEventListener('click', updateTotals)
+        })
+
+
+
+        function initCartSocket() {
+            var cart = $('.nav-cart');
+
+            // on cart page
+            $('input[type="number"][data-quantity="true"]').on('change keyup paste', function (e) {
+                let val = $(this).val() <= 25 ? $(this).val() : 25
+                socket.emit('changeQuantity', {
+                    id: $(this).data('id'),
+                    quantity: val
+                });
+            });
+            socket.on('quantityUpdated', function (data) {
+                $('input[type="number"][data-quantity="true"][data-id="' + data.id + '"]').val(data.quantity)
+            });
+
+
+            $('a.remove-from-cart').on('click', function (e) {
+                e.preventDefault();
+                socket.emit('removeFromCart', {
+                    id: $(this).data('id')
+                })
+            });
+
+            socket.on('removedFromCart', function (data) {
+
+                $('tr[data-id="' + data.id + '"]')
+                    .fadeOut(500, function () {
+                        $(this).remove();
+                        var count = cart.find('.count');
+
+                        var newCount = parseInt(count.text()) - 1;
+
+                        count.text(newCount);
+
+                        if (newCount < 1) {
+                            location.reload();
+                        } else {
+                            updateTotals();
+                        }
+                    });
+            });
+        }
+        initCartSocket();
+    }
+</script>
+
 <div class="container">
     <h1 class="center">Shopping Basket</h1>
     <% if(typeof cart != 'undefined'){ %>
     <% if(cart.items.length > 0){ %>
 
+    <% if(externalView){ %>
+    <div><i>Pricing is currently set at £1/μL for any item. Minimum order for any item is 5μL.</i></div>
+    <% } %>
+
     <form method="post" action="/cart/order">
         <table class="cart">
             <thead>
-            <tr>
-                <th>Item</th>
-                <th class="center">Quantity</th>
-                <th class="center">Actions</th>
-            </tr>
+                <tr>
+                    <th>Item</th>
+                    <th class="center">Quantity</th>
+                    <th class="center">Price</th>
+                    <th class="center">Actions</th>
+                </tr>
 
             </thead>
             <tbody>
-            <% cart.items.map(function(item){ %>
-            <input type="hidden" value="<%- item.id %>">
-            <tr data-id="<%- item.id %>">
-                <td data-th="Item"><a href="/premade/item/<%- item.type.id %>"><%- item.type.name %></a></td>
-                <td data-th="Quantity" class="center">
-                    <input type="number" placeholder="5" value="<%- item.quantity || 5 %>" data-quantity="true"
-                           data-id="<%- item.id %>" min="5" max="25">
-                    <span>μL</span>
+                <% cart.items.map(function(item, index){ %>
+                <input type="hidden" value="<%- item.id %>">
+                <tr data-id="<%- item.id %>">
+                    <td data-th="Item"><a href="/premade/item/<%- item.type.id %>"><%- item.type.name %></a></td>
+                    <td data-th="Quantity" class="center">
+                        <input type="number" placeholder="5" value="<%- item.quantity || 5 %>" data-quantity="true"
+                            data-id="<%- item.id %>" min="5" max="25" name="itemQuantity"
+                            id="<%= 'quantity_' + index %>">
+                        <span>μL</span>
 
-                </td>
-                <td data-th="Actions" class="center"><a href="#"
-                                                        class="button danger outline icon remove-from-cart areyousure"
-                                                        data-id="<%- item.id %>"><span
+                    </td>
+                    <td data-th="Price" class="center">
+                        <span>£</span>
+                        <span id="<%= 'price_' + index %>"><%= item.quantity * pricePerUnit %></span>
+
+                    </td>
+                    <td data-th="Actions" class="center"><a name="removeItem"
+                            class="button danger outline icon remove-from-cart" data-id="<%- item.id %>"><span
                                 data-icon="&#xe019;"></span></a>
-                </td>
-            </tr>
-            <% }); %>
+                    </td>
+                </tr>
+                <% }); %>
+                <% if(cart){ %>
+                <tr>
+                    <td><b>TOTAL</b></td>
+                    <td><b><span id="totalQuantity" /></span>μL</b></td>
+                    <td><b>£<span id="totalPrice"></span></b></td>
+                </tr>
+                <% } %>
             </tbody>
         </table>
+
+        <% if(externalView){ %>
+        <div class="row">
+            <div class="col6">
+                <span>Payment code:</span>
+                <!--put required back in, remove value-->
+                <input name="costCode" type="text" class="wide" minLength="3" maxLength="20" value="DOJO">
+
+            </div>
+        </div>
+        <div class="tile pad">
+            <!--put required back in-->
+            <input id="consent" type="checkbox" data-quantity="true">
+            <span>I consent to paying for this deployment of kick-ass turtles</span>
+        </div>
+        <% } %>
 
         <div class="row">
             <div class="col12">
                 <div class="pull-right">
                     <!--<input type="submit" class="button primary" value="Update Cart">-->
-                    <button class="button success areyousure" id="placeOrderButton">Place Order</button>
+                    <!--add areyousure back in-->
+                    <button class="button success" id="placeOrderButton">Place Order</button>
                 </div>
             </div>
         </div>

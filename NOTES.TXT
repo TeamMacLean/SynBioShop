@@ -3,11 +3,21 @@
 * when you view an order, display above additional info (any view pages)
 * when you email, display above additional info (any emails)
 * Database changes
-* make price configurable (admin set how much each item is? synbio dont but might change to this) (modularity is good) (put in config)
+* make price configurable (admin set how much each item is? synbio don't but might change to this) (modularity is good) (put in config)
+
+
+el.addEventListener(eventName, eventHandler);
+on change of quantity, attach listener to input, update price and update total
+ensure second.
+
+initialQuantity + changeInQuantity
+
+
 
 //TODO
 * Plan client code
 * Setup 
+* rules around minLength/maxLength of code
 
 
 --------------------------

@@ -45,5 +45,8 @@ Cart.define('empty', function () {
 });
 module.exports = Cart;
 const CartItem = require('./cartItem');
-
+// model name
+// items name for those CartItems
+// id is the local key
+// cart is the foreign key
 Cart.hasMany(CartItem, 'items', 'id', 'cartID');

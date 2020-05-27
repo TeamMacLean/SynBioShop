@@ -7,6 +7,9 @@ const Order = require('../models/order');
 // const async = require('async');
 const Email = require('../lib/email');
 const Flash = require('../lib/flash');
+const config = require('../config.json');
+
+const pricePerUnit = config.pricePerUnit;
 
 const ShoppingCart = {};
 
@@ -30,7 +33,7 @@ ShoppingCart.index = (req, res) => {
 
                 cart.items = [].concat(...updatedItems);
 
-                return res.render('cart/index', {cart});
+                return res.render('cart/index', {cart, pricePerUnit});
             }).catch((err)=> {
                 return renderError(err, res);
             });
@@ -152,8 +155,10 @@ ShoppingCart.ensureAdd = (username, typeID) => new Promise((good, bad) => {
 
 ShoppingCart.placeOrder = (req, res) => {
     const username = req.user.username;
+    const costCode = req.body.costCode;
+    // database join of 'items' with cart
     ShoppingCart.ensureCart(username, {items: true}).then((cart)=> {
-        new Order({username}).save().then((savedOrder)=> {
+        new Order({username, costCode}).save().then((savedOrder)=> {
             const saving = [];
 
             cart.items.map(item => {
@@ -163,7 +168,6 @@ ShoppingCart.placeOrder = (req, res) => {
 
             Promise.all(saving).then(()=> {
                 savedOrder.getTypes().then((orderWithTypes)=> {
-                    console.log('passing to email', orderWithTypes);
                     Email.newOrder(orderWithTypes, req.user).then(()=> {
                         cart.empty().then(()=> {
                             Flash.success(req, 'Order successfully placed');

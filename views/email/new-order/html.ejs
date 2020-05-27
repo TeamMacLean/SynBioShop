@@ -9,6 +9,10 @@
 
 <body>
 
+<% 
+    const externalView = locals.user.company === 'TSL' || locals.user.isAdmin;
+%>
+
 <img class="center" src="<%- baseURL %>/img/logo.png" style="max-width: 80px; margin-bottom:20px;">
 
 <h1 class="center">New SynBio Order</h1>
@@ -21,6 +25,9 @@
     <tr>
         <th>Item</th>
         <th class="center">Quantity</th>
+        <% if (externalView) { %>
+            <th class="center">Price</th>
+        <% } %>
         <th class="center">Concentration</th>
         <th class="center">SynBio ID</th>
     </tr>
@@ -31,12 +38,28 @@
         <tr>
             <td><%- item.type.name %></td>
             <td class="center"><%- item.quantity %> μL</td>
+            <% if (externalView) { %>
+                <td class="center">£<%- item.quantity * pricePerUnit %></td>
+            <% } %>
             <td class="center"><%- item.type.concentration %></td>
             <td class="center"><%- item.type.synBioID %></td>
         </tr>
     <% }); %>
+    <tr>
+        <td><b>Total</b></td>
+        <td class="center"><b><%- locals.order.totalQuantity %> μL</b></td>
+        <% if (externalView) { %>
+            <td class="center"><b>£<%- locals.order.totalPrice %></b></td>
+        <% } %>
+    </tr>
     </tbody>
 </table>
+<% if (locals.order.costCode) { %>
+    <div>
+        Cost code: <div class="center"><%= locals.order.costCode %></div>
+    </div>
+<% } %>
+
 <a href="<%- baseURL %>/order/<%- locals.order.id %>" class="center">View order on site</a>
 </body>
 </html>

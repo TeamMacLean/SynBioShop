@@ -1,4 +1,3 @@
-import $ from 'jquery'
 import tinymce from 'tinymce'
 
 import 'tinymce/plugins/image/plugin.min.js'
@@ -12,7 +11,7 @@ $(function () {
     initUserMenu();
     initFlashButtons();
     initAreYouSureButtons();
-    initCartSocket();
+    initCart();
     initTinyMCE();
     initSearch();
 });
@@ -43,13 +42,75 @@ function initAreYouSureButtons() {
     });
 }
 
-function initCartSocket() {
-    var cart = $('.nav-cart');
+function initCart() {
+    function flyToCart(el) {
+        var cart = $('.nav-cart');
+        var clonedEl = el.clone();
+
+        $(clonedEl).css({
+            position: 'absolute',
+            top: $(el).offset().top + "px",
+            left: $(el).offset().left + "px",
+            opacity: 1,
+            'z-index': 1000
+        });
+        $('body').append($(clonedEl));
+
+        var divider = 3;
+
+        var gotoX = $(cart).offset().left + ($(cart).width() / 2) - ($(el).width() / divider) / 2;
+        var gotoY = $(cart).offset().top + ($(cart).height() / 2) - ($(el).height() / divider) / 2;
+
+        $(clonedEl)
+            .addClass('hover')
+            .animate({
+                opacity: 0,
+                left: gotoX,
+                top: gotoY,
+                width: $(el).width() / divider,
+                height: $(el).height() / divider,
+                fontSize: 0,
+                lineHeight: 0
+
+            }, 1000,
+                function () {
+                    var count = cart.find('.count');
+                    count.text(parseInt(count.text()) + 1);
+                    $(clonedEl).remove();
+                    animateCSS(cart, 'rubberBand');
+
+
+                    //make button tick'd
+                    $(el).find('span')
+                        .attr('data-icon', 'N');
+
+                    // $(cart).fadeOut('fast', function () {
+                    //     $(cart).fadeIn('fast', function () {
+                    //         $(clonedEl).fadeOut('fast', function () {
+                    //             $(clonedEl).remove();
+                    //         });
+                    //     });
+                    // });
+                });
+    }
+
+    function animateCSS(el, name, cb) {
+        el.on("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd",
+            function (e) {
+                $(this).off(e);
+                $(this).removeClass(name + ' animated');
+                if (cb) {
+                    cb();
+                }
+            });
+
+        el.addClass(name + ' animated');
+    }
+
     $('*[data-addToCart="true"]').on('click', function (e) {
         e.preventDefault();
         var typeID = $(this).attr('data-typeID');
-        socket.emit('addToCart', {typeID: typeID, username: document.signedInUser.username});
-        // flyToCart($(this));
+        socket.emit('addToCart', { typeID: typeID, username: document.signedInUser.username });
     });
 
     socket.on('addedToCart', function (type) {
@@ -62,110 +123,10 @@ function initCartSocket() {
         var elForItemAdded = $('*[data-addToCart="true"][data-typeID="' + type.id + '"]');
         animateCSS(elForItemAdded, 'shake');
     });
-
-
-    // // on cart page
-    //
-    $('input[type="number"][data-quantity="true"]').on('change keyup paste', function (e) {
-        let val = $(this).val() <= 25 ? $(this).val() : 25
-        socket.emit('changeQuantity', {
-            id: $(this).data('id'),
-            quantity: val
-        });
-    });
-    socket.on('quantityUpdated', function (data) {
-        $('input[type="number"][data-quantity="true"][data-id="' + data.id + '"]').val(data.quantity)
-    });
-
-
-    $('a.remove-from-cart').on('click', function (e) {
-        e.preventDefault();
-        socket.emit('removeFromCart', {
-            id: $(this).data('id')
-        })
-    });
-    socket.on('removedFromCart', function (data) {
-        $('tr[data-id="' + data.id + '"]')
-            .fadeOut(500, function () {
-                $(this).remove();
-                var count = cart.find('.count');
-
-                var newCount = parseInt(count.text()) - 1;
-
-                count.text(newCount);
-
-                if (newCount < 1) {
-                    location.reload();
-                }
-
-            });
-    });
-}
-
-function flyToCart(el) {
-    var cart = $('.nav-cart');
-    var clonedEl = el.clone();
-
-    $(clonedEl).css({
-        position: 'absolute',
-        top: $(el).offset().top + "px",
-        left: $(el).offset().left + "px",
-        opacity: 1,
-        'z-index': 1000
-    });
-    $('body').append($(clonedEl));
-
-    var divider = 3;
-
-    var gotoX = $(cart).offset().left + ($(cart).width() / 2) - ($(el).width() / divider) / 2;
-    var gotoY = $(cart).offset().top + ($(cart).height() / 2) - ($(el).height() / divider) / 2;
-
-    $(clonedEl)
-        .addClass('hover')
-        .animate({
-                opacity: 0,
-                left: gotoX,
-                top: gotoY,
-                width: $(el).width() / divider,
-                height: $(el).height() / divider,
-                fontSize: 0,
-                lineHeight: 0
-
-            }, 1000,
-            function () {
-                var count = cart.find('.count');
-                count.text(parseInt(count.text()) + 1);
-                $(clonedEl).remove();
-                animateCSS(cart, 'rubberBand');
-
-
-                //make button tick'd
-                $(el).find('span')
-                    .attr('data-icon', 'N');
-
-                // $(cart).fadeOut('fast', function () {
-                //     $(cart).fadeIn('fast', function () {
-                //         $(clonedEl).fadeOut('fast', function () {
-                //             $(clonedEl).remove();
-                //         });
-                //     });
-                // });
-            });
 }
 
 
-function animateCSS(el, name, cb) {
-    el.on("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd",
-        function (e) {
-            $(this).off(e);
-            $(this).removeClass(name + ' animated');
-            if (cb) {
-                cb();
-            }
-        });
 
-    el.addClass(name + ' animated');
-}
 
 function initTinyMCE() {
     if ($('#tinymce').length) {
@@ -180,9 +141,7 @@ function initTinyMCE() {
             extended_valid_elements: "iframe[src|frameborder|style|scrolling|class|width|height|name|align]",
             relative_urls: false,
             file_picker_callback: function (callback, value, meta) {
-                console.log('1');
                 $('#my_form').find('input').click().on('change', function () {
-                    console.log('2');
                     var formData = new FormData();
                     formData.append('userfile', $('input[type=file]')[0].files[0]);
 
