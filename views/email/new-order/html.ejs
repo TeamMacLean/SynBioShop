@@ -25,7 +25,7 @@
     <tr>
         <th>Item</th>
         <th class="center">Quantity</th>
-        <% if (externalView) { %>
+        <% if (locals.order.totalCost) { %>
             <th class="center">Price</th>
         <% } %>
         <th class="center">Concentration</th>
@@ -38,8 +38,8 @@
         <tr>
             <td><%- item.type.name %></td>
             <td class="center"><%- item.quantity %> μL</td>
-            <% if (externalView) { %>
-                <td class="center">£<%- item.quantity * pricePerUnit %></td>
+            <% if (locals.order.totalCost) { %>
+                <td class="center">£<%- item.quantity * locals.order.pricePerUnit %></td>
             <% } %>
             <td class="center"><%- item.type.concentration %></td>
             <td class="center"><%- item.type.synBioID %></td>
@@ -48,15 +48,15 @@
     <tr>
         <td><b>Total</b></td>
         <td class="center"><b><%- locals.order.totalQuantity %> μL</b></td>
-        <% if (externalView) { %>
-            <td class="center"><b>£<%- locals.order.totalPrice %></b></td>
+        <% if (locals.order.totalCost) { %>
+            <td class="center"><b>£<%- locals.order.totalCost %></b></td>
         <% } %>
     </tr>
     </tbody>
 </table>
 <% if (locals.order.costCode) { %>
     <div>
-        Cost code: <div class="center"><%= locals.order.costCode %></div>
+        Cost code: <%= locals.order.costCode %>
     </div>
 <% } %>
 

@@ -9,22 +9,35 @@
     const pricePerUnit = "<%=pricePerUnit%>";
     const externalView = "<%=externalView%>";
 
+    console.log('ex view', externalView)
+
     window.onload = function () {
 
         const allItemQuantityElements = document.getElementsByName("itemQuantity");
 
         allItemQuantityElements.forEach((element, index) => {
             const quantityEl = document.getElementById("quantity_" + index);
+
             const priceEl = document.getElementById("price_" + index);
 
-            priceEl.innerHTML = quantityEl.value * pricePerUnit;
+            if (priceEl){
 
-            quantityEl.addEventListener('change', e => {
+                priceEl.innerHTML = quantityEl.value * pricePerUnit;
+            }
+
+            const onAnyChange = e => {
                 const priceElement = document.getElementById("price_" + index);
-                priceElement.innerHTML = e.target.value * pricePerUnit;
+
+                if (priceElement) {
+                    priceElement.innerHTML = e.target.value * pricePerUnit;
+                }
 
                 updateTotals();
-            });
+            }
+
+            quantityEl.addEventListener('keyup', onAnyChange);
+            quantityEl.addEventListener('change', onAnyChange);
+            quantityEl.addEventListener('blur', onAnyChange);
         });
 
         updateTotals();
@@ -36,17 +49,19 @@
                     .reduce(function (a, b) { return a + b });
 
                 document.querySelectorAll('#totalQuantity')[0].innerHTML = sum;
-                const totalPrice = sum * pricePerUnit;
-                document.querySelectorAll('#totalPrice')[0].innerHTML = totalPrice || "n/a";
+                document.querySelectorAll('#totalQuantity-input')[0].value = sum;
 
+                if (document.querySelectorAll('#totalCost').length) {
+                    const totalCost = sum * pricePerUnit;
+                    document.querySelectorAll('#totalCost')[0].innerHTML = totalCost;
+                    document.querySelectorAll('#totalCost-input')[0].value = totalCost;
+                }
             }
         }
 
         document.getElementsByName("removeItem").forEach(element => {
             element.addEventListener('click', updateTotals)
         })
-
-
 
         function initCartSocket() {
             var cart = $('.nav-cart');
@@ -62,7 +77,6 @@
             socket.on('quantityUpdated', function (data) {
                 $('input[type="number"][data-quantity="true"][data-id="' + data.id + '"]').val(data.quantity)
             });
-
 
             $('a.remove-from-cart').on('click', function (e) {
                 e.preventDefault();
@@ -99,17 +113,21 @@
     <% if(typeof cart != 'undefined'){ %>
     <% if(cart.items.length > 0){ %>
 
+    <div class="form-group"><i>Order 5-25μL per item.</i></div>
     <% if(externalView){ %>
-    <div><i>Pricing is currently set at £1/μL for any item. Minimum order for any item is 5μL.</i></div>
+        <div class="form-group"><i>Pricing is currently set at £1/μL for any item.</i></div>
     <% } %>
 
     <form method="post" action="/cart/order">
+        <input type="hidden" name="pricePerUnit" value="<%=pricePerUnit%>" />
         <table class="cart">
             <thead>
                 <tr>
                     <th>Item</th>
                     <th class="center">Quantity</th>
-                    <th class="center">Price</th>
+                    <% if (externalView){ %>
+                        <th class="center">Price</th>
+                    <% } %>
                     <th class="center">Actions</th>
                 </tr>
 
@@ -126,11 +144,14 @@
                         <span>μL</span>
 
                     </td>
-                    <td data-th="Price" class="center">
-                        <span>£</span>
-                        <span id="<%= 'price_' + index %>"><%= item.quantity * pricePerUnit %></span>
-
-                    </td>
+                    <% if (externalView){ %>
+                        <td data-th="Price" class="center">
+                            <span>£</span>
+                            <span id="<%= 'price_' + index %>"><%= item.quantity * pricePerUnit %></span>
+    
+                        </td>
+                    <% } %>
+                    
                     <td data-th="Actions" class="center"><a name="removeItem"
                             class="button danger outline icon remove-from-cart" data-id="<%- item.id %>"><span
                                 data-icon="&#xe019;"></span></a>
@@ -140,26 +161,38 @@
                 <% if(cart){ %>
                 <tr>
                     <td><b>TOTAL</b></td>
-                    <td><b><span id="totalQuantity" /></span>μL</b></td>
-                    <td><b>£<span id="totalPrice"></span></b></td>
+                    <td>
+                        <b>
+                            <input type="hidden" id="totalQuantity-input" name="totalQuantity" />
+                            <span class="center" id="totalQuantity"></span>
+                            μL
+                        </b>
+                    </td>
+                    <% if (externalView){ %>
+                        <td>
+                            <b>
+                                £
+                                <input type="hidden" id="totalCost-input" name="totalCost" />
+                                <span class="center" id="totalCost"></span>
+                            </b>
+                        </td>
+                    <% } %>
                 </tr>
                 <% } %>
             </tbody>
         </table>
 
-        <% if(externalView){ %>
-        <div class="row">
+        <% if (externalView){ %>
+        <div class="row form-group">
             <div class="col6">
                 <span>Payment code:</span>
-                <!--put required back in, remove value-->
-                <input name="costCode" type="text" class="wide" minLength="3" maxLength="20" value="DOJO">
+                <input required name="costCode" type="text" class="wide" minLength="3" maxLength="20">
 
             </div>
         </div>
-        <div class="tile pad">
-            <!--put required back in-->
-            <input id="consent" type="checkbox" data-quantity="true">
-            <span>I consent to paying for this deployment of kick-ass turtles</span>
+        <div class="form-group">
+            <input class="muted-text" required id="consent" type="checkbox" data-quantity="true">
+            <span class="muted-text">I consent to providing an accurate and appropriate payment code for this order</span>
         </div>
         <% } %>
 
@@ -167,8 +200,7 @@
             <div class="col12">
                 <div class="pull-right">
                     <!--<input type="submit" class="button primary" value="Update Cart">-->
-                    <!--add areyousure back in-->
-                    <button class="button success" id="placeOrderButton">Place Order</button>
+                    <button class="button success areyousure" id="placeOrderButton">Place Order</button>
                 </div>
             </div>
         </div>

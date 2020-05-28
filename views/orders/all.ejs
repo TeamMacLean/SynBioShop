@@ -19,6 +19,12 @@
                             <p>Ordered: <%- order.createdHumanDate() %></p>
                             <p>Status: <%- order.complete ? 'Complete' : 'In Progress' %></p>
                             <p>Customer: <%- order.username %></p>
+                            <p>                                    
+                                Total cost: <%= order.totalCost ? ("£" + order.totalCost) : "n/a" %>
+                            </p>
+                            <p>
+                                Cost code: <%= order.costCode || "n/a" %>
+                            </p>
                         </div>
                         <a href="/order/<%- order.id %>" class="button primary tile-button-bottom">Show</a>
                     </div>
@@ -40,6 +46,8 @@
                 <th>Order Placed</th>
                 <th>Completion Date</th>
                 <th>Customer</th>
+                <th>Total cost</th>
+                <th>Cost code</th>
                 <th></th>
             </tr>
             </thead>
@@ -54,6 +62,8 @@
                     <td><%- order.createdHumanDate() %></td>
                     <td><%- order.completedHumanDate() %></td>
                     <td><%- order.username %></td>
+                    <td><%= order.totalCost ? ("£" + order.totalCost) : "n/a" %></td>
+                    <td><%- order.costCode || "n/a" %></td>
                     <td><a href="/order/<%- order.id %>">View</a></td>
                 </tr>
             <% }); %>

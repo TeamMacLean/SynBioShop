@@ -13,6 +13,9 @@ const Order = thinky.createModel('Order', {
     completedAt: type.date(),
     janCode: type.string().required(),
     costCode: type.string().min(3).max(20),
+    totalCost: type.string(),
+    totalQuantity: type.string().min(1),
+    pricePerUnit: type.string(),
 });
 
 

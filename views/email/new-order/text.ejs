@@ -13,11 +13,12 @@ ID: <%- item.type.synBioID %>
 
 <% }); %>
 
-<!-- Total quantity: <%- locals.order.items.totalQuantity %>
-<% if (locals.order.items.costCode) { %>
-    Total price: £<%- locals.order.items.totalPrice %>
-    Cost code: <%- locals.order.items.costCode %>
+Total quantity: <%- locals.order.totalQuantity %>μL
+<% if (locals.order.totalCost) { %>
+    Total price: £<%- locals.order.totalCost %>
 <% } %>
- -->
+<% if (locals.order.costCode) { %>
+    Cost code: <%- locals.order.costCode %>
+<% } %>
 
 View the order here: <%- baseURL %>/order/<%- locals.order.id %>

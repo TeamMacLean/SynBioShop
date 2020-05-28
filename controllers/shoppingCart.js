@@ -155,10 +155,11 @@ ShoppingCart.ensureAdd = (username, typeID) => new Promise((good, bad) => {
 
 ShoppingCart.placeOrder = (req, res) => {
     const username = req.user.username;
-    const costCode = req.body.costCode;
+    const { totalQuantity, totalCost, costCode, pricePerUnit } = req.body;
+
     // database join of 'items' with cart
     ShoppingCart.ensureCart(username, {items: true}).then((cart)=> {
-        new Order({username, costCode}).save().then((savedOrder)=> {
+        new Order({username, costCode, totalCost, totalQuantity, pricePerUnit}).save().then((savedOrder)=> {
             const saving = [];
 
             cart.items.map(item => {

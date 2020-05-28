@@ -5,6 +5,8 @@
         <th>createdAt</th>
         <th>Name</th>
         <th>items</th>
+        <th>Total cost</th>
+        <th>Cost code</th>
     </tr>
 
     <% orders.map(order=>{ %>
@@ -29,6 +31,8 @@
                     <% }) %>
                 </ul>
             </td>
+            <td><%= order.totalCost ? ("£" + order.totalCost) : "n/a" %></td>
+            <td><%- order.costCode || "n/a" %></td>
         </tr>
 
     <% }) %>
@@ -38,8 +42,13 @@
 <% var pages = count / perPage; %>
 <div class="pagination">
     <% for(var i = 1; i < pages; i++){ %>
-        <a href="/order/summary?page=<%- i %>" class="pagination-link <%- i === page ? 'active' : '' %>"
-           aria-label="page-<%- i %>"><%- i %></a>
+        <a 
+            href="/order/summary?page=<%- i %>" 
+            class="pagination-link <%- i === page ? 'active' : '' %>"
+            aria-label="page-<%- i %>"
+        >
+            <%- i %>
+        </a>
     <% } %>
 </div>
 <% include ../foot.ejs %>

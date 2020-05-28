@@ -7,7 +7,8 @@
     <p>ID: <%- order.janCode %></p>
     <p>Ordered: <%- order.createdHumanDate() %></p>
     <p>Status: <%- order.complete ? 'Complete' : 'Pending' %></p>
-    <p>Customer: <%- order.username %></p>
+    <p>Customer: <%- order.username %></p> 
+    <p>Cost code: <%= order.costCode || "n/a" %></p>
 
     <% if(order.completedAt){ %>
         <p>Completed: <%- order.completedHumanDate() %></p>
@@ -19,17 +20,23 @@
         <tr>
             <th>Item</th>
             <th class="center">Quantity</th>
+            <% if (order.costCode) { %>
+                <th class="center">Price</th>
+            <% } %>
             <th class="center">Concentration</th>
             <th class="center">SynBio ID</th>
         </tr>
 
         </thead>
         <tbody>
-        <% locals.order.items.map(function(item){ %>
+        <% order.items.map(function(item){ %>
             <tr>
                 <td><a href="/premade/item/<%- item.type.id %>" target="_blank"><%- item.type.name %></a></td>
                 <% if(item.quantity){ %>
                     <td class="center"><%- item.quantity %> μL</td>
+                    <% if (order.costCode) { %>
+                        <td class="center">£<%- item.quantity * order.pricePerUnit %></td>
+                    <% } %>
                 <% } else { %>
                     <% if(item.largeScale){ %>
                         <td class="center">large scale</td>
@@ -41,6 +48,13 @@
                 <td class="center"><%- item.type.synBioID %></td>
             </tr>
         <% }); %>
+            <tr>
+                <td><b>Total</b></td>
+                <td class="center"><b><%- order.totalQuantity %> μL</b></td>
+                <% if (order.totalCost) { %>
+                    <td class="center"><b>£<%- order.totalCost %></b></td>
+                <% } %>
+            </tr>        
         </tbody>
     </table>
 

@@ -106,7 +106,7 @@ orders.simonSummary = (req, res) => {
 
 orders.simonRepeatOrders = (req, res) => {
 
-    const itemsByUser = {}; //username:sdfsd, items:[]
+    const itemsByUser = {}; //username:pagem, items:[]
 
     function addItem(username, id) {
 
@@ -135,7 +135,7 @@ orders.simonRepeatOrders = (req, res) => {
                             good();
                         }).catch(err => {
                             good();
-                            //TODO if not found it probebly doesnt exist any more
+                            //TODO if not found it probably doesn't exist any more
                         });
                     }));
                 });
@@ -198,7 +198,6 @@ orders.markAsComplete = (req, res) => {
 orders.markAsIncomplete = (req, res) => {
 
     const orderID = req.params.id;
-
 
     Order.get(orderID)
         .then((order) => {
