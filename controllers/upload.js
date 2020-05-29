@@ -91,6 +91,9 @@ upload.download = (req, res)=> {
 
     File.get(id)
         .then((file)=> {
+            // .download is part of express
+            // 2nd optional argument renames the file you'll download (to pretty originalName!)
+            // don't use sendFile 
             return res.download(file.path, file.originalName);
         })
         .catch((err)=> {

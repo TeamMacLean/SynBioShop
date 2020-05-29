@@ -34,8 +34,8 @@
             <% type.fields.map(function(field){ %>
             <div class="form-group">
                 <label for="<%- field.name %>"><%- field.text %></label>
-                <input type="<%- field.type %>" id="<%- field.name %>" name="<%- field.name %>"
-                       value="<%- type[field.name] %>" required>
+                <input type="<%- field.type %>" id="<%- field.name %>" name="<%- field.name %>" 
+                    value="<%- type[field.name] %>" required>
             </div>
             <% }); %>
 

@@ -11,14 +11,17 @@ const File = thinky.createModel('File', {
     name: type.string().required(),
     path: type.string().required(),
     createdAt: type.date().default(r.now()),
-    typeID: type.string()
+    typeID: type.string() // ref to premade item
     // relativePath: type.string().required()
+    // below are 'virtual' fields that are part of Model
 });
 
 File.define('relativePath', function () {
+    // already relatively in public/ so uploadRootURL one dir shorter than uploadRoot
     return `${config.uploadRootURL}/${this.name}`;
 });
 
+// why file manager?
 File.define('downloadPath', function(){
     return `/filemanager/${this.id}/download`;
 });

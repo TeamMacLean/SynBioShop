@@ -466,6 +466,10 @@ function processFiles(savedType, req) {
         if (req.files && req.files.file) {
             const file = req.files.file;
             const newPath = path.join(config.uploadRoot, file.name);
+
+            // take temporary file path and give it new path
+            // i.e. from tmp directory to uploadRoot
+            // e.g. from /tmp/file.ex to public/uploads/file.ex
             fs.rename(file.path, newPath, (err) => {
                 if (err) {
                     console.error('ERROR', err);
@@ -497,6 +501,7 @@ premade.item.save = (req, res) => {
 
     const id = req.body.id;
 
+    // hidden field is id, if it's in edit mode
     if (id) {
 
 
