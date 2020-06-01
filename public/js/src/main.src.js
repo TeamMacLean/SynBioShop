@@ -6,7 +6,6 @@ import 'tinymce/plugins/autolink/plugin.min.js'
 import 'tinymce/plugins/hr/plugin.min.js'
 import 'tinymce/plugins/link/plugin.min.js'
 
-
 $(function () {
     initUserMenu();
     initFlashButtons();
@@ -14,7 +13,10 @@ $(function () {
     initCart();
     initTinyMCE();
     initSearch();
+    
 });
+
+
 
 function initUserMenu() {
 
@@ -127,9 +129,8 @@ function initCart() {
 
 
 
-
 function initTinyMCE() {
-    if ($('#tinymce').length) {
+    if ($('#tinymce').length && typeof mcePlugins !== "undefined") {
         tinymce.baseURL = "/components/tinymce/";
         tinymce.suffix = ".min";
         tinymce.init({

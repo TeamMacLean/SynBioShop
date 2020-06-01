@@ -501,7 +501,13 @@ premade.item.save = (req, res) => {
 
     const id = req.body.id;
 
-    // hidden field is id, if it's in edit mode
+    console.log('req.body', req.body)
+    console.log('req.files', req.files)
+
+    return res.redirect(`/premade/`);
+ 
+/*
+    // hidden field of id, if it's in edit mode
     if (id) {
 
 
@@ -579,7 +585,7 @@ premade.item.save = (req, res) => {
 
             }).catch(err => renderError(err, res))
         }).catch(err => renderError(err, res));
-    }
+    }*/
 };
 
 premade.item.show = (req, res) => {
@@ -616,6 +622,7 @@ premade.item.show = (req, res) => {
                 return res.render('premade/item/show', {headings, values, dbs, item});
             }).catch(err => renderError(err, res));
         }).catch((err) => renderError(err, res));
+        
 };
 
 premade.item.enable = (req, res) => {
