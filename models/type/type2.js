@@ -37,4 +37,6 @@ Type2.model = thinky.createModel('Type2', {
 module.exports = Type2;
 
 const File = require('../file');
-Type2.model.hasMany(File, 'file', 'id', 'typeID');
+Type2.model.hasMany(File, 'mapFile', 'id', 'typeID');
+const SequenceFile = require('../sequenceFile');
+// Type2.model.hasMany(SequenceFile, 'sequenceFiles', 'id', 'typeID');

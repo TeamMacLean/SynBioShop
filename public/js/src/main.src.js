@@ -6,6 +6,8 @@ import 'tinymce/plugins/autolink/plugin.min.js'
 import 'tinymce/plugins/hr/plugin.min.js'
 import 'tinymce/plugins/link/plugin.min.js'
 
+import $ from 'jquery'
+
 $(function () {
     initUserMenu();
     initFlashButtons();

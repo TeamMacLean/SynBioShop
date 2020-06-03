@@ -173,6 +173,14 @@ router.route('/premade/item/:itemID/delete')
     .all(isAuthenticated)
     .all(isAdmin)
     .get(premade.item.delete);
+router.route('/premade/item/:itemID/uploadSequenceFile')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.item.uploadSequenceFile);
+router.route('/premade/item/:itemID/deleteSequenceFile')
+    .all(isAuthenticated)
+    .all(isAdmin)
+    .get(premade.item.deleteSequenceFile);
 }
 
 

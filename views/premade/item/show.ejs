@@ -46,11 +46,34 @@
             <% } %>
 
             <% if(item.file){ %>
-            <a href="<%- item.file.downloadPath() %>" class="button primary">
+            <a href="<%- item.mapFile.downloadPath() %>" class="button primary">
                 Download
             </a>
             <% } %>
         </fieldset>
+
+        <% include ./_sequenceFileUploadModal.ejs %>
+
+        <!--fieldset for seq files
+        
+        <div>
+            <div>Button</div><modal />
+
+            <row>
+                for (sequenceFiles){
+                    <col size="25%" class="col-3">
+                        <img>
+                        <button>DownL &#xe071;  &#xe092; icon_download icon_cloud-download</button>
+                        if (admin) {
+                            <button>Delete</button>
+
+                        }
+                    </col>
+                }
+            </row>
+        </div>
+        
+        -->
 
         <% if(item.documentation){ %>
 
