@@ -85,13 +85,19 @@
                                 <!-- TODO <button>DownL &#xe071;  &#xe092; icon_download icon_cloud-download</button> -->
 
                                 <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-                                    <a 
-                                        name="removeItem"
-                                        class="button danger outline icon remove-from-cart areyousure" 
-                                        id="<%- sequenceFile.id %>"
+                                    <!-- TODO add areyousure in, what does remove-from-cart do? -->
+                                    <form 
+                                        method="POST"
+                                        action="/premade/item/<%- item.id %>/deleteSequenceFile"        
                                     >
+                                        <input type="hidden" name="sequenceFileID" value="<%- sequenceFile.id %>" />
+                                        <button 
+                                            type="submit"
+                                            class="button danger outline icon remove-from-cart" 
+                                        >
                                         <span data-icon="&#xe019;"></span>
-                                    </a>
+                                        </button>
+                                    </form>
                                 <% } %>
                             </div>
                             <br>

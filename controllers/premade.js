@@ -614,7 +614,7 @@ premade.item.uploadSequenceFile = (req, res) => {
             })
                 .save()
                 .then(() => {
-                    return res.sendStatus(200);
+                    return res.redirect(200);
                 })
                 .catch((err) => {
                     return renderError(err, res)
@@ -624,7 +624,28 @@ premade.item.uploadSequenceFile = (req, res) => {
 }
 
 premade.item.deleteSequenceFile = (req, res) => {
-    res.send('THIS IS A DELETE TEST');
+    const { sequenceFileID } = req.body;
+    const { itemID } = req.params;
+
+    // unpack sequenceFile ID, remove from database
+
+    SequenceFile.get(sequenceFileID)
+        .then((sequenceFile)=> {
+            sequenceFile.delete()
+                .then(()=> {
+                    Flash.success(req, `${sequenceFile.originalName} deleted successfully`);
+                    // TODO can we make this refresh not occur, i.e. nicer like other parts of website?
+                    return res.redirect(`/premade/item/${itemID}`);
+                })
+                .catch((err)=> {
+                    return renderError(err, res);
+                });
+        })
+        .catch((err)=> {
+            return renderError(err, res);
+        })
+    ;
+
 }
 
 premade.item.show = (req, res) => {

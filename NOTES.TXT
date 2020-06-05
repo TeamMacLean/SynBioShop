@@ -1,12 +1,6 @@
 Sequence file upload task
 TODO
 
-FILE UPLOADER MVP - ADD SEQUENCE FILES
-- Duplicate process for deleting files
-
-DOWNLOAD ACTUAL SEQUENCE FILES IN SHOW.ejs
-- Each file is just a string of file name
-- Can download with button
 
 MODAL POPUP - ADD SEQUENCE FILES
 - Use suggested bookmark to get MVP
@@ -16,6 +10,7 @@ MODAL POPUP - ADD SEQUENCE FILES
 - Incorporates file uploader
 
 FINAL TOUCHES
+- you want filemanager to also display upload and delete sequence files
 - Add areyousure to delete sequence file
 - test everything again (idiot-proof)
 - prepare = present to Martin (mention stretch goals)
