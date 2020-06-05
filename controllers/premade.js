@@ -3,6 +3,7 @@ const renderError = require('../lib/renderError');
 const Type = require('../models/type');
 const Category = require('../models/category');
 const File = require('../models/file');
+const SequenceFile = require('../models/sequenceFile');
 const config = require('../config.json');
 const path = require('path');
 const fs = require('fs');
@@ -462,7 +463,7 @@ premade.item.new = (req, res) => {
     }).catch(err => renderError(err, res));
 };
 
-function processFiles(savedType, req) {
+function processMapFile(savedType, req) {
     return new Promise((good, bad) => {
         if (req.files && req.files.mapFile) {
             const file = req.files.mapFile;
@@ -539,7 +540,7 @@ premade.item.save = (req, res) => {
                 type.save()
                     .then((savedType) => {
 
-                        processFiles(savedType, req)
+                        processMapFile(savedType, req)
                             .then(() => {
                                 return res.redirect(`/premade/item/${id}`);
                             })
@@ -580,7 +581,7 @@ premade.item.save = (req, res) => {
             newType.save().then((savedType) => {
 
 
-                processFiles(savedType, req)
+                processMapFile(savedType, req)
                     .then(() => {
                         console.log(`trying to get to /premade/item/${savedType.id}`);
                         return res.redirect(`/premade/item/${savedType.id}`);
@@ -595,12 +596,31 @@ premade.item.save = (req, res) => {
 };
 
 premade.item.uploadSequenceFile = (req, res) => {
-    res.send('THIS IS AN UPLOAD TEST');
+    const seqFile = req.files.file;
+    const { itemID} = req.params;
 
-    //get file from req
-    //move file to final location
-    //add document to DB for 'SequenceFile, where the typeID = req.params.itemID'
-    //return 200
+    const newPath = path.join(config.uploadRoot, seqFile.name);
+
+    mkdirp(config.uploadRoot).then(made => {
+        fs.rename(seqFile.path, newPath, (err) => {
+            if (err) {
+                console.error('ERROR', err);
+            }
+            new SequenceFile({
+                path: newPath,
+                name: seqFile.name,
+                originalName: seqFile.originalname,
+                typeID: itemID
+            })
+                .save()
+                .then(() => {
+                    return res.sendStatus(200);
+                })
+                .catch((err) => {
+                    return renderError(err, res)
+                });
+        });
+    });
 }
 
 premade.item.deleteSequenceFile = (req, res) => {
@@ -628,7 +648,7 @@ premade.item.show = (req, res) => {
                 }
             });
 
-            //get files, select most recent
+            //get map files, select most recent
             if (item.mapFile && item.mapFile.length) {
                 item.mapFile = item.mapFile.sort(function (a, b) {
                     return new Date(b.createdAt) - new Date(a.createdAt);

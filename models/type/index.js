@@ -32,6 +32,7 @@ function filterBy(key, filter) {
         const promises = types.TYPES.map(type => type.model.filter(searcher).getJoin({
             db: true,
             mapFile: true,
+            sequenceFiles: true,
             category: true
         }));
         Promise.all(promises)

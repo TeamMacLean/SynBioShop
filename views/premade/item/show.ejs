@@ -1,26 +1,14 @@
 <% include ../../head.ejs %>
 <% include ./../sidebar.ejs %>
 
-<% 
-    const sequenceFiles = [];
-
-    const sequenceFiles2 = [
-        {
-            name: 'Jonjo.ms',
-            id: 33,
-        },
-        {
-            name: 'Joseph.ms',
-            id: 49,
-        },
-    ]; 
-%>
-
 <script>
     function myLog() {
         console.log('Hello George');
     }
 </script> 
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js">
+</script>
 
 <div class="sidebar-push">
     <div class="container">
@@ -31,9 +19,9 @@
             <div class="form-group">
                 <a href="/premade/item/<%- item.id %>/edit" class="button primary">Edit
                     Item</a>
-                <button class="btn btn-primary" id="uploadSequenceFilesButton" onclick="myLog();">
+                <!-- <button class="btn btn-primary" id="uploadSequenceFilesButton" onclick="myLog();">
                     Upload sequence files
-                </button>    
+                </button>     -->
                 <% if(item.disabled){ %>
                 <a href="/premade/item/<%- item.id %>/enable" class="button success areyousure">Enable
                     Item</a>
@@ -58,9 +46,10 @@
         <hr>
         <% } %>
 
-        <% headings.map(function(heading, i){ %>
+        <!-- temp reclude -->
+        <!-- <% headings.map(function(heading, i){ %>
         <p><span class="bold"><%- heading %>:</span> <%- values[i] %></p>
-        <% }); %>
+        <% }); %> -->
 
         <fieldset>
             <% if(!locals.disableCart){ %>
@@ -79,16 +68,18 @@
                 </a>
             <% } %>
         </fieldset>
+        
+        <% include ./_sequenceFileUploadModal.ejs %>
 
-        <% if(sequenceFiles?.length){ %>
+        <% if(item.sequenceFiles?.length){ %>
             <div>
                 <hr>
                 <h3>Sequence files</h3>
 
                 <div class="row">
-                    <% sequenceFiles.map((sequenceFile, index) => { %>
-                        <div class="col3">
-                            <div><%= sequenceFile.name %></div>
+                    <% item.sequenceFiles.map((sequenceFile, index) => { %>
+                        <div class="col6">
+                            <div><%= sequenceFile.originalName %></div>
                             <div id="sequenceFileButtonsWrapper">
                                 <button class="icon_download"></button>
                                 <!-- TODO <button>DownL &#xe071;  &#xe092; icon_download icon_cloud-download</button> -->
@@ -118,5 +109,4 @@
     </div>
 </div>
 
-<% include ./_sequenceFileUploadModal.ejs %>
 <% include ../../foot.ejs %>

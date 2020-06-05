@@ -1,17 +1,7 @@
 Sequence file upload task
 TODO
 
-NB
-- http://localhost:8080/#dataexplorer
-    = r.db('synbioshop').table('Type2').filter({name: 'katie'})
-
-
 FILE UPLOADER MVP - ADD SEQUENCE FILES
-- Use suggested bookmarked library to get MVP
-- Stored in local storage correctly
-    = must use ID of item
-    = ensure duplicated SequenceFile
-- Path string in DB stored correctly
 - Duplicate process for deleting files
 
 DOWNLOAD ACTUAL SEQUENCE FILES IN SHOW.ejs
@@ -35,3 +25,7 @@ STRETCH GOALS (discuss with Martin)
 
 FINALLY
 - send screenshots to customer over email
+
+NB
+- http://localhost:8080/#dataexplorer
+    = r.db('synbioshop').table('Type2').filter({name: 'katie'})
