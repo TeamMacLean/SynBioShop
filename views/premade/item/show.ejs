@@ -1,49 +1,42 @@
 <% include ../../head.ejs %>
 <% include ./../sidebar.ejs %>
 
-<script>
-    function myLog() {
-        console.log('Hello George');
-    }
-</script> 
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js">
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
 
 <div class="sidebar-push">
     <div class="container">
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-        <div class="tile pad inverted">
-            <h4>Admin</h4>
-            <div class="form-group">
-                <a href="/premade/item/<%- item.id %>/edit" class="button primary">Edit
-                    Item</a>
-                <!-- <button class="btn btn-primary" id="uploadSequenceFilesButton" onclick="myLog();">
-                    Upload sequence files
-                </button>     -->
-                <% if(item.disabled){ %>
-                <a href="/premade/item/<%- item.id %>/enable" class="button success areyousure">Enable
-                    Item</a>
-                <a href="/premade/item/<%- item.id %>/delete" class="button danger areyousure">Delete
-                    Item</a>
-                <% } else { %>
-                <a href="/premade/item/<%- item.id %>/disable" class="button danger areyousure">Disable
-                    Item</a>
-                <% } %>
+            <div class="tile pad inverted">
+                <h4>Admin</h4>
+                <div class="form-group">
+                    <a href="/premade/item/<%- item.id %>/edit" class="button primary">Edit
+                        Item</a>
+                    <button class="btn btn-primary" id="uploadSequenceFilesButton" onClick="MicroModal.show('modal-1')">
+                        Upload sequence files
+                    </button>
+                    <% if(item.disabled){ %>
+                    <a href="/premade/item/<%- item.id %>/enable" class="button success areyousure">Enable
+                        Item</a>
+                    <a href="/premade/item/<%- item.id %>/delete" class="button danger areyousure">Delete
+                        Item</a>
+                    <% } else { %>
+                    <a href="/premade/item/<%- item.id %>/disable" class="button danger areyousure">Disable
+                        Item</a>
+                    <% } %>
+                </div>
             </div>
-        </div>
         <% } %>
 
         <h2><%- item.name %></h2>
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-        <hr>
-        <p><span class="bold">Concentration:</span> <%- item.concentration %></p>
-        <p><span class="bold">SynBioID:</span> <%- item.synBioID %></p>
-        <p style="color:red;"><span class="bold">Note:</span> <%- item.note %></p>
-        
-        <hr>
+            <hr>
+            <p><span class="bold">Concentration:</span> <%- item.concentration %></p>
+            <p><span class="bold">SynBioID:</span> <%- item.synBioID %></p>
+            <p style="color:red;"><span class="bold">Note:</span> <%- item.note %></p>
+            
+            <hr>
         <% } %>
 
         <!-- temp reclude -->
@@ -68,8 +61,6 @@
                 </a>
             <% } %>
         </fieldset>
-        
-        <% include ./_sequenceFileUploadModal.ejs %>
 
         <% if(item.sequenceFiles?.length){ %>
             <div>
@@ -80,25 +71,29 @@
                     <% item.sequenceFiles.map((sequenceFile, index) => { %>
                         <div class="col6">
                             <div><%= sequenceFile.originalName %></div>
-                            <div id="sequenceFileButtonsWrapper">
-                                <button class="icon_download"></button>
-                                <!-- TODO <button>DownL &#xe071;  &#xe092; icon_download icon_cloud-download</button> -->
+                            <div class="row" id="sequenceFileButtonsWrapper">
 
-                                <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-                                    <!-- TODO add areyousure in, what does remove-from-cart do? -->
-                                    <form 
-                                        method="POST"
-                                        action="/premade/item/<%- item.id %>/deleteSequenceFile"        
-                                    >
-                                        <input type="hidden" name="sequenceFileID" value="<%- sequenceFile.id %>" />
-                                        <button 
-                                            type="submit"
-                                            class="button danger outline icon remove-from-cart" 
+                                <div class="col2 center">
+                                    <a href="<%- sequenceFile.downloadPath() %>" class="icon_download"></a>
+                                </div>
+
+                                <div class="col2">
+                                    <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+                                        <!-- TODO add areyousure in, what does remove-from-cart do? -->
+                                        <form 
+                                            method="POST"
+                                            action="/premade/item/<%- item.id %>/deleteSequenceFile"        
                                         >
-                                        <span data-icon="&#xe019;"></span>
-                                        </button>
-                                    </form>
-                                <% } %>
+                                            <input type="hidden" name="sequenceFileID" value="<%- sequenceFile.id %>" />
+                                            <button 
+                                                type="submit"
+                                                class="button danger outline icon remove-from-cart areyousure" 
+                                            >
+                                            <span data-icon="&#xe019;"></span>
+                                            </button>
+                                        </form>
+                                    <% } %>
+                                </div>
                             </div>
                             <br>
                         </div>
@@ -116,3 +111,4 @@
 </div>
 
 <% include ../../foot.ejs %>
+<% include ./_sequenceFileUploadModal.ejs %>

@@ -231,6 +231,10 @@ router.route('/imageupload')
 router.route('/filemanager/:id/download')
     .get(upload.download);
 
+// Not great
+router.route('/sequencefilemanager/:id/download')
+    .get(upload.downloadSequenceFile);
+
 router.route('/filemanager')
     .all(isAuthenticated)
     .all(isAdmin)
@@ -249,7 +253,7 @@ router.route('/orders')
 
 router.route('/order/summary')
     .all(isAuthenticated)
-   .all(isAdmin)
+    .all(isAdmin)
     .get(orders.simonSummary);
 
 router.route('/dupes')

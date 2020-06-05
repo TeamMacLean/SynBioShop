@@ -1,26 +1,15 @@
 Sequence file upload task
 TODO
 
+NOTES ON CURRENT IMPLEMENTATION
+- Uploads are too fast to bother with event handlers, etc.
+- filemanager doesn't include sequence files
 
-MODAL POPUP - ADD SEQUENCE FILES
-- Use suggested bookmark to get MVP
-    = put at top or bottom of page?
-- Closes and refreshes page
-    = ensure all files are uploaded before admin-user can do this
-- Incorporates file uploader
-
-FINAL TOUCHES
-- you want filemanager to also display upload and delete sequence files
-- Add areyousure to delete sequence file
-- test everything again (idiot-proof)
-- prepare = present to Martin (mention stretch goals)
-
-STRETCH GOALS (discuss with Martin)
-- Tick once file is downloaded (simple event listener)
-
-FINALLY
-- send screenshots to customer over email
-
-NB
-- http://localhost:8080/#dataexplorer
-    = r.db('synbioshop').table('Type2').filter({name: 'katie'})
+SEND SCREENSHOTS TO CUSTOMER
+- MAP file change
+- Upload sequence files button/modal
+- Uploaded sequence files - download if not admin
+- Uploaded sequence files - delete if admin
+- NB don't confirm uploads until complete (pretty quick)
+- filemanager doesn't include sequence files
+- use display of item to edit sequence files (NOT edit of item page, just use edit page for replacing the single map file)

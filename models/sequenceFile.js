@@ -4,7 +4,6 @@ const isImage = require('is-image');
 const config = require('../config.json');
 const r = thinky.r;
 
-
 const SequenceFile = thinky.createModel('SequenceFile', {
     id: type.string(),
     originalName: type.string().required(),
@@ -21,9 +20,8 @@ SequenceFile.define('relativePath', function () {
     return `${config.uploadRootURL}/${this.name}`;
 });
 
-// why file manager?
 SequenceFile.define('downloadPath', function(){
-    return `/filemanager/${this.id}/download`;
+    return `/sequencefilemanager/${this.id}/download`;
 });
 
 SequenceFile.define('isImage', function () {

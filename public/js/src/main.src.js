@@ -8,6 +8,8 @@ import 'tinymce/plugins/link/plugin.min.js'
 
 import $ from 'jquery'
 
+import MicroModal from 'micromodal';  // es6 module
+
 $(function () {
     initUserMenu();
     initFlashButtons();
@@ -15,7 +17,7 @@ $(function () {
     initCart();
     initTinyMCE();
     initSearch();
-    
+    initMicroModal();
 });
 
 
@@ -216,4 +218,8 @@ function initSearch() {
     function sendSearch(text) {
         socket.emit('search', text);
     }
+}
+
+function initMicroModal(){
+    MicroModal.init();
 }

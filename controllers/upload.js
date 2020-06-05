@@ -3,6 +3,7 @@ const config = require('../config.json');
 const fs = require('fs');
 const path = require('path');
 const File = require('../models/file');
+const SequenceFile = require('../models/sequenceFile');
 const Flash = require('../lib/flash');
 const upload = {};
 
@@ -101,6 +102,18 @@ upload.download = (req, res)=> {
         })
 };
 
+upload.downloadSequenceFile = (req, res)=> {
+    const id = req.params.id;
+
+    SequenceFile.get(id)
+        .then((file)=> {
+            return res.download(file.path, file.originalName);
+        })
+        .catch((err)=> {
+            return renderError(err, res);
+        })
+};
+
 upload.deleteFile = (req, res)=> {
     const id = req.params.id;
 
@@ -111,6 +124,25 @@ upload.deleteFile = (req, res)=> {
                 .then(()=> {
                     Flash.success(req, `${file.originalName} deleted successfully`);
                     return res.redirect('/filemanager');
+                })
+                .catch((err)=> {
+                    return renderError(err, res);
+                });
+        })
+        .catch((err)=> {
+            return renderError(err, res);
+        });
+};
+
+upload.deleteSequenceFile = (req, res)=> {
+    const id = req.params.id;
+
+    SequenceFile.get(id)
+        .then((sequenceFile)=> {
+            file.delete()
+                .then(()=> {
+                    Flash.success(req, `${sequenceFile.originalName} deleted successfully`);
+                    return res.redirect('back');
                 })
                 .catch((err)=> {
                     return renderError(err, res);
