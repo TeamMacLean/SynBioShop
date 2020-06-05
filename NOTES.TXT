@@ -1,36 +1,37 @@
-/ if user is from TSL (determine globally, accessible from anywhere)
-* checkout page needs nominal text input, display a total price, show a per item price (i.e. 5 uL = £5), checkbox to confirm purchase
-* when you view an order, display above additional info (any view pages)
-* when you email, display above additional info (any emails)
-* Database changes
-* make price configurable (admin set how much each item is? synbio don't but might change to this) (modularity is good) (put in config)
+Sequence file upload task
+TODO
+
+NB
+- http://localhost:8080/#dataexplorer
+    = r.db('synbioshop').table('Type2').filter({name: 'katie'})
 
 
-el.addEventListener(eventName, eventHandler);
-on change of quantity, attach listener to input, update price and update total
-ensure second.
+FILE UPLOADER MVP - ADD SEQUENCE FILES
+- Use suggested bookmarked library to get MVP
+- Stored in local storage correctly
+    = must use ID of item
+    = ensure duplicated SequenceFile
+- Path string in DB stored correctly
+- Duplicate process for deleting files
 
-initialQuantity + changeInQuantity
+DOWNLOAD ACTUAL SEQUENCE FILES IN SHOW.ejs
+- Each file is just a string of file name
+- Can download with button
 
+MODAL POPUP - ADD SEQUENCE FILES
+- Use suggested bookmark to get MVP
+    = put at top or bottom of page?
+- Closes and refreshes page
+    = ensure all files are uploaded before admin-user can do this
+- Incorporates file uploader
 
+FINAL TOUCHES
+- Add areyousure to delete sequence file
+- test everything again (idiot-proof)
+- prepare = present to Martin (mention stretch goals)
 
-//TODO
-* Plan client code
-* Setup 
-* rules around minLength/maxLength of code
+STRETCH GOALS (discuss with Martin)
+- Tick once file is downloaded (simple event listener)
 
-
---------------------------
-item_name    |   [5]ul  | £5
---------------------------
-item_name    |   [63]ul | £63
---------------------------
-item_name    |   [35]ul | £35
---------------------------
-item_name    |   [65]ul | £65
---------------------------
-    [nominal](required if !TSL)            £TOTAL
---------------------------
-    [X] confirm (tick required !tsl)
---------------------------
-| cancel | checkout 
+FINALLY
+- send screenshots to customer over email

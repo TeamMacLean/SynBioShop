@@ -8,6 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const Flash = require('../lib/flash');
 const Log = require('../lib/log');
+const mkdirp = require('mkdirp');
 
 const premade = {};
 premade.db = {};
@@ -465,30 +466,36 @@ function processFiles(savedType, req) {
     return new Promise((good, bad) => {
         if (req.files && req.files.mapFile) {
             const file = req.files.mapFile;
-            const newPath = path.join(config.uploadRoot, file.name);
-
             // take temporary file path and give it new path
             // i.e. from tmp directory to uploadRoot
             // e.g. from /tmp/file.ex to public/uploads/file.ex
-            fs.rename(file.path, newPath, (err) => {
-                if (err) {
-                    console.error('ERROR', err);
-                }
-                new File({
-                    path: newPath,
-                    name: file.name,
-                    originalName: file.originalname,
-                    typeID: savedType.id
-                })
-                    .save()
-                    .then(() => {
-                        return good();
-                    })
-                    .catch((err) => {
-                        return bad(err);
-                    });
-            });
+            const newPath = path.join(config.uploadRoot, file.name);
+            // ensure newPath is there:
+            // Use it to run function that requires the directory. 
+            // Callback is called after path is created or if path did already exists. 
+            // Error err is set if mkdirp failed to create directory path.
+            mkdirp(config.uploadRoot).then(made => {
+                //Carry on, all good, directory exists / created.
 
+                fs.rename(file.path, newPath, (err) => {
+                    if (err) {
+                        console.error('ERROR', err);
+                    }
+                    new File({
+                        path: newPath,
+                        name: file.name,
+                        originalName: file.originalname,
+                        typeID: savedType.id
+                    })
+                        .save()
+                        .then(() => {
+                            return good();
+                        })
+                        .catch((err) => {
+                            return bad(err);
+                        });
+                });
+            });
         } else {
             return good();
         }
@@ -501,15 +508,12 @@ premade.item.save = (req, res) => {
 
     const id = req.body.id;
 
-    console.log('req.body', req.body)
-    console.log('req.files', req.files)
-
-    // return res.redirect(`/premade/`);
 
 
     // hidden field of id, if it's in edit mode
     if (id) {
 
+        console.log('edit mode')
 
         Type.getByID(id)
             .then((type) => {
@@ -554,6 +558,8 @@ premade.item.save = (req, res) => {
             })
 
     } else {
+
+        console.log('new mode')
 
         DB.get(dbID).then((db) => {
             const type = Type.getByTypeNumber(db.type);
@@ -607,7 +613,7 @@ premade.item.show = (req, res) => {
     console.log(`trying to show ${itemID}`);
     Type.getByID(itemID)
         .then((item) => {
-
+            
             const type = Type.getByTypeNumber(item.db.type);
             const headings = ['Description', 'Comments'];
             const values = [item.description, item.comments];
@@ -623,19 +629,18 @@ premade.item.show = (req, res) => {
             });
 
             //get files, select most recent
-            if (item.file && item.file.length) {
-                item.file = item.file.sort(function (a, b) {
+            if (item.mapFile && item.mapFile.length) {
+                item.mapFile = item.mapFile.sort(function (a, b) {
                     return new Date(b.createdAt) - new Date(a.createdAt);
                 })[0];
             } else {
-                item.file = null;
+                item.mapFile = null;
             }
 
             getDbs().then((dbs) => {
                 return res.render('premade/item/show', { headings, values, dbs, item });
             }).catch(err => renderError(err, res));
         }).catch((err) => renderError(err, res));
-
 };
 
 premade.item.enable = (req, res) => {
@@ -667,12 +672,12 @@ premade.item.edit = (req, res) => {
             .then((category) => {
 
                 //get files, select most recent
-                if (type.file && type.file.length) {
-                    type.file = type.file.sort(function (a, b) {
+                if (type.mapFile && type.mapFile.length) {
+                    type.mapFile = type.mapFile.sort(function (a, b) {
                         return new Date(b.createdAt) - new Date(a.createdAt);
                     })[0];
                 } else {
-                    type.file = null;
+                    type.mapFile = null;
                 }
 
                 getDbs().then((dbs) => {

@@ -20,7 +20,7 @@
             <!-- <div class="form-group">
                 <label for="name">Name</label> -->
             <!--change back to text-->
-            <input type="hidden" id="name" name="name" value="<%- type.name || 'bob' %> " required>
+            <input type="text" id="name" name="name" value="<%- type.name || 'karen' %>" required>
             <!-- </div> -->
 
             <!-- <div class="form-group">
@@ -39,7 +39,7 @@
 
             <% type.fields.map(function(field){ %>
             <div class="form-group">
-                <label for="<%- field.name %>"><%- field.text %></label>
+                <!-- <label for="<%- field.name %>"><%- field.text %></label> -->
                 <!-- <input type="<%- field.type %>" id="<%- field.name %>" name="<%- field.name %>"
                     value="<%- type[field.name] %>" required> -->
                 <input type="hidden" id="<%- field.name %>" name="<%- field.name %>"
@@ -67,14 +67,18 @@
             </div>
 
             <div class="form-group">
-                <label for="mapFile">MAP</label>
+                <label for="mapFile"><b>MAP file</b></label>
                 <% if(type.mapFile){ %>
+                    <% console.log('GERRY', type) %>
                 <span>Currently: <a href="<%- type.mapFile.downloadPath() %>"><%- type.mapFile.originalName %></a></span>
                 <br>
                 <% } %>
                 <input type="file" id="mapFile" name="mapFile">
             </div>
 
+            <div class="form-group">
+                <p><i>(<b>N.B.</b> please press save in order to be able to start editing sequence files.)</i></p>
+            </div>
 
             <div class="form-group">
                 <label for="tinymce">Documentation</label>

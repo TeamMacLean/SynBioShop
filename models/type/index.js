@@ -31,7 +31,7 @@ function filterBy(key, filter) {
     return new Promise((resolve, reject) => {
         const promises = types.TYPES.map(type => type.model.filter(searcher).getJoin({
             db: true,
-            file: true,
+            mapFile: true,
             category: true
         }));
         Promise.all(promises)

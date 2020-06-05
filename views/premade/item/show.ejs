@@ -1,5 +1,27 @@
 <% include ../../head.ejs %>
 <% include ./../sidebar.ejs %>
+
+<% 
+    const sequenceFiles = [];
+
+    const sequenceFiles2 = [
+        {
+            name: 'Jonjo.ms',
+            id: 33,
+        },
+        {
+            name: 'Joseph.ms',
+            id: 49,
+        },
+    ]; 
+%>
+
+<script>
+    function myLog() {
+        console.log('Hello George');
+    }
+</script> 
+
 <div class="sidebar-push">
     <div class="container">
 
@@ -9,6 +31,9 @@
             <div class="form-group">
                 <a href="/premade/item/<%- item.id %>/edit" class="button primary">Edit
                     Item</a>
+                <button class="btn btn-primary" id="uploadSequenceFilesButton" onclick="myLog();">
+                    Upload sequence files
+                </button>    
                 <% if(item.disabled){ %>
                 <a href="/premade/item/<%- item.id %>/enable" class="button success areyousure">Enable
                     Item</a>
@@ -37,52 +62,61 @@
         <p><span class="bold"><%- heading %>:</span> <%- values[i] %></p>
         <% }); %>
 
-
         <fieldset>
             <% if(!locals.disableCart){ %>
             <a href="#" data-addToCart="true" data-typeID="<%- item.id %>" class="button success">
                 Add to cart
             </a>
             <% } %>
+        </fieldset>
 
-            <% if(item.file){ %>
-            <a href="<%- item.mapFile.downloadPath() %>" class="button primary">
-                Download
-            </a>
+        <fieldset>
+            <% if(item.mapFile){ %>
+                <hr>
+                <h3>MAP file</h3>
+                <a href="<%- item.mapFile.downloadPath() %>" class="button primary">
+                    Download
+                </a>
             <% } %>
         </fieldset>
 
-        <% include ./_sequenceFileUploadModal.ejs %>
+        <% if(sequenceFiles?.length){ %>
+            <div>
+                <hr>
+                <h3>Sequence files</h3>
 
-        <!--fieldset for seq files
+                <div class="row">
+                    <% sequenceFiles.map((sequenceFile, index) => { %>
+                        <div class="col3">
+                            <div><%= sequenceFile.name %></div>
+                            <div id="sequenceFileButtonsWrapper">
+                                <button class="icon_download"></button>
+                                <!-- TODO <button>DownL &#xe071;  &#xe092; icon_download icon_cloud-download</button> -->
+
+                                <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+                                    <a 
+                                        name="removeItem"
+                                        class="button danger outline icon remove-from-cart areyousure" 
+                                        id="<%- sequenceFile.id %>"
+                                    >
+                                        <span data-icon="&#xe019;"></span>
+                                    </a>
+                                <% } %>
+                            </div>
+                            <br>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+        <% } %>                     
         
-        <div>
-            <div>Button</div><modal />
-
-            <row>
-                for (sequenceFiles){
-                    <col size="25%" class="col-3">
-                        <img>
-                        <button>DownL &#xe071;  &#xe092; icon_download icon_cloud-download</button>
-                        if (admin) {
-                            <button>Delete</button>
-
-                        }
-                    </col>
-                }
-            </row>
-        </div>
-        
-        -->
-
         <% if(item.documentation){ %>
-
-        <hr>
-
-        <div class="document"><%- item.documentation %></div>
-
+            <hr>
+            <div class="document"><%- item.documentation %></div>
         <% } %>
 
     </div>
 </div>
+
+<% include ./_sequenceFileUploadModal.ejs %>
 <% include ../../foot.ejs %>
