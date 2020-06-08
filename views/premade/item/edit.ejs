@@ -17,61 +17,48 @@
             <input type="hidden" name="id" id="id" value="<%- type.id %>">
             <% } %>
 
-            <!-- <div class="form-group">
-                <label for="name">Name</label> -->
-            <!--change back to text-->
-            <input type="text" id="name" name="name" value="<%- type.name || 'karen' %>" required>
-            <!-- </div> -->
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" value="<%- type.name %>" required>
+            </div>
 
-            <!-- <div class="form-group">
-                <label for="description">Description</label> -->
-            <!--change back to text-->
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" name="description" id="description" value="<%- type.description %>">
+            </div>
 
-            <input type="hidden" name="description" id="description" value="<%- type.description || 'bob' %>">
-            <!-- </div> -->
-
-            <!-- <div class="form-group">
-                <label for="comments">Comments</label> -->
-            <!--change back to text-->
-
-            <input type="hidden" name="comments" id="comments" value="<%- type.comments || 'bob' %>">
-            <!-- </div> -->
+            <div class="form-group">
+                <label for="comments">Comments</label>
+                <input type="text" name="comments" id="comments" value="<%- type.comments %>">
+            </div>
 
             <% type.fields.map(function(field){ %>
             <div class="form-group">
-                <!-- <label for="<%- field.name %>"><%- field.text %></label> -->
-                <!-- <input type="<%- field.type %>" id="<%- field.name %>" name="<%- field.name %>"
-                    value="<%- type[field.name] %>" required> -->
-                <input type="hidden" id="<%- field.name %>" name="<%- field.name %>"
-                    value="<%- type[field.name] || 'bob' %>" required>
+                <label for="<%- field.name %>"><%- field.text %></label>
+                <input type="<%- field.type %>" id="<%- field.name %>" name="<%- field.name %>"
+                    value="<%- type[field.name] %>" required>
             </div>
             <% }); %>
 
             <div class="form-group">
                 <label for="concentration">Concentration</label>
-                <!--change back to text-->
-
-                <input type="hidden" name="concentration" id="concentration" value="<%- type.concentration || 1 %>">
+                <input type="text" name="concentration" id="concentration" value="<%- type.concentration %>">
             </div>
             <div class="form-group">
                 <label for="synBioID">SynBio ID (Mark's Labeling)</label>
-                <!--change back to text-->
-
-                <input type="hidden" name="synBioID" id="synBioID" value="<%- type.synBioID || 34 %>">
+                <input type="text" name="synBioID" id="synBioID" value="<%- type.synBioID %>">
             </div>
 
             <div class="form-group">
                 <label for="note">Admin note</label>
-                <!--change back to text-->
-                <input type="hidden" name="note" id="note" value="<%- type.note || 'bob' %>">
+                <input type="text" name="note" id="note" value="<%- type.note %>">
             </div>
 
             <div class="form-group">
                 <label for="mapFile"><b>MAP file</b></label>
                 <% if(type.mapFile){ %>
-                    <% console.log('GERRY', type) %>
-                <span>Currently: <a href="<%- type.mapFile.downloadPath() %>"><%- type.mapFile.originalName %></a></span>
-                <br>
+                    <span>Currently: <a href="<%- type.mapFile.downloadPath() %>"><%- type.mapFile.originalName %></a></span>
+                    <br>
                 <% } %>
                 <input type="file" id="mapFile" name="mapFile">
             </div>
@@ -83,9 +70,9 @@
             <div class="form-group">
                 <label for="tinymce">Documentation</label>
                 <% if(typeof type != 'undefined'){ %>
-                <textarea id="tinymce" class="wide" name="documentation"><%- type.documentation %></textarea>
+                    <textarea id="tinymce" class="wide" name="documentation"><%- type.documentation %></textarea>
                 <% } else { %>
-                <textarea id="tinymce" class="wide" name="documentation"></textarea>
+                    <textarea id="tinymce" class="wide" name="documentation"></textarea>
                 <% } %>
             </div>
 

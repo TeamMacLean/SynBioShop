@@ -1,4 +1,5 @@
 <script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
 
 <div class="modal micromodal-slide" id="modal-1" aria-hidden="true">
     <!-- <div class="modal__overlay" tabindex="-1" data-micromodal-close id="modal-overlay"> -->
@@ -6,20 +7,24 @@
     <div class="modal__overlay" tabindex="-1" id="modal-overlay">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
             <header class="modal__header">
-            <h2 class="modal__title" id="modal-1-title">
-                Add sequence files here
-            </h2>
-            <!-- <button class="modal__close" aria-label="Close modal" data-micromodal-close></button> -->
+                <h2 class="modal__title" id="modal-1-title">
+                    Add sequence files here
+                </h2>
+                <!-- <button class="modal__close" aria-label="Close modal" data-micromodal-close></button> -->
             </header>
+            <br>
+            <p><i>(<b>N.B.</b> If you are struggling to upload multiple files simultaneously, try 1 file at a time.)</i></p>
             <main class="modal__content" id="modal-1-content">
-                    <form 
-                        action="/premade/item/<%- item.id %>/uploadSequenceFile"         
-                        class="dropzone"
-                        id="my-awesome-dropzone">
-                    <form><div class="dz-message">Click here or drag files to here</div></form>
+                <form 
+                    action="/premade/item/<%- item.id %>/uploadSequenceFile"         
+                    class="dropzone"
+                    id="my-awesome-dropzone">
+                <form>
+                    <div class="dz-message">Click here or drag files to here</div>
+                </form>
             </main>
             <footer class="modal__footer">
-                <button class="modal__btn modal__btn-primary" onClick="location.reload(); return false;">Confirm additional uploaded files</button>
+                <button class="modal__btn modal__btn-primary success" onClick="location.reload(); return false;">Confirm additional uploaded files</button>
                 <!-- <button class="modal__btn" onClick="MicroModal.hide('modal-1')" data-micromodal-close aria-label="Close this dialog window">Close</button> -->
             </footer>
         </div>

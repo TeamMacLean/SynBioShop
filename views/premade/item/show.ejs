@@ -1,8 +1,6 @@
 <% include ../../head.ejs %>
 <% include ./../sidebar.ejs %>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
-
 <div class="sidebar-push">
     <div class="container">
 
@@ -12,7 +10,7 @@
                 <div class="form-group">
                     <a href="/premade/item/<%- item.id %>/edit" class="button primary">Edit
                         Item</a>
-                    <button class="btn btn-primary" id="uploadSequenceFilesButton" onClick="MicroModal.show('modal-1')">
+                    <button class="btn btn-primary primary" id="uploadSequenceFilesButton" onClick="MicroModal.show('modal-1')">
                         Upload sequence files
                     </button>
                     <% if(item.disabled){ %>
@@ -39,10 +37,9 @@
             <hr>
         <% } %>
 
-        <!-- temp reclude -->
-        <!-- <% headings.map(function(heading, i){ %>
-        <p><span class="bold"><%- heading %>:</span> <%- values[i] %></p>
-        <% }); %> -->
+        <% headings.map(function(heading, i){ %>
+            <p><span class="bold"><%- heading %>:</span> <%- values[i] %></p>
+        <% }); %>
 
         <fieldset>
             <% if(!locals.disableCart){ %>
@@ -56,8 +53,12 @@
             <% if(item.mapFile){ %>
                 <hr>
                 <h3>MAP file</h3>
-                <a href="<%- item.mapFile.downloadPath() %>" class="button primary">
-                    Download
+                <% if(item.mapFile){ %>
+                    <span><%- item.mapFile.originalName %></span>
+                    <br>
+                <% } %>
+                <a href="<%- item.mapFile.downloadPath() %>" class="icon_download button primary outline">
+                    
                 </a>
             <% } %>
         </fieldset>
@@ -70,32 +71,29 @@
                 <div class="row">
                     <% item.sequenceFiles.map((sequenceFile, index) => { %>
                         <div class="col6">
-                            <div><%= sequenceFile.originalName %></div>
-                            <div class="row" id="sequenceFileButtonsWrapper">
-
-                                <div class="col2 center">
-                                    <a href="<%- sequenceFile.downloadPath() %>" class="icon_download"></a>
-                                </div>
-
-                                <div class="col2">
+                            <div class="d-flex justify-content-space-between">                                                                
+                                <div class="d-flex align-items-center"><span><%= sequenceFile.originalName %></span></div>
+    
+                                <div class="d-flex flex-direction-row pb10px">
+                                    <a href="<%- sequenceFile.downloadPath() %>" class="icon_download button primary outline"></a>
                                     <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-                                        <!-- TODO add areyousure in, what does remove-from-cart do? -->
-                                        <form 
-                                            method="POST"
-                                            action="/premade/item/<%- item.id %>/deleteSequenceFile"        
-                                        >
-                                            <input type="hidden" name="sequenceFileID" value="<%- sequenceFile.id %>" />
-                                            <button 
-                                                type="submit"
-                                                class="button danger outline icon remove-from-cart areyousure" 
+                                        <div class="pl5px">
+                                            <form 
+                                                method="POST"
+                                                action="/premade/item/<%- item.id %>/deleteSequenceFile"        
                                             >
-                                            <span data-icon="&#xe019;"></span>
-                                            </button>
-                                        </form>
+                                                <input type="hidden" name="sequenceFileID" value="<%- sequenceFile.id %>" />
+                                                <button 
+                                                    type="submit"
+                                                    class=" button danger outline icon remove-from-cart areyousure" 
+                                                >
+                                                    <span data-icon="&#xe019;"></span>
+                                                </button>
+                                            </form>
+                                        </div>
                                     <% } %>
-                                </div>
+                                </div>                         
                             </div>
-                            <br>
                         </div>
                     <% }) %>
                 </div>
