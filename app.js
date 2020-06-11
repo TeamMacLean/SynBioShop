@@ -17,6 +17,7 @@ const Order = require('./models/order');
 const flash = require('express-flash');
 const Billboard = require('./models/billboard');
 
+
 const validator = require('validator');
 
 const util = require('./lib/util.js');
@@ -67,6 +68,7 @@ app.use((req, res, next) => {
         res.locals.signedInUser.mail = validator.escape(req.user.mail);
         res.locals.signedInUser.isAdmin = util.isAdmin(req.user.username);
         res.locals.signedInUser.company = validator.escape(req.user.company);
+        res.locals.isPricingAvailable = config.isPricingAvailable;
         if (req.user.iconURL) {
             res.locals.signedInUser.iconURL = req.user.iconURL;
         }

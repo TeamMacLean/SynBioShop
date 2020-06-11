@@ -7,6 +7,7 @@ import 'tinymce/plugins/hr/plugin.min.js'
 import 'tinymce/plugins/link/plugin.min.js'
 
 import $ from 'jquery'
+import Inputmask from "inputmask";
 
 import MicroModal from 'micromodal';  // es6 module
 
@@ -18,6 +19,7 @@ $(function () {
     initTinyMCE();
     initSearch();
     initMicroModal();
+    initInputmask();
 });
 
 
@@ -222,4 +224,9 @@ function initSearch() {
 
 function initMicroModal(){
     MicroModal.init();
+}
+
+function initInputmask(){
+    var im = new Inputmask();
+    im.mask("#costCode");
 }

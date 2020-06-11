@@ -8,19 +8,15 @@
             <div class="tile pad inverted">
                 <h4>Admin</h4>
                 <div class="form-group">
-                    <a href="/premade/item/<%- item.id %>/edit" class="button primary">Edit
-                        Item</a>
+                    <a href="/premade/item/<%- item.id %>/edit" class="button primary">Edit Item</a>
                     <button class="btn btn-primary primary" id="uploadSequenceFilesButton" onClick="MicroModal.show('modal-1')">
                         Upload sequence files
                     </button>
                     <% if(item.disabled){ %>
-                    <a href="/premade/item/<%- item.id %>/enable" class="button success areyousure">Enable
-                        Item</a>
-                    <a href="/premade/item/<%- item.id %>/delete" class="button danger areyousure">Delete
-                        Item</a>
+                        <a href="/premade/item/<%- item.id %>/enable" class="button success areyousure">Enable Item</a>
+                        <a href="/premade/item/<%- item.id %>/delete" class="button danger areyousure">Delete Item</a>
                     <% } else { %>
-                    <a href="/premade/item/<%- item.id %>/disable" class="button danger areyousure">Disable
-                        Item</a>
+                        <a href="/premade/item/<%- item.id %>/disable" class="button danger areyousure">Disable Item</a>
                     <% } %>
                 </div>
             </div>
