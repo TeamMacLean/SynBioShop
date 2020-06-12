@@ -6,6 +6,7 @@
   "uploadRoot": "public/uploads",
   "uploadRootURL": "/uploads",
   "pricePerUnit": "1",
+  "isPricingAvailable": true,
   "imageTypesAllowed": [
     "png",
     "jpg",

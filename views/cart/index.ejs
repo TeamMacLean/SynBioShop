@@ -136,7 +136,7 @@
                 <tr data-id="<%- item.id %>">
                     <td data-th="Item"><a href="/premade/item/<%- item.type.id %>"><%- item.type.name %></a></td>
                     <td data-th="Quantity" class="center">
-                        <% if (locals.signedInUser.company !== 'TSL') { %>
+                        <% if (locals.signedInUser.company !== 'TSL' && locals.isPricingAvailable) { %>
                             <input type="number" value="<%- 5 %>" data-quantity="true"
                                 data-id="<%- item.id %>" name="itemQuantity"
                                 id="<%= 'quantity_' + index %>" readonly>                            
