@@ -3,7 +3,7 @@
 <% 
     const displayPricing = (locals.isPricingAvailable && (locals.signedInUser.company !== 'TSL' || locals.signedInUser.isAdmin));
 %>
-
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
 
     const pricePerUnit = "<%=pricePerUnit%>";
@@ -155,8 +155,8 @@
                         </td>
                     <% } %>
                     
-                    <td data-th="Actions" class="center"><a name="removeItem"
-                            class="button danger outline icon remove-from-cart" data-id="<%- item.id %>"><span
+                    <td data-th="Actions" class="center"><a href="#" name="removeItem"
+                            class="button danger outline icon remove-from-cart areyousure" data-id="<%- item.id %>"><span
                                 data-icon="&#xe019;"></span></a>
                     </td>
                 </tr>

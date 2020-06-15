@@ -1,4 +1,5 @@
 {
+  "disableCart":false,
   "port": "3000",
   "secret": "cats",
   "dbName": "synbioshop",
