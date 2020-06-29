@@ -29,8 +29,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // bodyparser is the most important plugin for express
 // to get the body out of the request is usually regex garbage
 // this formats and puts in req body for you. super useful!
-app.use(bodyParser.json()); 
-app.use(bodyParser.urlencoded({extended: false})); 
+app.use(bodyParser.json({limit: '50mb'})); 
+app.use(bodyParser.urlencoded({extended: false, limit: '50mb'})); 
 app.use(cookieParser());
 app.use(flash());
 app.use(multer({
