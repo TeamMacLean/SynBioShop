@@ -1,7 +1,8 @@
 <% include ../head.ejs %>
 
 <% 
-    const displayPricing = (locals.isPricingAvailable && (locals.signedInUser.company !== 'TSL' || locals.signedInUser.isAdmin));
+    const displayPricing = 
+        (locals.isPricingAvailable && (locals.signedInUser.company !== 'TSL' || locals.signedInUser.isAdmin));
 %>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
@@ -38,13 +39,35 @@
             quantityEl.addEventListener('blur', onAnyChange);
         });
 
+        /*  Update totals must run
+            setTimeout to help it
+            consider setInterval in the future
+            Yes, hacky.
+        */
+
         updateTotals();
+
+        // setInterval(function(){
+        //     alert("Hello");
+        // }, 10003);
+
+        setTimeout(function(){
+            updateTotals();
+        }, 3000);
 
         function updateTotals() {
             if (allItemQuantityElements.length) {
                 const sum = [...allItemQuantityElements]
                     .map(e => Number(e.value))
                     .reduce(function (a, b) { return a + b });
+
+                if (
+                    (!(sum > 0)) ||
+                    !document.querySelectorAll('#totalQuantity').length || 
+                    !document.querySelectorAll('#totalQuantity-input').length
+                ){
+                    window.alert('An error may have occurred updating total quantity. Please refresh your session. If issues continue, please email george.deeks@tsl.ac.uk for further assistance.')
+                }
 
                 document.querySelectorAll('#totalQuantity')[0].innerHTML = sum;
                 document.querySelectorAll('#totalQuantity-input')[0].value = sum;
@@ -109,111 +132,125 @@
 <div class="container">
     <h1 class="center">Shopping Basket</h1>
     <% if(typeof cart != 'undefined'){ %>
-    <% if(cart.items.length > 0){ %>
+        <% if(cart.items.length > 0){ %>
 
-    <div class="form-group"><i>Order 5-25μL per item.</i></div>
-    <% if(displayPricing){ %>
-        <div class="form-group"><i>For non-TSL staff, pricing is currently set at £5 for 5ul, per item. Bespoke orders available through email request.</i></div>
-    <% } %>
-
-    <form method="post" action="/cart/order">
-        <input type="hidden" name="pricePerUnit" value="<%=pricePerUnit%>" />
-        <table class="cart">
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th class="center">Quantity</th>
-                    <% if (displayPricing){ %>
-                        <th class="center">Price</th>
-                    <% } %>
-                    <th class="center">Actions</th>
-                </tr>
-
-            </thead>
-            <tbody>
-                <% cart.items.map(function(item, index){ %>
-                <input type="hidden" value="<%- item.id %>">
-                <tr data-id="<%- item.id %>">
-                    <td data-th="Item"><a href="/premade/item/<%- item.type.id %>"><%- item.type.name %></a></td>
-                    <td data-th="Quantity" class="center">
-                        <% if (locals.signedInUser.company !== 'TSL' && locals.isPricingAvailable) { %>
-                            <input type="number" value="<%- 5 %>" data-quantity="true"
-                                data-id="<%- item.id %>" name="itemQuantity"
-                                id="<%= 'quantity_' + index %>" readonly>                            
-                            <% } else { %>
-                                <input type="number" placeholder="5" value="<%- item.quantity || 5 %>" data-quantity="true"
-                                    data-id="<%- item.id %>" min="5" max="25" name="itemQuantity"
-                                    id="<%= 'quantity_' + index %>">
-                            <% } %>
-                        <span>μL</span>
-                    </td>
-                    <% if (displayPricing){ %>
-                        <td data-th="Price" class="center">
-                            <span>£</span>
-                            <span id="<%= 'price_' + index %>"><%= item.quantity * pricePerUnit %></span>
-    
-                        </td>
-                    <% } %>
-                    
-                    <td data-th="Actions" class="center"><a href="#" name="removeItem"
-                            class="button danger outline icon remove-from-cart areyousure" data-id="<%- item.id %>"><span
-                                data-icon="&#xe019;"></span></a>
-                    </td>
-                </tr>
-                <% }); %>
-                <% if(cart){ %>
-                <tr>
-                    <td><b>TOTAL</b></td>
-                    <td>
-                        <b>
-                            <input type="hidden" id="totalQuantity-input" name="totalQuantity" />
-                            <span class="center" id="totalQuantity"></span>
-                            μL
-                        </b>
-                    </td>
-                    <% if (displayPricing){ %>
-                        <td>
-                            <b>
-                                £
-                                <input type="hidden" id="totalCost-input" name="totalCost" />
-                                <span class="center" id="totalCost"></span>
-                            </b>
-                        </td>
-                    <% } %>
-                </tr>
-                <% } %>
-            </tbody>
-        </table>
-
-        <% if (displayPricing){ %>
-        <div class="row form-group">
-            <div class="col6">
-                <span>Cost centre for charging:</span>
-                <input required id="costCode" name="costCode" type="text" minLength="11" maxLength="11" 
-                    data-inputmask="'mask': '*****-***-*'" class="uppercase"
-                >
-            </div>
-        </div>
-        <div class="form-group">
-            <input class="muted-text" required id="consent" type="checkbox" data-quantity="true">
-            <span class="muted-text">By ticking this box I am confirming that I have authority to spend on the above cost centre</span>
-        </div>
-        <% } %>
-
-        <div class="row">
-            <div class="col12">
-                <div class="pull-right">
-                    <!--<input type="submit" class="button primary" value="Update Cart">-->
-                    <button class="button success areyousure" id="placeOrderButton">Place Order</button>
+            <!-- <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+                <div class="tile pad inverted">
+                    <h4>Admin</h4>
+                        <div class="form-group">
+                            <input class="muted-text" id="enableTSLView" type="checkbox">
+                            <span class="muted-text">Enable non-admin view</span>
+                        </div>
+                        <div class="form-group">
+                            <input class="muted-text" id="enableTSLView" type="checkbox">
+                            <span class="muted-text">Enable non-TSL view</span>
+                        </div>
                 </div>
-            </div>
-        </div>
-    </form>
+            <% } %> -->
+
+            <div class="form-group"><i>Order 5-25μL per item.</i></div>
+            <% if(displayPricing){ %>
+                <div class="form-group"><i>For non-TSL staff, pricing is currently set at £5 for 5ul, per item. Bespoke orders available through email request.</i></div>
+            <% } %>
+
+            <form method="post" action="/cart/order">
+                <input type="hidden" name="pricePerUnit" value="<%=pricePerUnit%>" />
+                <table class="cart">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th class="center">Quantity</th>
+                            <% if (displayPricing){ %>
+                                <th class="center">Price</th>
+                            <% } %>
+                            <th class="center">Actions</th>
+                        </tr>
+
+                    </thead>
+                    <tbody>
+                        <% cart.items.map(function(item, index){ %>
+                        <input type="hidden" value="<%- item.id %>">
+                        <tr data-id="<%- item.id %>">
+                            <td data-th="Item"><a href="/premade/item/<%- item.type.id %>"><%- item.type.name %></a></td>
+                            <td data-th="Quantity" class="center">
+                                <% if (locals.signedInUser.company !== 'TSL' && locals.isPricingAvailable) { %>
+                                    <input type="number" value="<%- 5 %>" data-quantity="true"
+                                        data-id="<%- item.id %>" name="itemQuantity"
+                                        id="<%= 'quantity_' + index %>" readonly>                            
+                                    <% } else { %>
+                                        <input type="number" placeholder="5" value="<%- item.quantity || 5 %>" data-quantity="true"
+                                            data-id="<%- item.id %>" min="5" max="25" name="itemQuantity"
+                                            id="<%= 'quantity_' + index %>">
+                                    <% } %>
+                                <span>μL</span>
+                            </td>
+                            <% if (displayPricing){ %>
+                                <td data-th="Price" class="center">
+                                    <span>£</span>
+                                    <span id="<%= 'price_' + index %>"><%= item.quantity * pricePerUnit %></span>
+            
+                                </td>
+                            <% } %>
+                            
+                            <td data-th="Actions" class="center"><a href="#" name="removeItem"
+                                    class="button danger outline icon remove-from-cart areyousure" data-id="<%- item.id %>"><span
+                                        data-icon="&#xe019;"></span></a>
+                            </td>
+                        </tr>
+                        <% }); %>
+                        <% if(cart){ %>
+                        <tr>
+                            <td><b>TOTAL</b></td>
+                            <td>
+                                <b>
+                                    <input type="hidden" id="totalQuantity-input" name="totalQuantity" />
+                                    <span class="center" id="totalQuantity"></span>
+                                    μL
+                                </b>
+                            </td>
+                            <% if (displayPricing){ %>
+                                <td>
+                                    <b>
+                                        £
+                                        <input type="hidden" id="totalCost-input" name="totalCost" />
+                                        <span class="center" id="totalCost"></span>
+                                    </b>
+                                </td>
+                            <% } %>
+                        </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+
+                <% if (displayPricing){ %>
+                <div class="row form-group">
+                    <div class="col6">
+                        <span>Cost centre for charging:</span>
+                        <input required id="costCode" name="costCode" type="text" minLength="11" maxLength="11" 
+                            data-inputmask="'mask': '*****-***-*'" class="uppercase"
+                        >
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input class="muted-text" required id="consent" type="checkbox" data-quantity="true">
+                    <span class="muted-text">By ticking this box I am confirming that I have authority to spend on the above cost centre</span>
+                </div>
+                <% } %>
+
+                <div class="row">
+                    <div class="col12">
+                        <div class="pull-right">
+                            <!--<input type="submit" class="button primary" value="Update Cart">-->
+                            <button class="button success areyousure" id="placeOrderButton">Place Order</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        <% } else { %>
+            <h3 class="center">Your Shopping Basket is empty.</h3>
+        <% } %>
     <% } else { %>
-    <h3 class="center">Your Shopping Basket is empty.</h3>
-    <% } %>
-    <% } else { %>
-    <h3 class="center">Your Shopping Basket is empty.</h3>
+        <h3 class="center">Your Shopping Basket is empty.</h3>
     <% } %>
 
 </div>

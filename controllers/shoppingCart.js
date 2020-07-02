@@ -157,6 +157,16 @@ ShoppingCart.placeOrder = (req, res) => {
     const username = req.user.username;
     const { totalQuantity, totalCost, costCode, pricePerUnit } = req.body;
 
+    if (totalQuantity){
+        var grovel = 
+            'Total Quantity has not been defined. Please empty your cart, refresh the session, and try again.'
+        grovel += ' If this problem happens again, please click the \'Report Bug\' button and '
+        grovel += ' list the steps you took that will reproduce this issue, and we will ';
+        grovel += ' endeavour to fix the error as soon as possible.';
+
+        return renderError(grovel, res)
+    }
+
     // database join of 'items' with cart
     ShoppingCart.ensureCart(username, {items: true}).then((cart)=> {
         new Order({username, costCode, totalCost, totalQuantity, pricePerUnit}).save().then((savedOrder)=> {
