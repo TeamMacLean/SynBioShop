@@ -1,6 +1,6 @@
 A new order is ready.
 
-<%- locals.order.janCode %>
+<%- parseInt(locals.order.janCode) - 1 %>
 
 <% locals.order.items.map(function(item){ %>
 

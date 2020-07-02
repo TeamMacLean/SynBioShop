@@ -68,6 +68,7 @@ Order.pre('save', function (next) {
         Order.count()
             .execute()
             .then(count => {
+                console.log('new jancode', (count + 1))
                 order.janCode = (count + 1).toString();
                 next();
             })
