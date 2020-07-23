@@ -157,19 +157,32 @@ ShoppingCart.placeOrder = (req, res) => {
     const username = req.user.username;
     const { totalQuantity, totalCost, costCode, pricePerUnit } = req.body;
 
-    if (!totalQuantity){
-        var grovel = 
-            'Total Quantity has not been defined. Please empty your cart, refresh the session, and try again.'
-        grovel += ' If this problem happens again, please click the \'Report Bug\' button and '
-        grovel += ' list the steps you took that will reproduce this issue, and we will ';
-        grovel += ' endeavour to fix the error as soon as possible.';
-
-        return renderError(grovel, res)
-    }
-
     // database join of 'items' with cart
     ShoppingCart.ensureCart(username, {items: true}).then((cart)=> {
-        new Order({username, costCode, totalCost, totalQuantity, pricePerUnit}).save().then((savedOrder)=> {
+
+        // recalculate quantity and cost on serverside, in case of old/bad browser:
+
+        var totalQuantityCalculated = cart.items.map(item => item.quantity).reduce((a, b) => a + b, 0);
+
+        var isCostApplicable = req.user.isAdmin || req.user.company !== 'TSL';
+        var totalCostCalculated = isCostApplicable ? (totalQuantityCalculated * pricePerUnit) : null;
+
+        // console.log('isCostApplicable', isCostApplicable)
+        // console.log('totalCostCalculated', totalCostCalculated)
+        // console.log('calculatedTotalCost', calculatedTotalCost);
+
+        if (!totalQuantityCalculated){
+            var grovel = 
+                'Total Quantity has not been defined. Please empty your cart, log in and out again, and try again.'
+            grovel += ' This site is built for Google Chrome. Please also ensure that you are using it.'
+            grovel += ' If this problem persists, please click the \'Report Bug\' button and '
+            grovel += ' list the steps you took that will reproduce this issue, and we will ';
+            grovel += ' endeavour to fix the error as soon as possible.';
+    
+            return renderError(grovel, res)
+        }
+
+        new Order({username, costCode, totalCostCalculated, totalQuantityCalculated, pricePerUnit}).save().then((savedOrder)=> {
             const saving = [];
 
             cart.items.map(item => {
