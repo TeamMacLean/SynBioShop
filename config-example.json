@@ -30,6 +30,9 @@
     "emailDomain": "@example.org"
   },
   "admins": [
-    "pagem"
+    "deeks"
+  ],
+  "emailAdmins": [
+    "deeks"
   ]
 }
