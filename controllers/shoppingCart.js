@@ -155,7 +155,9 @@ ShoppingCart.ensureAdd = (username, typeID) => new Promise((good, bad) => {
 
 ShoppingCart.placeOrder = (req, res) => {
     const username = req.user.username;
-    const { totalQuantity, totalCost, costCode, pricePerUnit } = req.body;
+    const { costCode, pricePerUnit } = req.body;
+    var totalQuantity = req.body.totalQuantity;
+    var totalCost = req.body.totalCost;
 
     // database join of 'items' with cart
     ShoppingCart.ensureCart(username, {items: true}).then((cart)=> {
@@ -171,7 +173,10 @@ ShoppingCart.placeOrder = (req, res) => {
         // console.log('totalCostCalculated', totalCostCalculated)
         // console.log('calculatedTotalCost', calculatedTotalCost);
 
-        if (!totalQuantityCalculated){
+        totalQuantity = totalQuantity ? totalQuantity : totalQuantityCalculated;
+        totalCost = isCostApplicable ? (totalCost ? totalCost : totalCostCalculated) : null;
+
+        if (!totalQuantity){
             var grovel = 
                 'Total Quantity has not been defined. Please empty your cart, log in and out again, and try again.'
             grovel += ' This site is built for Google Chrome. Please also ensure that you are using it.'
@@ -182,7 +187,7 @@ ShoppingCart.placeOrder = (req, res) => {
             return renderError(grovel, res)
         }
 
-        new Order({username, costCode, totalCostCalculated, totalQuantityCalculated, pricePerUnit}).save().then((savedOrder)=> {
+        new Order({username, costCode, totalCost, totalQuantity, pricePerUnit}).save().then((savedOrder)=> {
             const saving = [];
 
             cart.items.map(item => {
