@@ -44,19 +44,20 @@ upload.uploadFilePost = (req, res) => {
     if (file) {
 
         const newPath = path.join(config.uploadRoot, file.name);
-        fs.rename(file.path, newPath);
 
-        new File({
-            path: newPath,
-            name: file.name,
-            originalName: file.originalname
-
-        }).save().then(()=> {
-            return res.redirect('/filemanager');
-        }).catch((err)=> {
-            return renderError(err, res);
+        fs.promises.rename(file.path, newPath).then( _ => {
+            new File({
+                path: newPath,
+                name: file.name,
+                originalName: file.originalname
+    
+            }).save().then(() => {
+                Flash.success(req, `Uploaded new file successfully`);                
+                return res.redirect('/filemanager');
+            }).catch((err)=> {
+                return renderError(err, res);
+            })
         })
-
 
     } else {
         return renderError('File not received', res);
