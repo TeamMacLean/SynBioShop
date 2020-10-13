@@ -57,15 +57,29 @@
                 return b.createdAt - a.createdAt;
             }).map(function(order){ %>
 
-                <tr>
-                    <td><%- order.janCode %></td>
-                    <td><%- order.createdHumanDate() %></td>
-                    <td><%- order.completedHumanDate() %></td>
-                    <td><%- order.username %></td>
-                    <td><%= order.totalCost ? ("£" + order.totalCost) : "n/a" %></td>
-                    <td><%- order.costCode || "n/a" %></td>
-                    <td><a href="/order/<%- order.id %>">View</a></td>
-                </tr>
+                <% /* CANCELLATION HACK */ if(['72', '71'].includes(order.janCode)){ %>
+                    <tr>
+                        <td><%- order.janCode %></td>
+                        <td><%- order.createdHumanDate() %></td>
+    
+                        <td>CANCELLED</td>      
+                        <td><%- order.username %></td>
+                        <td>n/a</td>
+                        <td>n/a</td>
+                    </tr> 
+                <% } else { %>
+                    <tr>
+                        <td><%- order.janCode %></td>
+                        <td><%- order.createdHumanDate() %></td>
+    
+                        <td><%- order.completedHumanDate() %></td>      
+                        <td><%- order.username %></td>
+                        <td><%= order.totalCost ? ("£" + order.totalCost) : "n/a" %></td>
+                        <td><%- order.costCode || "n/a" %></td>
+                        <td><a href="/order/<%- order.id %>">View</a></td>
+                    </tr>                
+                <% } %>
+            
             <% }); %>
 
             </tbody>
