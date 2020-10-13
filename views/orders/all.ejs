@@ -57,7 +57,7 @@
                 return b.createdAt - a.createdAt;
             }).map(function(order){ %>
 
-                <% /* CANCELLATION HACK */ if(['1336', '1542'].includes(order.janCode)){ %>
+                <% /* CANCELLATION HACK */ if(['1336', '1541'].includes(order.janCode)){ %>
                     <tr>
                         <td><%- order.janCode %></td>
                         <td><%- order.createdHumanDate() %></td>
