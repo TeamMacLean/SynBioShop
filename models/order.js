@@ -68,8 +68,20 @@ Order.pre('save', function (next) {
         Order.count()
             .execute()
             .then(count => {
-                console.log('new jancode', (count + 1))
-                order.janCode = (count + 1).toString();
+                const newJanCode = count + 1;
+                const newJanCodeStr = newJanCode.toString();
+                if (typeof(newJanCodeStr) !== 'string'){
+                    console.error('Did not convert JanCode to string')
+                }
+                if (!(newJanCode > count)){
+                    console.error('JanCode is not increased from count')
+                }
+
+                console.log('originalCount', count,'new jancode:', newJanCode, 'as string:', newJanCodeStr)
+                order.janCode = newJanCodeStr;
+                if (order.janCode != newJanCodeStr){
+                    console.error('Problems assigning order.janCode')
+                }
                 next();
             })
             .catch(err => {
@@ -77,6 +89,7 @@ Order.pre('save', function (next) {
             })
 
     } else {
+        console.log('JanCode established as:', order.janCode, 'count not available unless added to code')
         next();
     }
 
