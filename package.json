@@ -47,7 +47,7 @@
     "passport": "^0.3.2",
     "passport-ldapauth": "^0.5.0",
     "session-rethinkdb": "^2.0.0",
-    "socket.io": "^1.6.0",
+    "socket.io": "^2.4.0",
     "thinky": "^2.3.8",
     "validator": "^10.3.0",
     "xss": "^0.3.3"
