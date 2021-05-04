@@ -54,8 +54,9 @@
             <tbody>
                 <% 
                 // HACK failed orders, pt 1: add failed order janCodes
-                // TODO move to config.js
-                orders.closed.push({janCode: '1862'});
+                // TODO move to config.js, refactor
+                // THERE IS NOTHING WRONG WITH 1862 order
+                // orders.closed.push({janCode: '1862'});
 
                 orders.closed.sort(function (a, b) {
                     return b.janCode - a.janCode;
