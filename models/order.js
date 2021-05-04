@@ -76,7 +76,6 @@ Order.pre('save', function (next) {
                 if (!(newJanCode > count)){
                     console.error('JanCode is not increased from count')
                 }
-
                 console.log('originalCount', count,'new jancode:', newJanCode, 'as string:', newJanCodeStr)
                 order.janCode = newJanCodeStr;
                 if (order.janCode != newJanCodeStr){

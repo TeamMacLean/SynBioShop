@@ -10,7 +10,7 @@
             <p class="center">None</p>
         <% } else { %>
             <% orders.open.sort(function (a, b) {
-                return b.createdAt - a.createdAt;
+                return b.createdAt - a.createdAt
             }).map(function(order){ %>
                 <div class="col4 auto-clear">
                     <div class="tile">
@@ -29,7 +29,7 @@
                         <a href="/order/<%- order.id %>" class="button primary tile-button-bottom">Show</a>
                     </div>
                 </div>
-            <% }); %>
+            <% }) %>
         <% } %>
     </div>
 
@@ -52,35 +52,60 @@
             </tr>
             </thead>
             <tbody>
+                <% 
+                // HACK failed orders, pt 1: add failed order janCodes
+                // TODO move to config.js
+                orders.closed.push({janCode: '1862'});
 
-            <% orders.closed.sort(function (a, b) {
-                return b.createdAt - a.createdAt;
-            }).map(function(order){ %>
+                orders.closed.sort(function (a, b) {
+                    return b.janCode - a.janCode;
+                }).map(function(order){ %>
 
-                <% /* CANCELLATION HACK */ if(['1336', '1541'].includes(order.janCode)){ %>
-                    <tr>
-                        <td><%- order.janCode %></td>
-                        <td><%- order.createdHumanDate() %></td>
-    
-                        <td>CANCELLED</td>      
-                        <td><%- order.username %></td>
-                        <td>n/a</td>
-                        <td>n/a</td>
-                    </tr> 
-                <% } else { %>
-                    <tr>
-                        <td><%- order.janCode %></td>
-                        <td><%- order.createdHumanDate() %></td>
-    
-                        <td><%- order.completedHumanDate() %></td>      
-                        <td><%- order.username %></td>
-                        <td><%= order.totalCost ? ("£" + order.totalCost) : "n/a" %></td>
-                        <td><%- order.costCode || "n/a" %></td>
-                        <td><a href="/order/<%- order.id %>">View</a></td>
-                    </tr>                
-                <% } %>
-            
-            <% }); %>
+                    <% if(
+                        // HACK failed orders, pt 2: 
+                        // TODO move to config.js
+                        ['1862']
+                            .includes(order.janCode)
+                    ){ %>
+                        <tr>
+                            <td><%- order.janCode %></td>
+                            <td>n/a</td>
+        
+                            <td>FAILED</td>      
+                            <td>n/a</td>
+                            <td>n/a</td>
+                            <td>n/a</td>
+                            <td>n/a</td>
+                        </tr>
+                    <% } else if(
+                        // HACK CANCELLED ORDERS
+                        // TODO move to config.js
+                        ['1336', '1541']
+                            .includes(order.janCode)
+                    ){ %>
+                        <tr>
+                            <td><%- order.janCode %></td>
+                            <td><%- order.createdHumanDate() %></td>
+        
+                            <td>CANCELLED</td>      
+                            <td><%- order.username %></td>
+                            <td>n/a</td>
+                            <td>n/a</td>
+                            <td>n/a</td>
+                        </tr> 
+                    <% } else { %>
+                        <tr>
+                            <td><%- order.janCode %></td>
+                            <td><%- order.createdHumanDate() %></td>
+        
+                            <td><%- order.completedHumanDate() %></td>      
+                            <td><%- order.username %></td>
+                            <td><%= order.totalCost ? ("£" + order.totalCost) : "n/a" %></td>
+                            <td><%- order.costCode || "n/a" %></td>
+                            <td><a href="/order/<%- order.id %>">View</a></td>
+                        </tr>                
+                    <% } %>            
+            <% })%>
 
             </tbody>
         </table>
