@@ -24,7 +24,9 @@ Type2.model = thinky.createModel('Type2', {
     synBioID: type.string().required().default('unknown'),
     documentation: type.string().default(''),
     position: type.number().default(0),
-
+    level: type.string(),
+    includeOnRecentlyAdded: type.boolean().default(false),
+    citations: type.array(),
     note: type.string(),
 
     //TYPE SPECIFIC

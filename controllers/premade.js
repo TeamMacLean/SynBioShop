@@ -28,6 +28,21 @@ function getDbs() {
     });
 }
 
+function getMostRecentIncludeRecentlyTypes() {
+    return new Promise((resolve, reject) => {
+        Type.run().then(types => {
+            const filtered = types.filtered(type => !!type.showAsRecentlyAdded);
+            // could order by index instead but this should be more reliable
+            const result = filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            resolve(result);
+        })
+            .error(err => {
+                reject(err);
+            });
+    });
+}
+
 premade.index = (req, res) => {
     DB.getJoin({ categories: true }).then((dbs) => {
         return res.render('premade/index', { dbs });
@@ -323,7 +338,7 @@ premade.db.edit = (req, res) => {
 premade.category.new = (req, res) => {
     const id = req.params.id;
     DB.get(id).then(db => {
-        getDbs().then((dbs) => {
+        getDbs().then((dbs) => {            
             return res.render('premade/category/edit', { dbs, db });
         }).catch(err => renderError(err, res));
     }).catch(err => renderError(err, res));
@@ -412,7 +427,6 @@ premade.category.show = (req, res) => {
                     items.push(x);
                 }
             });
-
 
             getDbs().then((dbs) => {
                 return res.render('premade/category/show', { db: category.db, dbs, headings, items, category });
@@ -509,12 +523,10 @@ premade.item.save = (req, res) => {
 
     const id = req.body.id;
 
-
-
     // hidden field of id, if it's in edit mode
     if (id) {
 
-        console.log('edit mode')
+        console.log('edit item mode')
 
         Type.getByID(id)
             .then((type) => {
@@ -536,6 +548,29 @@ premade.item.save = (req, res) => {
 
                 type.note = req.body.note;
 
+                type.includeOnRecentlyAdded = 
+                    (req.body.includeonrecentlyadded && req.body.includeonrecentlyadded === 'on') ? 
+                        true : false;
+    
+                if (req.body.linkurl && req.body.linkurl.length){
+                    let citationsArray = [];
+                    req.body.linkurl.forEach(function(url, index){
+                        // include entry if either field has been edited
+
+                        var bothFieldsEmpty = (url === '' && req.body.linkdesc[index] === '');
+                        var bothFieldsStillDefaultValue = (url === 'Enter URL here' && req.body.linkdesc[index] === 'Enter description here');
+                        var canPush = !bothFieldsEmpty && !bothFieldsStillDefaultValue;
+                        if (canPush){
+                            citationsArray.push({
+                                url,
+                                description: req.body.linkdesc[index],
+                            });
+                        }
+                    });
+                    type.citations = citationsArray;
+                }
+
+                type.level = req.body.level;
 
                 type.save()
                     .then((savedType) => {
@@ -560,7 +595,7 @@ premade.item.save = (req, res) => {
 
     } else {
 
-        console.log('new mode')
+        console.log('new item mode')
 
         DB.get(dbID).then((db) => {
             const type = Type.getByTypeNumber(db.type);
@@ -571,19 +606,32 @@ premade.item.save = (req, res) => {
             Object.keys(req.body).forEach(key => {
                 obj[key] = req.body[key];
             });
-            // Object.keys(req.files).forEach(key => {
-            //     obj[key] = req.body[key];
-            // });
+
+            obj.includeOnRecentlyAdded = (obj.includeonrecentlyadded && obj.includeonrecentlyadded === 'on') ? true : false;
+            delete obj.includeonrecentlyadded;
+
+            if (obj.linkurl.length){
+                let citationsArray = [];
+                obj.linkurl.forEach(function(url, index){
+                    citationsArray.push({
+                        url,
+                        description: obj.linkdesc[index],
+                    });
+                });
+                obj.citations = citationsArray;
+            }
+            delete obj.linkurl;
+            delete obj.linkdesc;
+
+            obj.level = req.body.level;
             const newType = type.model(obj);
             newType.name = req.body.name;
 
             // newType.file = 'TODO';
             newType.save().then((savedType) => {
 
-
                 processMapFile(savedType, req)
                     .then(() => {
-                        console.log(`trying to get to /premade/item/${savedType.id}`);
                         return res.redirect(`/premade/item/${savedType.id}`);
                     })
                     .catch((err) => {
@@ -651,12 +699,11 @@ premade.item.deleteSequenceFile = (req, res) => {
 premade.item.show = (req, res) => {
     const itemID = req.params.itemID;
 
-    console.log(`trying to show ${itemID}`);
     Type.getByID(itemID)
         .then((item) => {
             
             const type = Type.getByTypeNumber(item.db.type);
-            const headings = ['Description', 'Comments'];
+            const headings = ['Description', 'Level', 'Comments'];
             const values = [item.description, item.comments];
 
             type.fields.map(t => {
@@ -677,6 +724,12 @@ premade.item.show = (req, res) => {
             } else {
                 item.mapFile = null;
             }
+
+            var itemLevelStr = 
+                (item.level === '0' || item.level === '1' || item.level === '2') ? 
+                    item.level : 'Unknown';
+            
+            values.splice(1, 0, itemLevelStr);
 
             getDbs().then((dbs) => {
                 return res.render('premade/item/show', { headings, values, dbs, item });
@@ -720,6 +773,12 @@ premade.item.edit = (req, res) => {
                 } else {
                     type.mapFile = null;
                 }
+
+                var typeLevelStr = 
+                (type.level === '0' || type.level === '1' || type.level === '2') ? 
+                    type.level : 'Unknown';
+
+                type.level = typeLevelStr;
 
                 getDbs().then((dbs) => {
                     return res.render('premade/item/edit.ejs', { type, dbs, category, db: type.db });

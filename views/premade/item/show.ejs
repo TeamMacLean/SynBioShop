@@ -37,6 +37,29 @@
             <p><span class="bold"><%- heading %>:</span> <%- values[i] %></p>
         <% }); %>
 
+        <% if (item.citations && item.citations.length) { %>
+                <label class='bold'>Academic citations:</label>
+                <div id='displaycitations'>
+                    <div>
+                        <table border=0>    
+                            <% item.citations.map(function(citationObj, index){ %>
+                                <tr>
+                                    <td> Citation URL: </td>
+                                    <td> <div><%= citationObj.url %></div></td>
+                                </tr>
+                                <tr>
+                                    <td> Citation Description: </td>
+                                    <td> <div><%= citationObj.description %></div></td>
+                                </tr>
+                            <% }); %>
+                        </table>
+                    </div>
+                </div>
+                <br />
+        <% } %>
+
+        <hr>
+
         <fieldset>
             <% if(!locals.disableCart){ %>
             <a href="#" data-addToCart="true" data-typeID="<%- item.id %>" class="button success">
