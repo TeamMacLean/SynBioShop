@@ -88,7 +88,7 @@ Order.pre('save', function (next) {
             })
 
     } else {
-        console.log('JanCode established as:', order.janCode, 'count not available unless added to code')
+        //console.log('JanCode established as:', order.janCode, 'count not available unless added to code')
         next();
     }
 
