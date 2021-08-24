@@ -18,7 +18,10 @@
         
         <% if(!locals.disablePremade){ %>
         <div class="search">
-            <input id="seach-input" type="text" placeholder="Search">
+            <form method="get" action="/search">
+                <input name="queryString" id="search-input" type="text" placeholder="Enter text here...">
+                <button>Search</button>
+            </form>
         </div>
 
         <div id="search-results" class="search-results hidden">

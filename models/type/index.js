@@ -46,6 +46,25 @@ function filterBy(key, filter) {
     });
 }
 
+types.getAll = () => {
+    return new Promise((resolve, reject) => {
+        const promises = types.TYPES.map(type => type.model.getJoin({
+            db: true,
+            mapFile: true,
+            sequenceFiles: true,
+            category: true
+        }));
+        Promise.all(promises)
+            .then((results)=> {
+                const mergedResults = [].concat(...results);
+                return resolve(mergedResults);
+            })
+            .catch((err)=> {
+                return reject(err);
+            });
+    });
+}
+
 types.getByID = typeID => new Promise((good, bad)=> {
 
     filterBy('id', typeID).then((foundItems)=> {
@@ -61,9 +80,7 @@ types.getByID = typeID => new Promise((good, bad)=> {
     })
 });
 
-
 types.getByCategory = dbID => filterBy('categoryID', dbID);
-
 
 types.type1.model.belongsTo(DB, 'db', 'dbID', 'id');
 types.type2.model.belongsTo(DB, 'db', 'dbID', 'id');

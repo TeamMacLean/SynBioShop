@@ -64,13 +64,13 @@
                 <div id='displaycitations'>
                     <div>
                         <table border=0>    
+                            <tr>
+                                <th>URL</th>
+                                <th>Description</th>
+                            </tr>
                             <% type.citations.map(function (citationObj, index) { %>
                                 <tr>
-                                    <td> Citation URL: </td>
                                     <td> <div><%= citationObj.url %></div></td>
-                                </tr>
-                                <tr>
-                                    <td> Citation Description: </td>
                                     <td> <div><%= citationObj.description %></div></td>
                                 </tr>
                             <% }); %>
@@ -84,7 +84,16 @@
                         <br />
                         <table border=0>            
                             <tr>
-                                <td> Citation URL: </td>
+                                <td>
+                                    <div style="display:flex;flex-direction:column">
+                                        <div>Citation URL</div>
+                                        <div>
+                                            <i>
+                                                (<b>MUST</b> use http:// or https:// for external links)
+                                            </i>
+                                        </div>
+                                    </div>
+                                </td>
                                 <td id='linkurlinput'></td>
                             </tr>
                             <tr>
@@ -95,19 +104,30 @@
                     </div>
                 </div>
                 <p id="addnew" style='display:none'>
-                    <a href="javascript:new_link()">Add New</a>
+                    <a href="javascript:new_link()">Add Another Citation</a>
                 </p>
                 <!-- Template -->
                 <div id="newlinktpl" style="display:none">
                     <div>
                         <table border=0>
                             <tr>
-                                <td> Citation URL: </td>
-                                <td> <input type="text" name="linkurl[]" value=""> </td>
+                                <td> 
+                                    <div style="display:flex;flex-direction:column">
+                                        <div>Citation URL</div>
+                                        <div>
+                                            <i>
+                                                (<b>MUST</b> use http:// or https:// for external links)
+                                            </i>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td> <input type="text" name="linkurl[]" value="Enter URL here"> </td>
                             </tr>
                             <tr>
                                 <td> Citation Description: </td>
-                                <td> <textarea name="linkdesc[]" cols="50" rows="5" ></textarea> </td>
+                                <td> 
+                                    <textarea name="linkdesc[]" cols="50" rows="5">Enter description here</textarea> 
+                                </td>
                             </tr>
                         </table>
                     </div>
@@ -138,7 +158,7 @@
                     </div>
                     </div>
                     <p id="addnew">
-                        <a href="javascript:new_link()">Add New </a>
+                        <a href="javascript:new_link()">Add Another Citation </a>
                     </p>
                     <!-- Template -->
                     <div id="newlinktpl" style="display:none">
@@ -267,13 +287,13 @@
         var div1 = document.createElement('div');
         div1.id = ct;
         var parentLinkEl = d.getElementById('linkurlinput');
-        var inputUrlEl = '<input type="text" name="linkurl[]" value="Open your borders">';
+        var inputUrlEl = '<input type="text" name="linkurl[]" value="Enter URL here">';
         div1.innerHTML = inputUrlEl;
         parentLinkEl.appendChild(div1)
         var div2 = document.createElement('div');
         div2.id = ct + 100;
         var parentDescEl = d.getElementById('linkdescinput');
-        var inputDescEl = '<textarea name="linkdesc[]" cols="50" rows="5" >Grandmothers</textarea>';
+        var inputDescEl = '<textarea name="linkdesc[]" cols="50" rows="5" >Enter description here</textarea>';
         div2.innerHTML = inputDescEl;
         parentDescEl.appendChild(div2)
     }

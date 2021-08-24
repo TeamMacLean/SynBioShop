@@ -1,6 +1,6 @@
 table {
   width: 100%;
-  font-size: 0.8rem;
+  font-size: 0.625rem;
 
   &.cart {
     margin-bottom: 20px;
@@ -8,9 +8,14 @@ table {
 
   th,
   td {
-    padding: 8px 0;
-    text-align: center;
+    padding: 8px 20px 8px 0px;
+    text-align: left;
     border-bottom: 1px solid @grey;
+
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   tr {
@@ -84,3 +89,5 @@ table {
 
   }
 }
+
+

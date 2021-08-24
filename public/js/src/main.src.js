@@ -181,7 +181,7 @@ function initSearch() {
     var resultsDiv = $('#search-results');
     var currentSearchString = '';
 
-    $('#seach-input').on('input', function () {
+    $('#search-input').on('input', function () {
         var text = $(this).val();
         currentSearchString = text;
 

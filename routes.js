@@ -4,6 +4,8 @@ const Util = require('./lib/util');
 const docs = require('./controllers/documents');
 const premade = require('./controllers/premade');
 const custom = require('./controllers/custom');
+const recent = require('./controllers/recent');
+const search = require('./controllers/search');
 const auth = require('./controllers/auth');
 const shoppingCart = require('./controllers/shoppingCart');
 const orders = require('./controllers/orders');
@@ -187,6 +189,16 @@ router.route('/premade/item/:itemID/deleteSequenceFile/')
 router.route('/custom')
     .all(isAuthenticated)
     .get(custom.index);
+
+//RECENTLY ADDED
+router.route('/recently-added-items')
+    .all(isAuthenticated)
+    .get(recent.index);
+
+    //SEARCH
+router.route('/search')
+    .all(isAuthenticated)
+    .get(search.index);
 
 //CART
 if(!config.disableCart){

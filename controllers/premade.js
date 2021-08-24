@@ -28,21 +28,6 @@ function getDbs() {
     });
 }
 
-function getMostRecentIncludeRecentlyTypes() {
-    return new Promise((resolve, reject) => {
-        Type.run().then(types => {
-            const filtered = types.filtered(type => !!type.showAsRecentlyAdded);
-            // could order by index instead but this should be more reliable
-            const result = filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-            resolve(result);
-        })
-            .error(err => {
-                reject(err);
-            });
-    });
-}
-
 premade.index = (req, res) => {
     DB.getJoin({ categories: true }).then((dbs) => {
         return res.render('premade/index', { dbs });

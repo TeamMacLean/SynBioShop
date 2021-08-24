@@ -1,0 +1,59 @@
+<% include ../head.ejs %>
+
+<div class="container">
+
+    <h2 class="center">Recently added items</h2>
+
+    <div>
+        <% if (items.length) { %>
+
+            <table class='table'>
+
+                <tr>
+                    <th style='marginRight:100px'> Item </th>
+                    <th> Description </th>
+                </tr>
+            
+                <% items.map(function(item){ %>
+                
+                    <tr>
+                        <td>
+                            <a 
+                                href="<%- '/premade/item/' + item.id %>"
+                            >
+                                <%-                             
+                                    item.name.length > 48 ? (
+                                        item.name.substring(0, 24) + 
+                                            '...' + 
+                                            item.name.substring((item.name.length - 24), item.name.length)
+
+                                    ) : item.name    
+                                %>
+                            </a>
+                        </td>
+                        <td> 
+                            <%- 
+                                item.description.length > 240 ? (
+                                    item.description.substring(0, 240) + 
+                                            '...' + 
+                                            item.description.substring((item.description.length - 240), item.description.length)
+
+                                ) : item.description 
+                            %> 
+                        </td>
+                    </tr>
+
+                <% }) %>
+
+            </table>
+            
+        <% } else { %>
+            <p>
+                No items found. Please contact system administrator if you think this is in error.
+            </p>
+        <% } %>
+    </div>
+
+</div>
+
+<% include ../foot.ejs %>
