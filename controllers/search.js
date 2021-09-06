@@ -69,7 +69,7 @@ function getSearchResults(queryString) {
                                 items.levelUnknown.push(finalObj)
                             }
                         });
-                        console.log('length of level 0', items.level0.length);
+                        // console.log('length of level 0', items.level0.length);
 
                         results.push({heading: 'premade', items})
                     }
@@ -125,7 +125,7 @@ function getSearchResults(queryString) {
             const level2PremadeItems = (premadeObj && premadeObj.items && premadeObj.items.level2 && premadeObj.items.level2.length) ? 
                 premadeObj.items.level2 : [];
 
-                console.log('length of level 0', level0PremadeItems.length);
+                // console.log('length of level 0', level0PremadeItems.length);
                 
             
             resolve({

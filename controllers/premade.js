@@ -511,7 +511,7 @@ premade.item.save = (req, res) => {
     // hidden field of id, if it's in edit mode
     if (id) {
 
-        console.log('edit item mode')
+        // console.log('edit item mode')
 
         Type.getByID(id)
             .then((type) => {
