@@ -681,6 +681,16 @@ premade.item.deleteSequenceFile = (req, res) => {
 
 }
 
+var possibleLevels = ['0', '1', '2', 'M', 'P', '-1 (pUAP)'];
+
+var getItemLevelStr = (level) => {
+    if (possibleLevels.includes(level)){
+        return level;
+    } else {
+        return 'Unknown';
+    }
+}
+
 premade.item.show = (req, res) => {
     const itemID = req.params.itemID;
 
@@ -710,9 +720,7 @@ premade.item.show = (req, res) => {
                 item.mapFile = null;
             }
 
-            var itemLevelStr = 
-                (item.level === '0' || item.level === '1' || item.level === '2') ? 
-                    item.level : 'Unknown';
+            var itemLevelStr = getItemLevelStr(item.level)
             
             values.splice(1, 0, itemLevelStr);
 
@@ -759,9 +767,7 @@ premade.item.edit = (req, res) => {
                     type.mapFile = null;
                 }
 
-                var typeLevelStr = 
-                (type.level === '0' || type.level === '1' || type.level === '2') ? 
-                    type.level : 'Unknown';
+                var typeLevelStr = getItemLevelStr(type.level)
 
                 type.level = typeLevelStr;
 

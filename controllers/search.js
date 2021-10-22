@@ -45,7 +45,10 @@ function getSearchResults(queryString) {
                             levelUnknown: [],
                             level0: [],
                             level1: [],
-                            level2: []
+                            level2: [],
+                            levelM: [],
+                            levelP: [],
+                            levelMinus1: [],
                         };
                         unique.forEach((doc)=> {
 
@@ -65,11 +68,16 @@ function getSearchResults(queryString) {
                                 items.level1.push(finalObj);
                             } else if (doc.level === '2' || doc.level === 2){
                                 items.level2.push(finalObj);
+                            } else if (doc.level === 'M' || doc.level === 3){
+                                items.levelM.push(finalObj);
+                            } else if (doc.level === 'P' || doc.level === 4){
+                                items.levelP.push(finalObj);
+                            } else if (doc.level === '-1 (pUAP)' || doc.level === '-1' || doc.level === 5 || doc.level === -1){
+                                items.levelMinus1.push(finalObj);
                             } else {
                                 items.levelUnknown.push(finalObj)
                             }
                         });
-                        // console.log('length of level 0', items.level0.length);
 
                         results.push({heading: 'premade', items})
                     }
@@ -124,16 +132,22 @@ function getSearchResults(queryString) {
                 premadeObj.items.level1 : [];
             const level2PremadeItems = (premadeObj && premadeObj.items && premadeObj.items.level2 && premadeObj.items.level2.length) ? 
                 premadeObj.items.level2 : [];
+            const levelMPremadeItems = (premadeObj && premadeObj.items && premadeObj.items.levelM && premadeObj.items.levelM.length) ? 
+                premadeObj.items.levelM : [];
+            const levelPPremadeItems = (premadeObj && premadeObj.items && premadeObj.items.levelP && premadeObj.items.levelP.length) ? 
+                premadeObj.items.levelP : [];
+            const levelMinus1PremadeItems = (premadeObj && premadeObj.items && premadeObj.items.levelMinus1 && premadeObj.items.levelMinus1.length) ? 
+                premadeObj.items.levelMinus1 : [];
 
-                // console.log('length of level 0', level0PremadeItems.length);
-                
-            
             resolve({
                 documents: documentItems,
                 premadeLevelUnknown: levelUnknownPremadeItems,
                 premadeLevel0: level0PremadeItems,
                 premadeLevel1: level1PremadeItems,
                 premadeLevel2: level2PremadeItems,
+                premadeLevelM: levelMPremadeItems,
+                premadeLevelP: levelPPremadeItems,
+                premadeLevelMinus1: levelMinus1PremadeItems,
                 
             });
     
@@ -158,6 +172,9 @@ recent.index = (req, res, next) => {
                 premadeLevel0: results.premadeLevel0, 
                 premadeLevel1: results.premadeLevel1, 
                 premadeLevel2: results.premadeLevel2, 
+                premadeLevelM: results.premadeLevelM, 
+                premadeLevelP: results.premadeLevelP, 
+                premadeLevelMinus1: results.premadeLevelMinus1, 
             });
         }).catch(err => {
             console.error('issue with rendering recently-added items' + err)

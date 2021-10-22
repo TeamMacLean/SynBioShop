@@ -70,6 +70,7 @@
                                     No items found. Please contact system administrator if you think this is in error.
                                 </p>
                             <% } %>
+                    
                         </div>
                     </div>
                 </div>
@@ -154,6 +155,188 @@
                                     </tr>
                                 
                                     <% premadeLevel2.map(function(item){ %>
+                                    
+                                        <tr>
+                                            <td>
+                                                <a 
+                                                    href="<%- '/premade/item/' + item.id %>"
+                                                >
+                                                    <b>
+                                                        <%- 
+                                                            (item.name && item.name.length > 48) ? (
+                                                                item.name.substring(0, 24) + 
+                                                                    '...' + 
+                                                                    item.name.substring((item.name.length - 24), item.name.length)
+                                
+                                                            ) : item.name    
+                                                        %>
+                                                    </b>
+                                                </a>
+                                            </td>
+                                            <td> 
+                                                <%- 
+                                                    (item.description && item.description.length > 240) ? (
+                                                        item.description.substring(0, 240) + 
+                                                                '...' + 
+                                                                item.description.substring((item.description.length - 240), item.description.length)
+                            
+                                                    ) : item.description 
+                                                %> 
+                                            </td>
+                                        </tr>
+                            
+                                    <% }) %>
+                            
+                                </table>
+                            <% } else { %>
+                                <p>
+                                    No items found. Please contact system administrator if you think this is in error.
+                                </p>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="padding-top:10px;padding-bottom:20px;">
+                <div class="wrap-collabsible-6"> 
+                    <input id="collapsible-6" class="toggle-6 input-type-checkbox-6" type="checkbox"> 
+                    <label for="collapsible-6" class="lbl-toggle-6">
+                        Level -1 (pUAP) (<%- premadeLevelMinus1.length || 0 %>)
+                    </label>
+                    <div class="collapsible-content-6">
+                        <div class="content-inner-6">
+                            <% if (premadeLevelMinus1 && premadeLevelMinus1.length) { %>
+
+                                <table class='table'>
+
+                                    <tr>
+                                        <th style='marginRight:100px'> Item </th>
+                                        <th> Description </th>
+                                    </tr>
+                                
+                                    <% premadeLevelMinus1.map(function(item){ %>
+                                    
+                                        <tr>
+                                            <td>
+                                                <a 
+                                                    href="<%- '/premade/item/' + item.id %>"
+                                                >
+                                                    <b>
+                                                        <%- 
+                                                            (item.name && item.name.length > 48) ? (
+                                                                item.name.substring(0, 24) + 
+                                                                    '...' + 
+                                                                    item.name.substring((item.name.length - 24), item.name.length)
+                                
+                                                            ) : item.name    
+                                                        %>
+                                                    </b>
+                                                </a>
+                                            </td>
+                                            <td> 
+                                                <%- 
+                                                    (item.description && item.description.length > 240) ? (
+                                                        item.description.substring(0, 240) + 
+                                                                '...' + 
+                                                                item.description.substring((item.description.length - 240), item.description.length)
+                            
+                                                    ) : item.description 
+                                                %> 
+                                            </td>
+                                        </tr>
+                            
+                                    <% }) %>
+                            
+                                </table>
+                            <% } else { %>
+                                <p>
+                                    No items found. Please contact system administrator if you think this is in error.
+                                </p>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="padding-top:10px;padding-bottom:20px;">
+                <div class="wrap-collabsible-7"> 
+                    <input id="collapsible-7" class="toggle-7 input-type-checkbox-7" type="checkbox"> 
+                    <label for="collapsible-7" class="lbl-toggle-7">
+                        Level P (<%- premadeLevelP.length || 0 %>)
+                    </label>
+                    <div class="collapsible-content-7">
+                        <div class="content-inner-7">
+                            <% if (premadeLevelP && premadeLevelP.length) { %>
+
+                                <table class='table'>
+
+                                    <tr>
+                                        <th style='marginRight:100px'> Item </th>
+                                        <th> Description </th>
+                                    </tr>
+                                
+                                    <% premadeLevelP.map(function(item){ %>
+                                    
+                                        <tr>
+                                            <td>
+                                                <a 
+                                                    href="<%- '/premade/item/' + item.id %>"
+                                                >
+                                                    <b>
+                                                        <%- 
+                                                            (item.name && item.name.length > 48) ? (
+                                                                item.name.substring(0, 24) + 
+                                                                    '...' + 
+                                                                    item.name.substring((item.name.length - 24), item.name.length)
+                                
+                                                            ) : item.name    
+                                                        %>
+                                                    </b>
+                                                </a>
+                                            </td>
+                                            <td> 
+                                                <%- 
+                                                    (item.description && item.description.length > 240) ? (
+                                                        item.description.substring(0, 240) + 
+                                                                '...' + 
+                                                                item.description.substring((item.description.length - 240), item.description.length)
+                            
+                                                    ) : item.description 
+                                                %> 
+                                            </td>
+                                        </tr>
+                            
+                                    <% }) %>
+                            
+                                </table>
+                            <% } else { %>
+                                <p>
+                                    No items found. Please contact system administrator if you think this is in error.
+                                </p>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="padding-top:10px;padding-bottom:20px;">
+                <div class="wrap-collabsible-8"> 
+                    <input id="collapsible-8" class="toggle-8 input-type-checkbox-8" type="checkbox"> 
+                    <label for="collapsible-8" class="lbl-toggle-8">
+                        Level M (<%- premadeLevelM.length || 0 %>)
+                    </label>
+                    <div class="collapsible-content-8">
+                        <div class="content-inner-8">
+                            <% if (premadeLevelM && premadeLevelM.length) { %>
+
+                                <table class='table'>
+
+                                    <tr>
+                                        <th style='marginRight:100px'> Item </th>
+                                        <th> Description </th>
+                                    </tr>
+                                
+                                    <% premadeLevelM.map(function(item){ %>
                                     
                                         <tr>
                                             <td>
@@ -472,17 +655,17 @@
   padding: .5rem 1rem;
 }
 
-/** NUMBER 3 */
+/** NUMBER 8 */
 
-.wrap-collapsible-3 {
+.wrap-collapsible-8 {
   margin-bottom: 1.2rem 0;
 }
 
-.input-type-checkbox-3 {
+.input-type-checkbox-8 {
   display: none;
 }
 
-.lbl-toggle-3 {
+.lbl-toggle-8 {
   display: block;
 
   font-weight: bold;
@@ -502,11 +685,11 @@
   transition: all 0.25s ease-out;
 }
 
-.lbl-toggle-3:hover {
+.lbl-toggle-8:hover {
   color: #0b0d7c;
 }
 
-.lbl-toggle-3::before {
+.lbl-toggle-8::before {
   content: ' ';
   display: inline-block;
 
@@ -520,26 +703,26 @@
   transition: transform .2s ease-out;
 }
 
-.toggle-3:checked + .lbl-toggle-3::before {
+.toggle-8:checked + .lbl-toggle-8::before {
   transform: rotate(90deg) translateX(-3px);
 }
 
-.collapsible-content-3 {
+.collapsible-content-8 {
   max-height: 0px;
   overflow: hidden;
   transition: max-height .25s ease-in-out;
 }
 
-.toggle-3:checked + .lbl-toggle-3 + .collapsible-content-3 {
+.toggle-8:checked + .lbl-toggle-8 + .collapsible-content-8 {
   max-height: 100vh;
 }
 
-.toggle-3:checked + .lbl-toggle-3 {
+.toggle-8:checked + .lbl-toggle-8 {
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
 }
 
-.collapsible-content-3 .content-inner-3 {
+.collapsible-content-8 .content-inner-8 {
   background: rgba(250, 224, 66, .2);
   border-bottom: 1px solid rgba(250, 224, 66, .45);
   border-bottom-left-radius: 7px;
@@ -690,6 +873,231 @@
 }
 
 .collapsible-content-5 .content-inner-5 {
+  background: rgba(250, 224, 66, .2);
+  border-bottom: 1px solid rgba(250, 224, 66, .45);
+  border-bottom-left-radius: 7px;
+  border-bottom-right-radius: 7px;
+  padding: .5rem 1rem;
+}
+
+/** NUMBER 3 */
+
+.wrap-collapsible-3 {
+  margin-bottom: 1.2rem 0;
+}
+
+.input-type-checkbox-3 {
+  display: none;
+}
+
+.lbl-toggle-3 {
+  display: block;
+
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  text-align: center;
+
+  padding: 1rem;
+
+  color: #495062;
+  background: #3DA2FF;
+
+  cursor: pointer;
+
+  border-radius: 7px;
+  transition: all 0.25s ease-out;
+}
+
+.lbl-toggle-3:hover {
+  color: #0b0d7c;
+}
+
+.lbl-toggle-3::before {
+  content: ' ';
+  display: inline-block;
+
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 5px solid currentColor;
+  vertical-align: middle;
+  margin-right: .7rem;
+  transform: translateY(-2px);
+
+  transition: transform .2s ease-out;
+}
+
+.toggle-3:checked + .lbl-toggle-3::before {
+  transform: rotate(90deg) translateX(-3px);
+}
+
+.collapsible-content-3 {
+  max-height: 0px;
+  overflow: hidden;
+  transition: max-height .25s ease-in-out;
+}
+
+.toggle-3:checked + .lbl-toggle-3 + .collapsible-content-3 {
+  max-height: 100vh;
+}
+
+.toggle-3:checked + .lbl-toggle-3 {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.collapsible-content-3 .content-inner-3 {
+  background: rgba(250, 224, 66, .2);
+  border-bottom: 1px solid rgba(250, 224, 66, .45);
+  border-bottom-left-radius: 7px;
+  border-bottom-right-radius: 7px;
+  padding: .5rem 1rem;
+}
+
+/** NUMBER 6 */
+
+.wrap-collapsible-6 {
+  margin-bottom: 1.2rem 0;
+}
+
+.input-type-checkbox-6 {
+  display: none;
+}
+
+.lbl-toggle-6 {
+  display: block;
+
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  text-align: center;
+
+  padding: 1rem;
+
+  color: #495062;
+  background: #3DA2FF;
+
+  cursor: pointer;
+
+  border-radius: 7px;
+  transition: all 0.25s ease-out;
+}
+
+.lbl-toggle-6:hover {
+  color: #0b0d7c;
+}
+
+.lbl-toggle-6::before {
+  content: ' ';
+  display: inline-block;
+
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 5px solid currentColor;
+  vertical-align: middle;
+  margin-right: .7rem;
+  transform: translateY(-2px);
+
+  transition: transform .2s ease-out;
+}
+
+.toggle-6:checked + .lbl-toggle-6::before {
+  transform: rotate(90deg) translateX(-3px);
+}
+
+.collapsible-content-6 {
+  max-height: 0px;
+  overflow: hidden;
+  transition: max-height .25s ease-in-out;
+}
+
+.toggle-6:checked + .lbl-toggle-6 + .collapsible-content-6 {
+  max-height: 100vh;
+}
+
+.toggle-6:checked + .lbl-toggle-6 {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.collapsible-content-6 .content-inner-6 {
+  background: rgba(250, 224, 66, .2);
+  border-bottom: 1px solid rgba(250, 224, 66, .45);
+  border-bottom-left-radius: 7px;
+  border-bottom-right-radius: 7px;
+  padding: .5rem 1rem;
+}
+
+/** NUMBER 7 */
+
+.wrap-collapsible-7 {
+  margin-bottom: 1.2rem 0;
+}
+
+.input-type-checkbox-7 {
+  display: none;
+}
+
+.lbl-toggle-7 {
+  display: block;
+
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  text-align: center;
+
+  padding: 1rem;
+
+  color: #495062;
+  background: #3DA2FF;
+
+  cursor: pointer;
+
+  border-radius: 7px;
+  transition: all 0.25s ease-out;
+}
+
+.lbl-toggle-7:hover {
+  color: #0b0d7c;
+}
+
+.lbl-toggle-7::before {
+  content: ' ';
+  display: inline-block;
+
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 5px solid currentColor;
+  vertical-align: middle;
+  margin-right: .7rem;
+  transform: translateY(-2px);
+
+  transition: transform .2s ease-out;
+}
+
+.toggle-7:checked + .lbl-toggle-7::before {
+  transform: rotate(90deg) translateX(-3px);
+}
+
+.collapsible-content-7 {
+  max-height: 0px;
+  overflow: hidden;
+  transition: max-height .25s ease-in-out;
+}
+
+.toggle-7:checked + .lbl-toggle-7 + .collapsible-content-7 {
+  max-height: 100vh;
+}
+
+.toggle-7:checked + .lbl-toggle-7 {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.collapsible-content-7 .content-inner-7 {
   background: rgba(250, 224, 66, .2);
   border-bottom: 1px solid rgba(250, 224, 66, .45);
   border-bottom-left-radius: 7px;

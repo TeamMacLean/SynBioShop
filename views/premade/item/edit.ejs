@@ -31,7 +31,7 @@
                 <label for="level">Level</label>
                 <select name="level" id="level">
                     <option
-                        value="-1"
+                        value="null"
                         <%- type.level === 'Unknown' ? 'selected' : '' %>
                     >
                         Unknown
@@ -53,6 +53,24 @@
                         <%- type.level === '2' ? 'selected' : '' %>
                     >
                         Level 2
+                    </option>
+                    <option
+                        value="M"
+                        <%- type.level === 'M' ? 'selected' : '' %>
+                    >
+                        Level M
+                    </option>
+                    <option
+                        value="P"
+                        <%- type.level === 'P' ? 'selected' : '' %>
+                    >
+                        Level P
+                    </option>
+                    <option
+                        value="-1 (pUAP)"
+                        <%- type.level === '-1 (pUAP)' ? 'selected' : '' %>
+                    >
+                        Level -1 (pUAP)
                     </option>
                 </select>                
             </div>
