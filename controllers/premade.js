@@ -595,7 +595,7 @@ premade.item.save = (req, res) => {
             obj.includeOnRecentlyAdded = (obj.includeonrecentlyadded && obj.includeonrecentlyadded === 'on') ? true : false;
             delete obj.includeonrecentlyadded;
 
-            if (obj.linkurl.length){
+            if (obj.linkurl && obj.linkurl.length){
                 let citationsArray = [];
                 obj.linkurl.forEach(function(url, index){
                     citationsArray.push({
