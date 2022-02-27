@@ -166,12 +166,21 @@ ShoppingCart.placeOrder = (req, res) => {
 
         var totalQuantityCalculated = cart.items.map(item => item.quantity).reduce((a, b) => a + b, 0);
 
-        var isCostApplicable = req.user.isAdmin || req.user.company !== 'TSL';
-        var totalCostCalculated = isCostApplicable ? (totalQuantityCalculated * pricePerUnit) : null;
+        // determine if 'total cost' will exist (populates emails/orders)
+        
+        const isCostApplicable = 
+            config.isPricingAvailable && (config.admins.includes(username) || req.user.company !== 'TSL')
 
-        // console.log('isCostApplicable', isCostApplicable)
-        // console.log('totalCostCalculated', totalCostCalculated)
-        // console.log('calculatedTotalCost', calculatedTotalCost);
+        console.log(`Cost is ${isCostApplicable ? '' : 'not'} applied`)
+        // if (!isCostApplicable) {
+        //     if (!config.isPricingAvailable){
+        //         console.log('\t...because pricing has been turned off in local settings')
+        //     } else if (req.user.company === 'TSL'){
+        //         console.log('\t...because user is part of TSL and not an admin for the site')
+        //     }
+        // }
+
+        var totalCostCalculated = isCostApplicable ? (totalQuantityCalculated * pricePerUnit) : null;
 
         totalQuantity = totalQuantity ? totalQuantity : totalQuantityCalculated;
         totalCost = isCostApplicable ? (totalCost ? totalCost : totalCostCalculated) : null;

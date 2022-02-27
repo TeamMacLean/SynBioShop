@@ -33,7 +33,7 @@
             <tr>
                 <td><a href="/premade/item/<%- item.type.id %>" target="_blank"><%- item.type.name %></a></td>
                 <% if(item.quantity){ %>
-                    <td class="center"><%- item.quantity %> μL</td>
+                    <td class="center"><%- item.quantity %></td>
                     <% if (order.totalCost) { %>
                         <td class="center">£<%- item.quantity * order.pricePerUnit %></td>
                     <% } %>
@@ -50,7 +50,7 @@
         <% }); %>
             <tr>
                 <td><b>Total</b></td>
-                <td class="center"><b><%- order.totalQuantity %> μL</b></td>
+                <td class="center"><b><%- order.totalQuantity %></b></td>
                 <% if (order.totalCost) { %>
                     <td class="center"><b>£<%- order.totalCost %></b></td>
                 <% } %>

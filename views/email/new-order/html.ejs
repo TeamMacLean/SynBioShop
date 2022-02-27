@@ -34,7 +34,7 @@
     <% locals.order.items.map(function(item){ %>
         <tr>
             <td><%- item.type.name %></td>
-            <td class="center"><%- item.quantity %> μL</td>
+            <td class="center"><%- item.quantity %> <!--μL--></td>
             <% if (locals.order.totalCost) { %>
                 <td class="center">£<%- item.quantity * locals.order.pricePerUnit %></td>
             <% } %>
@@ -44,7 +44,7 @@
     <% }); %>
     <tr>
         <td><b>Total</b></td>
-        <td class="center"><b><%- locals.order.totalQuantity %> μL</b></td>
+        <td class="center"><b><%- locals.order.totalQuantity %> <!--μL--></b></td>
         <% if (locals.order.totalCost) { %>
             <td class="center"><b>£<%- locals.order.totalCost %></b></td>
         <% } %>

@@ -5,7 +5,7 @@ A new order is ready.
 <% locals.order.items.map(function(item){ %>
 
 Name: <%- item.type.name %>
-Quantity: <%- item.quantity %> μL
+Quantity: <%- item.quantity %>
 Concentration: <%- item.type.concentration %><
 ID: <%- item.type.synBioID %>
 
@@ -13,7 +13,7 @@ ID: <%- item.type.synBioID %>
 
 <% }); %>
 
-Total quantity: <%- locals.order.totalQuantity %>μL
+Total quantity: <%- locals.order.totalQuantity %>
 <% if (locals.order.totalCost) { %>
     Total price: £<%- locals.order.totalCost %>
 <% } %>

@@ -7,7 +7,7 @@ const CartItem = thinky.createModel('CartItem', {
     typeID: type.string().required(),
     largeScale: type.boolean().required().default(false), //@DEPRECIATED
     orderID: type.string(),
-    quantity: type.number().required().default(5)
+    quantity: type.number().required().default(1)
 });
 
 CartItem.define('getType', function () {
