@@ -51,28 +51,32 @@
             <% items.sort(function (a, b) {
                 return a.position - b.position;
             }).map(function(item){ %>
-            <% if(item.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !item.disabled){ %>
-            <tr class="<% if(item.disabled){ %>disabled<% } %>">
-                <td style="white-space:nowrap;" data-th="Name"><a href="/premade/item/<%- item.id %>"><%- item.name %></a>
-                </td style="white-space:nowrap;">
 
-                <% item.items.map(function(tt, anotherIndex){ %>
+                <% if(item.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !item.disabled){ %>
+                    <tr class="<% if(item.disabled){ %>disabled<% } %>">
+                        
+                        <!-- Name -->
+                        <td width='15%' style="white-space:nowrap;" data-th="Name">
+                            <a href="/premade/item/<%- item.id %>"><%- item.name %></a>
+                        </td style="white-space:nowrap;">
 
-                    <%if (anotherIndex === 0){ /** Wider column for desc */%>
-                        <td width="40%" style="white-space:nowrap;" data-th="<%- headings[anotherIndex] %>">
-                            <%- tt %>
-                        </td>
-                    <%}%>    
-                    <%if (anotherIndex !== 4 && anotherIndex !== 1){ /** Remove 'Who Made It' for now */%>
-                        <td style="white-space:nowrap;" data-th="<%- headings[anotherIndex] %>">
-                            <%- tt %>
-                        </td>
-                    <%}%>                    
 
-                    
-                <% }) %>
-            </tr>
-            <% } %>
+                        <!-- Other columns -->
+                        <% item.items.map(function(contents, anotherIndex){ %>
+
+                            <%if (anotherIndex === 0){ /** Wider column for desc */%>
+                                <td width="35%" style="white-space:nowrap;" data-th="<%- headings[anotherIndex] %>">
+                                    <%- contents %>
+                                </td>
+                            <%} else if (anotherIndex !== 4){ /** Remove 'Who Made It' for now */%>
+                                <td style="white-space:nowrap;" data-th="<%- headings[anotherIndex] %>">
+                                    <%- contents %>
+                                </td>
+                            <%}%>            
+                        
+                        <% }) %>
+                    </tr>
+                <% } %>
             <% }) %>
             </tbody>
         </table>
