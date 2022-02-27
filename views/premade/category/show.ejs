@@ -1,5 +1,13 @@
 <% include ../../head.ejs %>
 <% include ./../sidebar.ejs %>
+
+<% 
+    const whoMadeItHeaderIndex = headings.indexOf('Who made it')
+    const newHeadings = headings.filter(heading => heading !== 'Who made it')
+%>
+
+<div></div>
+
 <div class="sidebar-push">
     <div class="container">
 
@@ -31,15 +39,13 @@
 
         <h2 class="center">Items</h2>
 
-        <% if(headings.length && items.length){ %>
+        <% if(newHeadings.length && items.length){ %>
         <table class="responsive">
             <thead>
             <tr>
                 <th>Name</th>
-                <% headings.map(function(t, index){ %>
-                    <%if (index !== 4){ /** Remove 'Who Made It' for now */%>
-                        <th><%- t %></th>
-                    <%}%>
+                <% newHeadings.map(function(t, index){ %>
+                    <th><%- t %></th>
                 <% }); %>
                 <!--<th class="center">Download</th>-->
                 <!--<th class="center">Add to cart</th>-->
@@ -64,12 +70,12 @@
                         <!-- Other columns -->
                         <% item.items.map(function(contents, anotherIndex){ %>
 
-                            <%if (anotherIndex === 0){ /** Wider column for desc */%>
-                                <td width="35%" style="white-space:nowrap;" data-th="<%- headings[anotherIndex] %>">
+                            <%if (anotherIndex === 0){ /** Wider 2nd column, hopefully means desc */%>
+                                <td width="35%" style="white-space:nowrap;" data-th="<%- newHeadings[anotherIndex] %>">
                                     <%- contents %>
                                 </td>
-                            <%} else if (anotherIndex !== 4){ /** Remove 'Who Made It' for now */%>
-                                <td style="white-space:nowrap;" data-th="<%- headings[anotherIndex] %>">
+                            <%} else if (anotherIndex !== whoMadeItHeaderIndex) {%>
+                                <td style="white-space:nowrap;" data-th="<%- newHeadings[anotherIndex] %>">
                                     <%- contents %>
                                 </td>
                             <%}%>            
