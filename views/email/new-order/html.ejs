@@ -7,14 +7,23 @@
     <title>New Order</title>
 </head>
 
-<body>
+<body style="margin-left: 20px; margin-right: 20px;">
 
-<img class="center" src="<%- baseURL %>/img/logo.png" style="max-width: 80px; margin-bottom:20px;">
+<img class="center" src="<%- baseURL %>/img/logo.png" style="max-width: 80px; margin-bottom:20px; width: 80px; height: 80px; min-width: 80px;">
 <% console.log("janCode in html.ejs:" + locals.order.janCode) %> 
 
 <h1 class="center">New SynBio Order</h1>
 <p class="center"><%- locals.order.janCode %> placed by <a
             href="mailto:<%- locals.user.mail %>"><%- locals.user.name %></a></p>
+
+<div>
+    <p>
+        IDTSL SynBio material supplied to TSL and JIC scientists is subject to a Material Transfer Agreement and must not be distributed or shared with any parties beyond TSL and JIC. Any third parties who request use of such material should be directed to TSL SynBio (please email <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a>).
+    </p>
+    <p>
+        Material supplied by TSL SynBio is for non-commercial research purposes only. If you wish to use supplied material for commercial purposes, please contact <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a> in order that an appropriate MTA can be drawn up.
+    </p>
+</div>
 
 <h2 class="center">Order Details</h2>
 <table class="cart">
