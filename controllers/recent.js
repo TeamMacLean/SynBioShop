@@ -20,6 +20,7 @@ function getMostRecentIncludeRecentlyTypes(limit) {
                 const arrayHasBeenSorted = result.some((sortedArrayItem, index) => sortedArrayItem.name !== filtered[index].name)
                 
                 const sliced = result.slice(0, limit);
+                console.log(sliced.map(s => sliced.db.createdAt))
 
                 console.log('Processing newest additions:')
                 console.log('arrayHasBeenSorted', arrayHasBeenSorted)
@@ -30,13 +31,14 @@ function getMostRecentIncludeRecentlyTypes(limit) {
                     
                     return {
                         ...item,
+                        createdAt: item.db.createdAt,
                         humanFormattedDate: formattedDate,
                     }
                 })
 
-                console.log('result 1:', slicedWithHumanDate[0].name, slicedWithHumanDate[0].humanFormattedDate)
-                console.log('result 3:', slicedWithHumanDate[2].name, slicedWithHumanDate[2].humanFormattedDate)
-                console.log('result 5:', slicedWithHumanDate[4].name, slicedWithHumanDate[4].humanFormattedDate)
+                console.log('result 1:', slicedWithHumanDate[0].name, slicedWithHumanDate[0].humanFormattedDate, slicedWithHumanDate[0].createdAt)
+                console.log('result 3:', slicedWithHumanDate[2].name, slicedWithHumanDate[2].humanFormattedDate, slicedWithHumanDate[2].createdAt)
+                console.log('result 5:', slicedWithHumanDate[4].name, slicedWithHumanDate[4].humanFormattedDate, slicedWithHumanDate[4].createdAt)
                 resolve(slicedWithHumanDate);
             
             }).catch(err => {                
