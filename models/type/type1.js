@@ -29,6 +29,7 @@ Type1.model = thinky.createModel('Type1', {
     position: type.number().default(0),
     level: type.string(),
     includeOnRecentlyAdded: type.boolean().default(false),
+    includeOnRecentlyAddedTimestamp: type.number().default(0),
     citations: type.array(),
     note: type.string(),
 

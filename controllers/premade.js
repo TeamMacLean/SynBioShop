@@ -536,6 +536,8 @@ premade.item.save = (req, res) => {
                 type.includeOnRecentlyAdded = 
                     (req.body.includeonrecentlyadded && req.body.includeonrecentlyadded === 'on') ? 
                         true : false;
+
+                type.includeOnRecentlyAddedTimestamp = Date.now();
     
                 if (req.body.linkurl && req.body.linkurl.length){
                     let citationsArray = [];

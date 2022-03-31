@@ -192,7 +192,7 @@ router.route('/custom')
 
 //RECENTLY ADDED
 router.route('/recently-added-items')
-    //.all(isAuthenticated)
+    .all(isAuthenticated)
     .get(recent.index);
 
     //SEARCH
@@ -207,7 +207,7 @@ router.route('/cart')
     .get(shoppingCart.index);
 
 // router.route('/cart/update')
-//     .all(isAuthenticated)
+//     .all(isAuTthenticated)
 //     .post(shoppingCart.update);
 
 router.route('/cart/order')
@@ -215,7 +215,7 @@ router.route('/cart/order')
     .post(shoppingCart.placeOrder);
 
 // router.route('/cart/remove/:cartItemID')
-//     .all(isAuthenticated)
+//     .all(isAuTthenticated)
 //     .get(shoppingCart.remove);
 
 // router.route('/cart/add/:typeID')

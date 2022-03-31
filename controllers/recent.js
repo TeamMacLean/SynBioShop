@@ -15,35 +15,15 @@ function getMostRecentIncludeRecentlyTypes(limit) {
                 
                 const filtered = javascriptTypes.filter(type => !!type.includeOnRecentlyAdded);
 
-                filtered.forEach((el, index) => {
-                    if (!el){
-                        console.error('issue with filtered[' + index + ']', filtered[index])
-                    } else if (!el.db){
-                        console.error('issue with filtered[' + index + '].db', filtered[index])
-                    } else if (!el.db.createdAt){
-                        console.error('issue with filtered[' + index + '].db.createdAt', filtered[index])
-                    } else {
-                        console.log('el fine', el.db.createdAt)
-                    }
-                })
-
-                var arrayToAdjust = [];
-                if (filtered.some((el, index) => !el.db || !el.db.createdAt)){
-                    console.error('this doesnt have createdAt', el.name, el)
-                    el.db = {'createdAt': 1}
-                }
-
-                const result = filtered.sort((a, b) => (new Date(b.db.createdAt)) - (new Date(a.db.createdAt)));
-
-                //const arrayHasBeenSorted = result.some((sortedArrayItem, index) => sortedArrayItem.name !== filtered[index].name)
+                const result = filtered.sort((a, b) => {
+                    const aComp = a.includeOnRecentlyAddedTimestamp || (new Date(a.db.createdAt));
+                    const bComp = b.includeOnRecentlyAddedTimestamp || (new Date(b.db.createdAt));
+                    return (bComp - aComp);
+                }) 
                 
-                //const sliced = result.slice(0, limit);
-                //console.log(sliced.map(s => sliced.db.createdAt))
+                const sliced = result.slice(0, limit);
 
-
-
-
-                const slicedWithHumanDate = result.map(item => {
+                const slicedWithHumanDate = sliced.map(item => {
                     const date = new Date(item.db.createdAt);
                     const formattedDate = `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
                     
@@ -54,9 +34,6 @@ function getMostRecentIncludeRecentlyTypes(limit) {
                     }
                 })
 
-                console.log('result 1:', slicedWithHumanDate[0].name, slicedWithHumanDate[0].humanFormattedDate, slicedWithHumanDate[0].createdAt)
-                console.log('result 3:', slicedWithHumanDate[2].name, slicedWithHumanDate[2].humanFormattedDate, slicedWithHumanDate[2].createdAt)
-                console.log('result 5:', slicedWithHumanDate[4].name, slicedWithHumanDate[4].humanFormattedDate, slicedWithHumanDate[4].createdAt)
                 resolve(slicedWithHumanDate);
             
             }).catch(err => {                
