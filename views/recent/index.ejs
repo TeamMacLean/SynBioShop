@@ -15,7 +15,7 @@
                     <th> Description </th>
                 </tr>
             
-                <% items.sort((a, b) => b.createdAt - a.createdAt).map(function(item){ %>
+                <% items.sort((a, b) => (new Date(b.db.createdAt)) - (new Date(a.db.createdAt))).map(function(item){ %>
                 
                     <tr>
                         <td width='25%'>

@@ -33,7 +33,7 @@ function getMostRecentIncludeRecentlyTypes(limit) {
                     el.db = {'createdAt': 1}
                 }
 
-                const result = filtered.sort((a, b) => b.db.createdAt - a.db.createdAt);
+                const result = filtered.sort((a, b) => (new Date(b.db.createdAt)) - (new Date(a.db.createdAt)));
 
                 const arrayHasBeenSorted = result.some((sortedArrayItem, index) => sortedArrayItem.name !== filtered[index].name)
                 
