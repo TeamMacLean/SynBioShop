@@ -10,14 +10,27 @@ function getMostRecentIncludeRecentlyTypes(limit) {
                 if (!types.length){
                     resolve([])
                 }
+
+                const javascriptTypes = JSON.parse(JSON.stringify(types));
                 
-                const filtered = types.filter(type => !!type.includeOnRecentlyAdded);
+                const filtered = javascriptTypes.filter(type => !!type.includeOnRecentlyAdded);
                 // could order by index instead but this should be more reliable
-                const result = filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+                const result = filtered.sort((a, b) => new Date(a.db.createdAt) - new Date(b.db.createdAt));
                 
                 const sliced = result.slice(0, limit);
+
+                const slicedWithHumanDate = sliced.map(item => {
+                    const date = new Date(item.db.createdAt);
+                    const formattedDate = `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
+                    
+                    return {
+                        ...item,
+                        humanFormattedDate: formattedDate,
+                    }
+                })
                 
-                resolve(sliced);
+                resolve(slicedWithHumanDate);
             
             }).catch(err => {                
                 reject(err);
