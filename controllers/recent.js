@@ -15,6 +15,18 @@ function getMostRecentIncludeRecentlyTypes(limit) {
                 
                 const filtered = javascriptTypes.filter(type => !!type.includeOnRecentlyAdded);
 
+                filtered.forEach((el, index) => {
+                    if (!el){
+                        console.error('issue with filtered[' + index + ']', filtered[index])
+                    } else if (!el.db){
+                        console.error('issue with filtered[' + index + '].db', filtered[index])
+                    } else if (!el.db.createdAt){
+                        console.error('issue with filtered[' + index + '].db.createdAt', filtered[index])
+                    } else {
+                        console.log('el fine', el.db.createdAt)
+                    }
+                })
+
                 var arrayToAdjust = [];
                 if (filtered.some((el, index) => !el.db || !el.db.createdAt)){
                     console.error('this doesnt have createdAt', el.name, el)
@@ -26,7 +38,7 @@ function getMostRecentIncludeRecentlyTypes(limit) {
                 const arrayHasBeenSorted = result.some((sortedArrayItem, index) => sortedArrayItem.name !== filtered[index].name)
                 
                 const sliced = result.slice(0, limit);
-                console.log(sliced.map(s => sliced.db.createdAt))
+                //console.log(sliced.map(s => sliced.db.createdAt))
 
                 console.log('Processing newest additions:')
                 console.log('arrayHasBeenSorted', arrayHasBeenSorted)
