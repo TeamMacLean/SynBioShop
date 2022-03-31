@@ -15,6 +15,15 @@ function getMostRecentIncludeRecentlyTypes(limit) {
                 
                 const filtered = javascriptTypes.filter(type => !!type.includeOnRecentlyAdded);
 
+                var arrayToAdjust = [];
+                if (filtered.some((el, index) => !el.db.createdAt)){
+                    console.error('this doesnt have createdAt', el.name, el)
+                    arrayToAdjust.push(index)
+                }
+                arraytoAdjust.forEach((el, index) => {
+                    filtered[index].db = {'createdAt': 1}
+                })
+
                 const result = filtered.sort((a, b) => b.db.createdAt - a.db.createdAt);
 
                 const arrayHasBeenSorted = result.some((sortedArrayItem, index) => sortedArrayItem.name !== filtered[index].name)
@@ -31,7 +40,7 @@ function getMostRecentIncludeRecentlyTypes(limit) {
                     
                     return {
                         ...item,
-                        createdAt: item.db.createdAt,
+                        createdAt: item.db.createdAt || 1,
                         humanFormattedDate: formattedDate,
                     }
                 })
