@@ -20,7 +20,7 @@ function getMostRecentIncludeRecentlyTypes(limit) {
                     console.error('this doesnt have createdAt', el.name, el)
                     arrayToAdjust.push(index)
                 }
-                arraytoAdjust.forEach((el, index) => {
+                arrayToAdjust.forEach((el, index) => {
                     filtered[index].db = {'createdAt': 1}
                 })
 
