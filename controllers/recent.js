@@ -16,7 +16,7 @@ function getMostRecentIncludeRecentlyTypes(limit) {
                 const filtered = javascriptTypes.filter(type => !!type.includeOnRecentlyAdded);
                 // could order by index instead but this should be more reliable
 
-                const result = filtered.sort((a, b) => new Date(a.db.createdAt) - new Date(b.db.createdAt));
+                const result = filtered.sort((a, b) => new Date(b.db.createdAt) - new Date(a.db.createdAt));
                 
                 const sliced = result.slice(0, limit);
 
