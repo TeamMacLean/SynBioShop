@@ -14,11 +14,15 @@ function getMostRecentIncludeRecentlyTypes(limit) {
                 const javascriptTypes = JSON.parse(JSON.stringify(types));
                 
                 const filtered = javascriptTypes.filter(type => !!type.includeOnRecentlyAdded);
+
+                console.log('initial', javascriptTypes.length, 'display only', filtered.length)
                 // could order by index instead but this should be more reliable
 
-                const result = filtered.sort((a, b) => new Date(b.db.createdAt) - new Date(a.db.createdAt));
+                const result = filtered.sort((a, b) => a.db.createdAt - b.db.createdAt);
                 
                 const sliced = result.slice(0, limit);
+
+                console.log('before slice', result.length, 'after slice', sliced.length, 'slice number', limit)
 
                 const slicedWithHumanDate = sliced.map(item => {
                     const date = new Date(item.db.createdAt);

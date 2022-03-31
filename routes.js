@@ -192,7 +192,7 @@ router.route('/custom')
 
 //RECENTLY ADDED
 router.route('/recently-added-items')
-    .all(isAuthenticated)
+    //.all(isAuthenticated)
     .get(recent.index);
 
     //SEARCH
