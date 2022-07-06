@@ -39,7 +39,7 @@
     "less-middleware": "^2.2.0",
     "micromodal": "^0.4.6",
     "mkdirp": "^1.0.4",
-    "moment": "^2.17.0",
+    "moment": "^2.29.4",
     "multer": "^0.1.8",
     "nodemailer": "^2.6.4",
     "nodemailer-smtp-transport": "^2.7.2",
