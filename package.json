@@ -56,8 +56,8 @@
     "@babel/core": "^7.10.2",
     "@babel/preset-env": "^7.10.2",
     "@babel/preset-react": "^7.10.1",
-    "babel-loader": "^8.1.0",
-    "css-loader": "^3.5.3",
+    "babel-loader": "^8.3.0",
+    "css-loader": "^6.7.3",
     "ejs-lint": "^1.1.0",
     "elegant-icons": "0.0.1",
     "jquery": "^3.3.1",
@@ -65,6 +65,6 @@
     "react-dom": "^15.6.0",
     "style-loader": "^1.2.1",
     "tinymce": "^4.7.13",
-    "webpack": "^2.7.0"
+    "webpack": "^5.75.0"
   }
 }
