@@ -65,6 +65,6 @@
     "react-dom": "^15.6.0",
     "style-loader": "^1.2.1",
     "tinymce": "^4.7.13",
-    "webpack": "^2.7.0"
+    "webpack": "^5.75.0"
   }
 }
