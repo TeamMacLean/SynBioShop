@@ -57,9 +57,7 @@ Order.define('getTypes', function () {
         })
 
     });
-
 });
-
 
 Order.pre('save', function (next) {
     const order = this;
@@ -70,13 +68,9 @@ Order.pre('save', function (next) {
             .then(count => {
                 const newJanCode = count + 1;
                 const newJanCodeStr = newJanCode.toString();
-                if (typeof(newJanCodeStr) !== 'string'){
-                    console.error('Did not convert JanCode to string')
-                }
-                if (!(newJanCode > count)){
-                    console.error('JanCode is not increased from count')
-                }
-                console.log('originalCount', count,'new jancode:', newJanCode, 'as string:', newJanCodeStr)
+
+                console.log('PRESAVE - count:', count, '+ new jancode as string:', newJanCodeStr)
+
                 order.janCode = newJanCodeStr;
                 if (order.janCode != newJanCodeStr){
                     console.error('Problems assigning order.janCode')
@@ -86,12 +80,9 @@ Order.pre('save', function (next) {
             .catch(err => {
                 next(err);
             })
-
     } else {
-        //console.log('JanCode established as:', order.janCode, 'count not available unless added to code')
         next();
     }
-
 });
 
 

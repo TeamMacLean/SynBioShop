@@ -6,6 +6,7 @@ const Order = require('../models/order');
 // const Log = require('../lib/log');
 // const async = require('async');
 const Email = require('../lib/email');
+const Csv = require('../lib/csv');
 const Flash = require('../lib/flash');
 const config = require('../config.json');
 
@@ -171,7 +172,7 @@ ShoppingCart.placeOrder = (req, res) => {
         const isCostApplicable = 
             config.isPricingAvailable && (config.admins.includes(username) || req.user.company !== 'TSL')
 
-        console.log(`Cost is ${isCostApplicable ? '' : 'not'} applied`)
+        //console.log(`Cost is ${isCostApplicable ? '' : 'not'} applied`)
         // if (!isCostApplicable) {
         //     if (!config.isPricingAvailable){
         //         console.log('\t...because pricing has been turned off in local settings')
@@ -206,16 +207,28 @@ ShoppingCart.placeOrder = (req, res) => {
 
             Promise.all(saving).then(()=> {
                 savedOrder.getTypes().then((orderWithTypes)=> {
-                    Email.newOrder(orderWithTypes, req.user).then(()=> {
-                        cart.empty().then(()=> {
-                            Flash.success(req, 'Order successfully placed');
-                            return res.redirect('/cart');
+
+                    Csv.newOrder(orderWithTypes, req.user).then(() => {
+                        
+                        Email.newOrder(orderWithTypes, req.user).then(()=> {
+
+                            cart.empty().then(()=> {
+
+                                Flash.success(req, 'Order successfully placed');
+                                return res.redirect('/cart');
+
+                            }).catch((err)=> {
+                                return renderError(err, res);
+                            })
+
                         }).catch((err)=> {
                             return renderError(err, res);
-                        })
+                        });
+
                     }).catch((err)=> {
                         return renderError(err, res);
                     });
+
                 }).catch((err)=> {
                     return renderError(err, res);
                 });
@@ -227,7 +240,6 @@ ShoppingCart.placeOrder = (req, res) => {
         }).catch((err)=> {
             return renderError(err, res);
         });
-
 
     }).catch((err)=> {
         return renderError(err, res);

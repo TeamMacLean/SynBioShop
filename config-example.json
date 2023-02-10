@@ -15,6 +15,7 @@
     "gif"
   ],
   "tmpDir": "/tmp",
+  "csvDir": "/mnt/synbio/brady_printing/",
   "baseURL": "http://127.0.0.1:3000",
   "ldap": {
     "url": "ldap://my-dc-controller:389",
