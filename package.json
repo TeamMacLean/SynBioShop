@@ -28,7 +28,7 @@
     "cookie-parser": "^1.4.1",
     "csv": "^6.2.7",
     "csv-stringify": "^6.2.4",
-    "ejs": "^2.5.2",
+    "ejs": "^3.1.7",
     "email-templates": "^2.5.4",
     "express": "^4.14.0",
     "express-flash": "0.0.2",
