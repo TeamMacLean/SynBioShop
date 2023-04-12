@@ -11,18 +11,10 @@ const Admin = {
 
 Admin.billboard.edit = ((req, res) => {
 
-
     Billboard.run()
         .then(billboards => {
-            console.log(billboards);
-            let billboard;
-            if (billboards.length) {
-                billboard = billboards[0];
-            } else {
-                billboard = {};
-            }
+            let billboard = billboards[0];
 
-            console.log('billboard:', billboard);
             return res.render('admin/billboard/edit', {billboard});
 
         })
@@ -49,15 +41,20 @@ Admin.billboard.editPost = ((req, res) => {
                 billboard = new Billboard({});
             }
 
-            billboard.text = text;
+            if (text == null || text.length() == 0) {
+                billboard.text = "";
+            } else {
+                billboard.text = text;
+            }
             billboard.enabled = enabled;
 
             billboard.save()
                 .then(savedBillboard => {
                     res.redirect('/');
-                }).catch((err) => {
-                return renderError(err, res);
-            })
+                })
+                .catch((err) => {
+                    return renderError(err, res);
+                })
 
         })
         .catch((err) => {
