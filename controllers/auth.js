@@ -26,13 +26,14 @@ Auth.signInPost = (req, res, next) => {
 
     passport.authenticate('ldapauth', (err, user, info) => {
         if (err) {
-            LOG.error(err);
+            LOG.error(err, info.message, user);
             console.error(err, info.message, user)
             return next(err);
         }
         if (!user) {
-            var message = 'No such user';
+            var message = 'No user obj found';
             console.error(message)
+            LOG.error(message);
             if (info && info.message) {
                 message += `, ${info.message}`;
             }
