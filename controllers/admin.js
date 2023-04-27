@@ -25,10 +25,13 @@ Admin.billboard.edit = ((req, res) => {
 
 });
 
+// This code is used to save the contents of the billboard to the database. 
+// This code will either create a new billboard or edit an existing one. 
+// The code first gets the billboards from the database. 
+// If there is a billboard already in the database, then it will edit it. 
+// If there is not a billboard in the database, then it will create a new one. 
+// Then it will save it and redirect to the homepage.
 Admin.billboard.editPost = ((req, res) => {
-
-    console.log(req.body);
-
     const text = req.body.text;
     const enabled = req.body.enabled === 'on';
 
@@ -41,7 +44,7 @@ Admin.billboard.editPost = ((req, res) => {
                 billboard = new Billboard({});
             }
 
-            if (text == null || text.length() == 0) {
+            if (text == null || text.length == 0) {
                 billboard.text = "";
             } else {
                 billboard.text = text;
@@ -55,13 +58,10 @@ Admin.billboard.editPost = ((req, res) => {
                 .catch((err) => {
                     return renderError(err, res);
                 })
-
         })
         .catch((err) => {
             return renderError(err, res);
         })
-
-
 });
 
 module.exports = Admin;
