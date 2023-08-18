@@ -1,118 +1,83 @@
 <% include ../head.ejs %>
 
 <div class="container">
+  <h1 class="center">Orders</h1>
 
-    <h1 class="center">Orders</h1>
-
-    <h3 class="center">Open</h3>
-    <div class="row">
-        <% if(orders.open.length == 0){ %>
-            <p class="center">None</p>
-        <% } else { %>
-            <% orders.open.sort(function (a, b) {
-                return b.createdAt - a.createdAt
-            }).map(function(order){ %>
-                <div class="col4 auto-clear">
-                    <div class="tile">
-                        <div class="tile-block">
-                            <p>ID: <%- order.janCode %></p>
-                            <p>Ordered: <%- order.createdHumanDate() %></p>
-                            <p>Status: <%- order.complete ? 'Complete' : 'In Progress' %></p>
-                            <p>Customer: <%- order.username %></p>
-                            <p>                                    
-                                Total cost: <%= order.totalCost ? ("£" + order.totalCost) : "n/a" %>
-                            </p>
-                            <p>
-                                Cost code: <%= order.costCode || "n/a" %>
-                            </p>
-                        </div>
-                        <a href="/order/<%- order.id %>" class="button primary tile-button-bottom">Show</a>
-                    </div>
-                </div>
-            <% }) %>
-        <% } %>
+  <h3 class="center">Open</h3>
+  <div class="row">
+    <% if(orders.open.length == 0){ %>
+    <p class="center">None</p>
+    <% } else { %> <% orders.open.sort(function (a, b) { return b.createdAt -
+    a.createdAt }).map(function(order){ %>
+    <div class="col4 auto-clear">
+      <div class="tile">
+        <div class="tile-block">
+          <p>ID: <%- order.janCode %></p>
+          <p>Ordered: <%- order.createdHumanDate() %></p>
+          <p>Status: <%- order.complete ? 'Complete' : 'In Progress' %></p>
+          <p>Customer: <%- order.username %></p>
+          <p>
+            Total cost: <%= order.totalCost ? ("£" + order.totalCost) : "n/a" %>
+          </p>
+          <p>Cost code: <%= order.costCode || "n/a" %></p>
+        </div>
+        <a
+          href="/order/<%- order.id %>"
+          class="button primary tile-button-bottom"
+          >Show</a
+        >
+      </div>
     </div>
+    <% }) %> <% } %>
+  </div>
 
-    <h3 class="center">Closed</h3>
+  <h3 class="center">Closed</h3>
 
-    <% if(orders.closed.length == 0){ %>
-        <p class="center">None</p>
-    <% } else { %>
+  <% if(orders.closed.length == 0){ %>
+  <p class="center">None</p>
+  <% } else { %>
 
-        <table class="table">
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Order Placed</th>
-                <th>Completion Date</th>
-                <th>Customer</th>
-                <th>Total cost</th>
-                <th>Cost code</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-                <% 
-                // HACK failed orders, pt 1: add failed order janCodes
-                // TODO move to config.js, refactor
-                // THERE IS NOTHING WRONG WITH 1862 order
-                // orders.closed.push({janCode: '1862'});
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Order Placed</th>
+        <th>Completion Date</th>
+        <th>Customer</th>
+        <th>Total cost</th>
+        <th>Cost code</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% orders.closed.sort((a, b) => b.janCode - a.janCode).forEach(order =>
+      {%> <% if( order.cancelled ){ %>
+      <tr>
+        <td><%- order.janCode %></td>
+        <td><%- order.createdHumanDate() %></td>
 
-                orders.closed.sort(function (a, b) {
-                    return b.janCode - a.janCode;
-                }).map(function(order){ %>
+        <td>CANCELLED</td>
+        <td><%- order.username %></td>
+        <td>n/a</td>
+        <td>n/a</td>
+        <td>n/a</td>
+      </tr>
+      <% } else { %>
+      <tr>
+        <td><%- order.janCode %></td>
+        <td><%- order.createdHumanDate() %></td>
 
-                    <% if(
-                        // HACK failed orders, pt 2: 
-                        // TODO move to config.js
-                        ['1862']
-                            .includes(order.janCode)
-                    ){ %>
-                        <tr>
-                            <td><%- order.janCode %></td>
-                            <td>n/a</td>
-        
-                            <td>FAILED</td>      
-                            <td>n/a</td>
-                            <td>n/a</td>
-                            <td>n/a</td>
-                            <td>n/a</td>
-                        </tr>
-                    <% } else if(
-                        // HACK CANCELLED ORDERS
-                        // TODO move to config.js (or write more code)
-                        ['1336', '1541', '2015', '2085', '2554', '2568', '2599', '2714', '2713']
-                            .includes(order.janCode)
-                    ){ %>
-                        <tr>
-                            <td><%- order.janCode %></td>
-                            <td><%- order.createdHumanDate() %></td>
-        
-                            <td>CANCELLED</td>      
-                            <td><%- order.username %></td>
-                            <td>n/a</td>
-                            <td>n/a</td>
-                            <td>n/a</td>
-                        </tr> 
-                    <% } else { %>
-                        <tr>
-                            <td><%- order.janCode %></td>
-                            <td><%- order.createdHumanDate() %></td>
-        
-                            <td><%- order.completedHumanDate() %></td>      
-                            <td><%- order.username %></td>
-                            <td><%= order.totalCost ? ("£" + order.totalCost) : "n/a" %></td>
-                            <td><%- order.costCode || "n/a" %></td>
-                            <td><a href="/order/<%- order.id %>">View</a></td>
-                        </tr>                
-                    <% } %>            
-            <% })%>
+        <td><%- order.completedHumanDate() %></td>
+        <td><%- order.username %></td>
+        <td><%= order.totalCost ? ("£" + order.totalCost) : "n/a" %></td>
+        <td><%- order.costCode || "n/a" %></td>
+        <td><a href="/order/<%- order.id %>">View</a></td>
+      </tr>
+      <% } %> <% })%>
+    </tbody>
+  </table>
 
-            </tbody>
-        </table>
-
-    <% } %>
-
+  <% } %>
 </div>
 
 <% include ../foot.ejs %>
