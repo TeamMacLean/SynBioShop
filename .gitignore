@@ -9,6 +9,4 @@ config.json
 docs
 log/*
 **/.DS_Store
-mnt/27_Synbio
-rethinkdb_data
-./mnt
+/mnt/

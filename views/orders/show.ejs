@@ -1,11 +1,20 @@
 <% include ../head.ejs %>
 
 <div class="container">
+  <div style="margin-top: 20px; font-size: 18px">
+    <a href="/orders" style="color: blue; text-decoration: underline"
+      >← Go Back to Orders</a
+    >
+  </div>
+
   <h1 class="center">Order</h1>
 
   <p>ID: <%- order.janCode %></p>
   <p>Ordered: <%- order.createdHumanDate() %></p>
-  <p>Status: <%- order.complete ? 'Complete' : 'Pending' %></p>
+  <p>
+    Status: <%- order.cancelled ? 'Cancelled' : (order.complete ? 'Complete' :
+    'Pending') %>
+  </p>
   <p>Customer: <%- order.username %></p>
   <p>Cost code: <%= order.costCode || "n/a" %></p>
 
@@ -60,9 +69,16 @@
     </tbody>
   </table>
 
-  <% if(!order.complete){ %>
+  <% if(order.cancelled){ %>
+  <a href="/order/<%- order.id %>/uncancel" class="button primary"
+    >Undo cancellation</a
+  >
+  <% } else if (!order.complete) { %>
   <a href="/order/<%- order.id %>/complete" class="button primary areyousure"
     >Mark as complete</a
+  >
+  <a href="/order/<%- order.id %>/cancel" class="button danger areyousure"
+    >Mark as cancelled</a
   >
   <% } else { %>
   <a href="/order/<%- order.id %>/incomplete" class="button primary areyousure"

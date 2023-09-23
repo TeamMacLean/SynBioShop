@@ -1,5 +1,5 @@
 {
-  "disableCart":false,
+  "disableCart": false,
   "port": "3000",
   "secret": "cats",
   "dbName": "synbioshop",
@@ -8,14 +8,9 @@
   "uploadRootURL": "/uploads",
   "pricePerUnit": "1",
   "isPricingAvailable": true,
-  "imageTypesAllowed": [
-    "png",
-    "jpg",
-    "jpeg",
-    "gif"
-  ],
+  "imageTypesAllowed": ["png", "jpg", "jpeg", "gif"],
   "tmpDir": "/tmp",
-  "csvDir": "/mnt/synbio/brady_printing/",
+  "csvDir": "./mnt/synbio/brady_printing/",
   "baseURL": "http://127.0.0.1:3000",
   "ldap": {
     "url": "ldap://my-dc-controller:389",
@@ -30,10 +25,6 @@
     "from": "TSL SynBio ◉ <synbio@example.org>",
     "emailDomain": "@example.org"
   },
-  "admins": [
-    "deeks"
-  ],
-  "emailAdmins": [
-    "deeks"
-  ]
+  "admins": ["deeks"],
+  "emailAdmins": ["deeks"]
 }

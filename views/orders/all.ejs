@@ -14,7 +14,10 @@
         <div class="tile-block">
           <p>ID: <%- order.janCode %></p>
           <p>Ordered: <%- order.createdHumanDate() %></p>
-          <p>Status: <%- order.complete ? 'Complete' : 'In Progress' %></p>
+          <p>
+            Status: <%- order.cancelled ? 'Cancelled' : (order.complete ?
+            'Complete' : 'Pending') %>
+          </p>
           <p>Customer: <%- order.username %></p>
           <p>
             Total cost: <%= order.totalCost ? ("£" + order.totalCost) : "n/a" %>
@@ -50,30 +53,24 @@
       </tr>
     </thead>
     <tbody>
-      <% orders.closed.sort((a, b) => b.janCode - a.janCode).forEach(order =>
-      {%> <% if( order.cancelled ){ %>
+      <% if (orders.closed.length === 0) { %>
       <tr>
-        <td><%- order.janCode %></td>
-        <td><%- order.createdHumanDate() %></td>
-
-        <td>CANCELLED</td>
-        <td><%- order.username %></td>
-        <td>n/a</td>
-        <td>n/a</td>
-        <td>n/a</td>
+        <td colspan="7">No closed orders.</td>
       </tr>
-      <% } else { %>
+      <% } else { %> <% orders.closed.sort((a, b) => b.janCode -
+      a.janCode).forEach(order => { %>
       <tr>
         <td><%- order.janCode %></td>
         <td><%- order.createdHumanDate() %></td>
-
-        <td><%- order.completedHumanDate() %></td>
+        <td>
+          <%- order.cancelled ? 'CANCELLED' : order.completedHumanDate() %>
+        </td>
         <td><%- order.username %></td>
         <td><%= order.totalCost ? ("£" + order.totalCost) : "n/a" %></td>
         <td><%- order.costCode || "n/a" %></td>
         <td><a href="/order/<%- order.id %>">View</a></td>
       </tr>
-      <% } %> <% })%>
+      <% }) %> <% } %>
     </tbody>
   </table>
 
