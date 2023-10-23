@@ -88,7 +88,9 @@ app.use((req, res, next) => {
     })
       .then(() => {
         return new Promise((good, bad) => {
-          Order.filter(Order.filter({ complete: false }))
+          Order.filter(
+            r.and(r.row("complete").eq(false), r.row("cancelled").eq(false))
+          )
             .count()
             .execute()
             .then((incompleteCount) => {
