@@ -107,44 +107,42 @@ premade.export = (req, res) => {
         .catch(err => renderError(err, res));
 };
 
+function safeJSONStringify(obj) {
+  return JSON.stringify(obj).replace(/<\/script/g, '<\\/script').replace(/<!--/g, '<\\!--');
+}
 
 premade.rearrange = (req, res) => {
     DB.getJoin({ categories: true }).then(dbs => {
+        // Combine all category type fetches into a single promise array
+        let getTypesPromises = dbs.flatMap(db => 
+            db.categories.map(cat => 
+                Type.getByCategory(cat.id).then(types => 
+                    ({ ...cat, items: types.map(t => ({ id: t.id, position: t.position, name: t.name })) })
+                )
+            )
+        );
 
-        var getTypes = [];
-        //TODO prune data
+        Promise.all(getTypesPromises)
+            .then(fullCats => {
+                // Merge the full categories back into their respective dbs
+                let fullDbs = dbs.map(db => ({
+                    ...db,
+                    categories: fullCats.filter(cat => db.categories.some(dbCat => dbCat.id === cat.id))
+                }));
+                
+                // Stringify the fullDbs safely for the client-side
+                let safeDbsStr = safeJSONStringify(fullDbs);
 
+                // checked that safeDbsStr is a valid JSON string
+                let safeDbs = JSON.parse(safeDbsStr);
 
-        var pruned = dbs.map(db => {
-            var cats = db.categories.map(cat => {
+                // safeDbs is verified as an array of objects
 
-                //TODO get items too
+                console.log('JREME', safeDbs)
 
-                var out = { id: cat.id, position: cat.position, name: cat.name, items: [] };
-
-                getTypes.push(
-                    new Promise((good, bad) => {
-                        Type.getByCategory(cat.id)
-                            .then(t => {
-                                t.map(tt => {
-                                    out.items.push({ id: tt.id, position: tt.position, name: tt.name });
-                                });
-                                good()
-                            })
-                            .catch(bad);
-                    })
-                );
-                return out;
-            });
-            return { categories: cats, id: db.id, name: db.name, position: db.position };
-        });
-        Promise.all(getTypes)
-            .then(o => {
-                return res.render('premade/rearrange', { dbs: pruned });
+                return res.render('premade/rearrange', { dbs: safeDbs });
             })
-            .catch(err => renderError(err, res))
-
-
+            .catch(err => renderError(err, res));
     }).catch(err => renderError(err, res));
 };
 
