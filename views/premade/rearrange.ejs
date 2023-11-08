@@ -9,7 +9,18 @@
 </div>
 
 <script>
-    var dbs = JSON.parse('<%- JSON.stringify(dbs) %>');
+
+
+  try {
+    console.log('<%- escape(JSON.stringify(dbs)) %>');
+
+  var dbs = JSON.parse('<%- escape(JSON.stringify(dbs)) %>');
+} catch (e) {
+  console.error(e);
+}
+
+
+
 </script>
 <script src="/js/rearrangePremade.js"></script>
 <script type="text/babel"></script>
