@@ -9,19 +9,17 @@
 </div>
 
 <script>
-
-
   try {
-    console.log('<%- escape(JSON.stringify(dbs)) %>');
-
-  var dbs = JSON.parse('<%- escape(JSON.stringify(dbs)) %>');
-} catch (e) {
-  console.error(e);
-}
-
-
-
+    var ejsData = '<%- JSON.stringify(dbs) %>';
+    console.log(ejsData);
+    var dbs = JSON.parse(ejsData);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    console.log('JERRY!');
+  }
 </script>
+
 <script src="/js/rearrangePremade.js"></script>
 <script type="text/babel"></script>
 
