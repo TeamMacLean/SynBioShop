@@ -12,6 +12,11 @@
 
     window.onload = function () {
 
+        // Check if cart items are present
+    if (!cart.items || cart.items.length === 0) {
+        document.getElementById("placeOrderButton").disabled = true;
+    }
+
         const allItemQuantityElements = document.getElementsByName("itemQuantity");
 
         allItemQuantityElements.forEach((element, index) => {

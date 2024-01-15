@@ -97,6 +97,12 @@ ShoppingCart.placeOrder = (req, res) => {
   // database join of 'items' with cart
   ShoppingCart.ensureCart(username, { items: true })
     .then((cart) => {
+
+      if (cart.items.length === 0) {
+        // Cart is empty, do not place an order
+        return res.redirect("/cart");
+      }
+
       // recalculate quantity and cost on serverside, in case of old/bad browser:
 
       var totalQuantityCalculated = cart.items
