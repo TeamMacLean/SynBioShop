@@ -31,9 +31,14 @@
                 }).map(function(category){ %>
                 <% if(category.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !category.disabled){ %>
                 <div class="indent">
-                    <li><a class="<% if(category.disabled){ %>disabled<% } %>"
-                           href="/premade/category/<%- category.id %>"><span
-                                    data-icon="&#xe017;"></span> <%- category.name %></a></li>
+                    <li>
+                        <a 
+                            class="<% if(category.disabled){ %>disabled<% } %>"
+                            href="/premade/category/<%- category.id %>"
+                        >
+                            <span data-icon="&#xe017;"></span> <%- category.name %>
+                        </a>
+                    </li>
                 </div>
                 <% } %>
                 <% }); %>
