@@ -34,77 +34,57 @@ premade.index = (req, res) => {
     }).catch(err => renderError(err, res));
 };
 
+premade.export = async (req, res) => {
+    try {
+        const categories = await Category.getJoin({ db: true });
+        const out = await Promise.all(categories.map(async category => {
+            const types = await Type.getByCategory(category.id);
+            const type = Type.getByTypeNumber(category.db.type);
 
-//TEST
-premade.export = (req, res) => {
+            const items = types.map(t => {
+                const itemData = [
+                    t.whoMadeIt,   // First column
+                    t.description, // Second column
+                ];
 
-
-    Category.getJoin({ db: true }).then((categories) => {
-        return Promise.all(categories.map(category => {
-
-            return Type.getByCategory(category.id).then(types => {
-                const type = Type.getByTypeNumber(category.db.type);
-                const headings = ['Description', 'Comments'];
-                const items = [];
-
-
-                type.fields.map(t => {
-                    headings.push(t.text);
-                });
-
-                types.map(t => {
-                    const x = {
-                        items: [t.description, t.comments],
-                        id: t.id,
-                        name: t.name,
-                        disabled: t.disabled,
-                        file: t.file,
-                        position: t.position
-                    };
-                    type.fields.map(tt => {
-                        if (t[tt.name]) {
-                            x.items.push(t[tt.name])
-                        }
-                    });
-                    if (x.items.length > 0) {
-                        items.push(x);
+                // Add the rest of the fields
+                type.fields.forEach(tt => {
+                    if (tt.name !== 'whoMadeIt' && tt.name !== 'description') {
+                        itemData.push(t[tt.name] || ''); // Add field value or empty string if undefined
                     }
                 });
 
-
                 return {
-                    category: category.name,
-                    position: (category.db.position * 100) + category.position,
-                    items: items.map(i => {
-                        return { name: i.name, description: i.items[0], position: i.position }
-                    })
-                }
-            })
-        }))
+                    name: t.name,
+                    data: itemData, // Array of item data
+                    position: t.position
+                };
+            });
 
-    })
-        .then(out => {
+            return {
+                category: category.name,
+                position: (category.db.position * 100) + category.position,
+                items: items
+            };
+        }));
 
-            //to csv
-            let csv = '';
-            out
-                .sort((a, b) => a.position - b.position)
-                .map(o => {
-                    csv = csv + o.category + '\n';
-                    o.items
-                        .sort((a, b) => a.position - b.position)
-                        .map(i => {
-                            csv = csv + i.name + ', ' + i.description + '\n';
-                        })
-                    csv = csv + '\n';
-                });
+        let csv = '';
+        out.sort((a, b) => a.position - b.position)
+            .forEach(o => {
+                csv += o.category + '\n';
+                o.items.sort((a, b) => a.position - b.position)
+                    .forEach(i => {
+                        csv += `${i.name}, ${i.data.join(', ')}\n`; // Join data array with commas
+                    });
+                csv += '\n';
+            });
 
-
-            res.contentType('text/csv');
-            res.set("Content-Disposition", "attachment;filename=premade_items.csv");
-            res.send(csv);
-        })
-        .catch(err => renderError(err, res));
+        res.contentType('text/csv');
+        res.set("Content-Disposition", "attachment;filename=premade_items.csv");
+        res.send(csv);
+    } catch (err) {
+        renderError(err, res);
+    }
 };
 
 function safeJSONStringify(obj) {
