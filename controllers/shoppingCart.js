@@ -15,6 +15,12 @@ const pricePerUnit = config.pricePerUnit;
 const ShoppingCart = {};
 
 ShoppingCart.index = (req, res) => {
+    const username = req.user.username;
+
+  // temp testing
+  //req.user.company = 'JIC';
+  // config.js for admin toggle
+
   ShoppingCart.ensureCart(req.user.username, { items: true })
     .then((cart) => {
       if (!cart.items) {
@@ -39,7 +45,13 @@ ShoppingCart.index = (req, res) => {
         .then((updatedItems) => {
           cart.items = [].concat(...updatedItems);
 
-          return res.render("cart/index", { cart, pricePerUnit });
+          const isAdmin = config.admins.includes(username);
+
+          const force = (isAdmin && req.query.adminForceShowPricing === 'true') || false;
+
+          const adminButtonText = (req.query.adminForceShowPricing === 'true') ? 'Disable Pricing View' : 'Enable Pricing View';
+
+          return res.render("cart/index", { cart, pricePerUnit, forceShowPricing: force, adminButtonText, isAdmin });
         })
         .catch((err) => {
           return renderError(err, res);
@@ -93,6 +105,7 @@ ShoppingCart.placeOrder = (req, res) => {
   const { costCode, pricePerUnit } = req.body;
   var totalQuantity = req.body.totalQuantity;
   var totalCost = req.body.totalCost;
+  var signatory = req.body.signatory || null;
 
   // database join of 'items' with cart
   ShoppingCart.ensureCart(username, { items: true })
@@ -111,18 +124,10 @@ ShoppingCart.placeOrder = (req, res) => {
 
       // determine if 'total cost' will exist (populates emails/orders)
 
-      const isCostApplicable =
-        config.isPricingAvailable &&
-        (config.admins.includes(username) || req.user.company !== "TSL");
-
-      //console.log(`Cost is ${isCostApplicable ? '' : 'not'} applied`)
-      // if (!isCostApplicable) {
-      //     if (!config.isPricingAvailable){
-      //         console.log('\t...because pricing has been turned off in local settings')
-      //     } else if (req.user.company === 'TSL'){
-      //         console.log('\t...because user is part of TSL and not an admin for the site')
-      //     }
-      // }
+      // TODO need to sort this out
+      // const isCostApplicable = req.user.company !== "TSL" ||
+      //   (config.admins.includes(username) && req.query.adminForceShowPricing === 'true');
+      const isCostApplicable = req.user.company !== "TSL" && !config.admins.includes(username);
 
       var totalCostCalculated = isCostApplicable
         ? totalQuantityCalculated * pricePerUnit
@@ -149,7 +154,7 @@ ShoppingCart.placeOrder = (req, res) => {
         return renderError(grovel, res);
       }
 
-      new Order({ username, costCode, totalCost, totalQuantity, pricePerUnit })
+      new Order({ username, costCode, totalCost, totalQuantity, pricePerUnit, signatory })
         .save()
         .then((savedOrder) => {
           const saving = [];

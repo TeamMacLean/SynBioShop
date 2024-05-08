@@ -4,6 +4,8 @@ const gravatar = require('gravatar');
 const renderError = require('../lib/renderError');
 const config = require('../config.json');
 const LOG = require('../lib/log');
+const ldap = require('ldapjs');
+
 /**
  * render site index
  * @param req {request}
@@ -57,10 +59,46 @@ Auth.signInPost = (req, res, next) => {
     })(req, res, next);
 };
 
-
 Auth.whoami = (req, res, next) => {
     return res.redirect('/');
 };
 
+Auth.checkLDAPUser = (req, res, next) => {
+    const username = req.body.username;
+  const client = ldap.createClient({
+    url: config.ldap.url
+  });
+
+  client.bind(config.ldap.bindDn, config.ldap.bindCredentials, err => {
+    if (err) {
+      client.unbind();
+      console.error('LDAP bind failed:', err);
+      return res.status(500).send('LDAP bind failed');
+    }
+
+    const searchOptions = {
+      scope: 'sub',
+      filter: `(sAMAccountName=${username})`
+    };
+
+    client.search(config.ldap.searchBase, searchOptions, (err, result) => {
+      if (err) {
+        client.unbind();
+        console.error('LDAP search failed:', err);
+        return res.status(500).send('LDAP search failed');
+      }
+
+      let userExists = false;
+      result.on('searchEntry', entry => {
+        userExists = true;
+      });
+
+      result.on('end', () => {
+        client.unbind();
+        res.send({ exists: userExists });
+      });
+    });
+  });
+};
 
 module.exports = Auth;

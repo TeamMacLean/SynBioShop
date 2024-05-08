@@ -17,6 +17,7 @@
   </p>
   <p>Customer: <%- order.username %></p>
   <p>Cost code: <%= order.costCode || "n/a" %></p>
+  <p>Signatory: <%= order.signatory || "n/a" %></p>
 
   <% if(order.completedAt){ %>
   <p>Completed: <%- order.completedHumanDate() %></p>

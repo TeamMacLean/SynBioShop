@@ -23,6 +23,7 @@
             Total cost: <%= order.totalCost ? ("£" + order.totalCost) : "n/a" %>
           </p>
           <p>Cost code: <%= order.costCode || "n/a" %></p>
+          <%/**<p>Signatory: /</%/=/ order.signatory || "n/a" /%/>/</p> */ %>
         </div>
         <a
           href="/order/<%- order.id %>"

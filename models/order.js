@@ -7,6 +7,7 @@ moment.locale("en-gb");
 const Order = thinky.createModel("Order", {
   id: type.string(),
   username: type.string().required(),
+  signatory: type.string(),
   complete: type.boolean().required().default(false),
   cancelled: type.boolean().required().default(false),
   createdAt: type.date().default(r.now()),

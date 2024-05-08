@@ -1,14 +1,22 @@
 <% include ../head.ejs %>
 
 <% 
-    const displayPricing = 
-        (locals.isPricingAvailable && (locals.signedInUser.company !== 'TSL' || locals.signedInUser.isAdmin));
+    const displayPricing = forceShowPricing ||
+        (locals.isPricingAvailable && locals.signedInUser.company !== 'TSL');
+    const isAdmin = locals.isAdmin;
+    var signatoryExistsText = "Signatory email account exists.";
 %>
+
+<script>
+    var signatoryExistsText = "<%- signatoryExistsText %>";
+    var displayPricing = "<%= displayPricing %>"; // Also pass displayPricing to JS
+    var isAdmin = <%= JSON.stringify(locals.signedInUser.isAdmin || false) %>;
+</script>
+
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
 
     const pricePerUnit = "<%=pricePerUnit%>";
-    const displayPricing = "<%=displayPricing%>";
 
     window.onload = function () {
 
@@ -46,10 +54,6 @@
         */
 
         updateTotals();
-
-        // setInterval(function(){
-        //     alert("Hello");
-        // }, 10003);
 
         setTimeout(function(){
             updateTotals();
@@ -134,29 +138,26 @@
     <% if(typeof cart != 'undefined'){ %>
         <% if(cart.items.length > 0){ %>
 
-            <!-- <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
-                <div class="tile pad inverted">
-                    <h4>Admin</h4>
-                        <div class="form-group">
-                            <input class="muted-text" id="enableTSLView" type="checkbox">
-                            <span class="muted-text">Enable non-admin view</span>
-                        </div>
-                        <div class="form-group">
-                            <input class="muted-text" id="enableTSLView" type="checkbox">
-                            <span class="muted-text">Enable non-TSL view</span>
-                        </div>
-                </div>
-            <% } %> -->
-
             <div class="form-group">
                 <i>
                     Order your items. A standard order item is 5μL.
-                    <!-- Order 5-25μL per item. -->
                 </i>
             </div>
             <% if(displayPricing){ %>
                 <div class="form-group"><i>For non-TSL staff, pricing is currently set at £5 <!--for 5ul,-->per item. Bespoke orders available through email request.</i></div>
             <% } %>
+
+            <!-- TODO: add this feature back in (does not update totalCost reliably for now) -->
+            <!-- <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
+                <div style="border: 1px solid #ccc; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); padding: 20px; margin: 20px;">
+                    <div style="margin-bottom: 10px;">
+                        <button id="togglePricing">
+                            Admin Only: Click to <%= adminButtonText %>
+                        </button>
+                    </div>  
+                    <div style="padding-top: 10px;"><i>Seeing pricing under admin view is for viewing purposes only and will not affect the cart order when submitted.</i></div>
+                </div>
+            <% } %> -->
 
             <form method="post" action="/cart/order">
                 <input type="hidden" name="pricePerUnit" value="<%=pricePerUnit%>" />
@@ -230,16 +231,24 @@
 
                 <% if (displayPricing){ %>
                 <div class="row form-group">
-                    <div class="col6">
+                    <div class="col3">
                         <span>Cost centre for charging:</span>
                         <input required id="costCode" name="costCode" type="text" minLength="11" maxLength="11" 
                             data-inputmask="'mask': '*****-***-*'" class="uppercase"
                         >
                     </div>
+                    <div class="col4">
+                        <span>Signatory username/email:</span>
+                        <input required id="signatory" name="signatory" type="text" minLength="3" maxLength="20">@nbi.ac.uk
+                        <span class="small"><i>Please provide a username for the cost centre's budget holder so that an email can be sent to them regarding this order.</i></span>
+                    </div>
+                    <div class="col4">
+                        <div id="ldapCheckResult"></div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <input class="muted-text" required id="cost-consent" type="checkbox" data-quantity="true">
-                    <span class="muted-text">By ticking this box I am confirming that I have authority to spend on the above cost centre</span>
+                    <span class="muted-text">By ticking this box I am confirming that I have authority to spend on the above cost centre. I accept that my 'New Order' email generated from this submission will also be sent to my signatory.</span>
                 </div>
                 <% } %>
 
@@ -261,8 +270,11 @@
                 <div class="row">
                     <div class="col12">
                         <div class="pull-right">
-                            <!--<input type="submit" class="button primary" value="Update Cart">-->
-                            <button class="button success areyousure" id="placeOrderButton">Place Order</button>
+                            <% if (displayPricing){ %>
+                                <button class="button success areyousure" id="placeOrderButton" disabled>Place Order</button>
+                            <% } else { %>
+                                <button class="button success areyousure" id="placeOrderButton">Place Order</button>
+                            <% } %>
                         </div>
                     </div>
                 </div>
@@ -275,5 +287,55 @@
     <% } %>
 
 </div>
+
+<script>
+    var isAdmin = <%= JSON.stringify(locals.signedInUser.isAdmin || false) %>;
+</script>
+
+<script>
+    if (isAdmin) {
+        document.getElementById('togglePricing').addEventListener('click', function() {
+            const url = new URL(window.location);
+            const currentShowPricing = url.searchParams.get('adminForceShowPricing') === 'true' ? true : false;
+            const newShowPricing = !currentShowPricing;
+            url.searchParams.set('adminForceShowPricing', newShowPricing);
+            window.location = url.href;
+        });
+    }
+</script>
+
+<script>
+if (displayPricing) {
+    document.getElementById('signatory').addEventListener('blur', function() {
+    const signatoryToCheck = this.value;
+    if (signatoryToCheck !== ''){
+        fetch('/check-ldap-user', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: signatoryToCheck })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
+            document.getElementById('ldapCheckResult').innerText = signatoryExistsText;
+            document.getElementById('ldapCheckResult').style.color = 'green'; 
+            document.getElementById('placeOrderButton').disabled = false;
+            } else {
+            document.getElementById('ldapCheckResult').innerText = 'Signatory email account does not exist.';
+            document.getElementById('ldapCheckResult').style.color = 'red'; 
+            document.getElementById('placeOrderButton').disabled = true;
+            }
+        })
+        .catch((error) => {
+            console.error(error)
+            document.getElementById('ldapCheckResult').innerText = 'Error checking signatory username. Check your connection to the network.';
+            document.getElementById('ldapCheckResult').style.color = 'red'; 
+            document.getElementById('placeOrderButton').disabled = true;
+        });
+    }});
+}
+</script>
 
 <% include ../foot.ejs %>

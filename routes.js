@@ -310,6 +310,8 @@ router.route("/signout").all(isAuthenticated).get(auth.signOut);
 
 router.route("/whoamoi").all(isAuthenticated).get(auth.whoami);
 
+router.post('/check-ldap-user', auth.checkLDAPUser);
+
 router.route("*").get((req, res) => {
   console.log("404", req.url);
   res.render("404");
