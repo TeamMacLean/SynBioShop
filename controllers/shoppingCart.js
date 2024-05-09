@@ -9,55 +9,98 @@ const Email = require("../lib/email");
 const Csv = require("../lib/csv");
 const Flash = require("../lib/flash");
 const config = require("../config.json");
+const axios = require("axios");
+const cheerio = require('cheerio');
 
 const pricePerUnit = config.pricePerUnit;
 
 const ShoppingCart = {};
 
 ShoppingCart.index = (req, res) => {
-    const username = req.user.username;
+  const username = req.user.username;
 
-  // temp testing
+  // test different companies
   //req.user.company = 'JIC';
-  // config.js for admin toggle
 
-  ShoppingCart.ensureCart(req.user.username, { items: true })
-    .then((cart) => {
-      if (!cart.items) {
-        cart.items = [];
-      }
+  let budgetHolders = [];
 
-      const promises = cart.items.map(
-        (item) =>
-          new Promise((resolve, reject) => {
-            item
-              .getType()
-              .then((type) => {
-                item.type = type;
-                return resolve(item);
-              })
-              .catch((err) => {
-                return reject(err);
-              });
-          })
-      );
-      Promise.all(promises)
-        .then((updatedItems) => {
-          cart.items = [].concat(...updatedItems);
+  axios({
+    method: 'get',
+    url: config.lookupBudget.url,
+    headers: {
+      Authorization: config.lookupBudget.headers.authorization,
+      Cookie: config.lookupBudget.headers.authorization,
+    }
+  }).then(response => {
+    // Your HTML string
+    const html = response.data;
 
-          const isAdmin = config.admins.includes(username);
+    // Initialize cheerio
+    const $ = cheerio.load(html);
 
-          const force = (isAdmin && req.query.adminForceShowPricing === 'true') || false;
-
-          const adminButtonText = (req.query.adminForceShowPricing === 'true') ? 'Disable Pricing View' : 'Enable Pricing View';
-
-          return res.render("cart/index", { cart, pricePerUnit, forceShowPricing: force, adminButtonText, isAdmin });
-        })
-        .catch((err) => {
-          return renderError(err, res);
+    // Select each option and extract the value and text
+    $('select[name="BH"] option').each(function() {
+      const value = $(this).attr('value');
+      const name = $(this).text().trim();
+      // Ensure the value is defined and it's not the placeholder option
+      if (value && name !== 'SELECT BUDGET HOLDER') {
+        budgetHolders.push({
+          username: value,
+          name: name
         });
-    })
-    .catch((err) => renderError(err, res));
+      }
+    });
+    
+    continueWithCartOperations();
+  }).catch((error) => {
+    console.error('Failed to fetch budget holders:', error);
+    continueWithCartOperations();
+  });
+
+  function continueWithCartOperations() {
+    ShoppingCart.ensureCart(req.user.username, { items: true })
+      .then((cart) => {
+        if (!cart.items) {
+          cart.items = [];
+        }
+
+        const promises = cart.items.map(
+          (item) =>
+            new Promise((resolve, reject) => {
+              item
+                .getType()
+                .then((type) => {
+                  item.type = type;
+                  return resolve(item);
+                })
+                .catch((err) => {
+                  return reject(err);
+                });
+            })
+        );
+        Promise.all(promises)
+          .then((updatedItems) => {
+            cart.items = [].concat(...updatedItems);
+
+            const isAdmin = config.admins.includes(username);
+
+            const force = (isAdmin && req.query.adminForceShowPricing === 'true') || false;
+
+            const adminButtonText = (req.query.adminForceShowPricing === 'true') ? 'Disable Pricing View' : 'Enable Pricing View';
+
+            return res.render("cart/index", { cart, pricePerUnit, forceShowPricing: force, adminButtonText, isAdmin, budgetHolders });
+          })
+          .catch((err) => {
+            return renderError(err, res);
+          });
+      })
+      .catch((err) => renderError(err, res));
+  }
+
+  function renderError(err, res) {
+    console.error('Error processing cart:', err);
+    res.status(500).send('Error processing cart');
+  }
 };
 
 ShoppingCart.ensureCart = (username, join) =>

@@ -66,6 +66,11 @@
         Cost code: <%= locals.order.costCode %>
     </div>
 <% } %>
+<% if (locals.order.signatory) { %>
+    <div>
+        Budget holder: <%= locals.order.signatory %>
+    </div>
+<% } %>
 
 <a href="<%- baseURL %>/order/<%- locals.order.id %>" class="center">View order on site</a>
 </body>

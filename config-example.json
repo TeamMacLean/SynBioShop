@@ -19,6 +19,14 @@
     "searchBase": "OU=user,dc=mydc,dc=co,dc=uk",
     "searchFilter": "(sAMAccountName={{username}})"
   },
+  "lookupBudget": {
+    "url": "http://hello.com/costcentres/",
+    "headers": {
+      "authorization": "Basic ZwefoewifjwefFjioef2hlcjM1",
+      "cookie_note": "This is liable to break or change at any time until more robust coding put in place.",
+      "cookie": "username=hello; ADFOSDIFJDOTTT=FJEWOIFJEOIFOJBPENANH"
+    }
+  },
   "email": {
     "host": "mail.example.org",
     "port": "25",
