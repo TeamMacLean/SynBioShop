@@ -1,15 +1,16 @@
 <% include ../head.ejs %>
 
 <% 
-    const displayPricing = forceShowPricing ||
+    const signatoryExistsText = "Signatory email account exists."; // Use 'const' instead of 'var'
+    const displayPricing = forceShowPricing || 
         (locals.isPricingAvailable && locals.signedInUser.company !== 'TSL');
-    const isAdmin = locals.isAdmin;
-    var signatoryExistsText = "Signatory email account exists.";
 %>
 
 <script>
     var signatoryExistsText = "<%- signatoryExistsText %>";
-    var displayPricing = "<%= displayPricing %>"; // Also pass displayPricing to JS
+    var displayPricing = "<%= displayPricing %>"; 
+    var budgetHolders = <%- JSON.stringify(budgetHolders) %>;
+    var areBudgetHolders = budgetHolders.length > 0;
     var isAdmin = <%= JSON.stringify(locals.signedInUser.isAdmin || false) %>;
 </script>
 
@@ -279,11 +280,7 @@
                 <div class="row">
                     <div class="col12">
                         <div class="pull-right">
-                            <% if (budgetHolders && budgetHolders.length || !displayPricing){ %>
-                                <button class="button success areyousure" id="placeOrderButton">Place Order</button>
-                                <% } else { %>
-                                <button class="button success areyousure" id="placeOrderButton" disabled>Place Order</button>
-                            <% } %>
+                            <button class="button success areyousure" id="placeOrderButton">Place Order</button>
                         </div>
                     </div>
                 </div>
@@ -296,22 +293,6 @@
     <% } %>
 
 </div>
-
-<script>
-    var isAdmin = <%= JSON.stringify(locals.signedInUser.isAdmin || false) %>;
-</script>
-
-<script>
-    // if (isAdmin) {
-    //     document.getElementById('togglePricing').addEventListener('click', function() {
-    //         const url = new URL(window.location);
-    //         const currentShowPricing = url.searchParams.get('adminForceShowPricing') === 'true' ? true : false;
-    //         const newShowPricing = !currentShowPricing;
-    //         url.searchParams.set('adminForceShowPricing', newShowPricing);
-    //         window.location = url.href;
-    //     });
-    // }
-</script>
 
 <script>
 if (!budgetHolders.length && displayPricing) {
