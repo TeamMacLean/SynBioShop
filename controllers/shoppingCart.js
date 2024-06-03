@@ -20,17 +20,18 @@ ShoppingCart.index = (req, res) => {
   const username = req.user.username;
 
   // test different companies
-  //req.user.company = 'JIC';
+  req.user.company = 'JIC';
 
   let budgetHolders = [];
 
   axios({
     method: 'get',
-    url: config.lookupBudget.url,
+    url: 'config.lookupBudget.url', // test failing
+    //url: config.lookupBudget.url,
     headers: {
       Authorization: config.lookupBudget.headers.authorization,
       Cookie: config.lookupBudget.headers.authorization,
-    }
+    },
   }).then(response => {
     // Your HTML string
     const html = response.data;
@@ -53,7 +54,7 @@ ShoppingCart.index = (req, res) => {
     
     continueWithCartOperations();
   }).catch((error) => {
-    console.error('Failed to fetch budget holders:', error);
+    //console.error('Failed to fetch budget holders:', error);
     continueWithCartOperations();
   });
 
@@ -88,7 +89,16 @@ ShoppingCart.index = (req, res) => {
 
             const adminButtonText = (req.query.adminForceShowPricing === 'true') ? 'Disable Pricing View' : 'Enable Pricing View';
 
-            return res.render("cart/index", { cart, pricePerUnit, forceShowPricing: force, adminButtonText, isAdmin, budgetHolders });
+            const budgetHoldersToReturn = (budgetHolders && budgetHolders.length) ? budgetHolders : [];
+
+            return res.render("cart/index", { 
+              cart, 
+              pricePerUnit, 
+              forceShowPricing: force, 
+              adminButtonText, 
+              isAdmin, 
+              budgetHolders: budgetHoldersToReturn, 
+            });
           })
           .catch((err) => {
             return renderError(err, res);
