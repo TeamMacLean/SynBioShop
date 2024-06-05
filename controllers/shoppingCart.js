@@ -20,7 +20,10 @@ ShoppingCart.index = (req, res) => {
   const username = req.user.username;
 
   // test different companies; takes a while to refresh
-  req.user.company = 'JIC';
+
+  if (username === 'deeks'){
+    req.user.company = 'JIC';
+  }
 
   let budgetHolders = [];
 
