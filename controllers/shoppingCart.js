@@ -20,14 +20,14 @@ ShoppingCart.index = (req, res) => {
   const username = req.user.username;
 
   // test different companies; takes a while to refresh
-  //req.user.company = 'JIC';
+  req.user.company = 'JIC';
 
   let budgetHolders = [];
 
   axios({
     method: 'get',
-    url: 'config.lookupBudget.url', // test failing
-    //url: config.lookupBudget.url,
+    // url: 'config.lookupBudget.url', // test failing
+    url: config.lookupBudget.url,
     headers: {
       Authorization: config.lookupBudget.headers.authorization,
       Cookie: config.lookupBudget.headers.authorization,
@@ -35,6 +35,8 @@ ShoppingCart.index = (req, res) => {
   }).then(response => {
     // Your HTML string
     const html = response.data;
+
+    console.log('success! budget holders found')
 
     // Initialize cheerio
     const $ = cheerio.load(html);
@@ -54,7 +56,7 @@ ShoppingCart.index = (req, res) => {
     
     continueWithCartOperations();
   }).catch((error) => {
-    //console.error('Failed to fetch budget holders:', error);
+    console.error('Failed to fetch budget holders:', error);
     continueWithCartOperations();
   });
 
