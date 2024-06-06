@@ -16,6 +16,39 @@ const pricePerUnit = config.pricePerUnit;
 
 const ShoppingCart = {};
 
+const options = {
+  method: 'get',
+  // url: config.lookupBudget.url,
+  timeout: 2000,
+  headers: {
+    Authorization: config.lookupBudget.headers.authorization,
+    Cookie: config.lookupBudget.headers.authorization,
+    'Accept': 'application/json, text/plain, */*',
+    'User-Agent': 'axios/1.7.2',
+    'Accept-Encoding': 'gzip, compress, deflate, br',
+  },
+  
+  url: 'https://intranet.nbi.ac.uk/infoserv/cgi-bin/costcentres/',
+  // proxy: {
+  //   protocol: 'http',
+  //   host: 'swproxy.nbi.ac.uk',
+  //   port: 8080,
+  // },
+};
+
+// Axios Request Options: {
+//   method: 'get',
+//   url: 'http://intranet.nbi.ac.uk/infoserv/cgi-bin/costcentres/',
+//   timeout: 2000,
+//   headers: {
+//     Authorization: 'Basic ZGVla3NAbmJpLmFjLnVrOkZpc2hlcjM1',
+//     Cookie: 'Basic ZGVla3NAbmJpLmFjLnVrOkZpc2hlcjM1',
+//     Accept: 'application/json, text/plain, */*',
+//     'User-Agent': 'axios/1.7.2',
+//     'Accept-Encoding': 'gzip, compress, deflate, br'
+//   }
+// }
+
 ShoppingCart.index = (req, res) => {
   const username = req.user.username;
 
@@ -25,53 +58,47 @@ ShoppingCart.index = (req, res) => {
     req.user.company = 'JIC';
   }
 
-  let budgetHolders = [];
+    console.log('Axios Request Options:', options);
 
-  axios({
-    method: 'get',
-    url: 'https://intranet.nbi.ac.uk/infoserv/cgi-bin/costcentres/',
-    proxy: {
-      protocol: 'http',
-      host: 'swproxy.nbi.ac.uk',
-      port: 8080,
-    },
-    timeout: 5000,
-    headers: {
-      'Authorization': 'Basic ZGVla3NAbmJpLmFjLnVrOkZpc2hlcjM1',
-      'Cookie': 'username=deeks; ASPSESSIONIDSERQATTT=HBMBPKPBKLCKIABOJBPENANH',
-      'Accept': 'application/json, text/plain, */*',
-      'User-Agent': 'axios/1.7.2',
-      'Accept-Encoding': 'gzip, compress, deflate, br',
-    },
-  }).then(response => {
-    // Your HTML string
-    const html = response.data;
+  axios(options)
+    .then(response => {
+      console.log('success! budget holders found');
 
-    console.log('success! budget holders found')
+      // Your HTML string
+      const html = response.data;
 
-    // Initialize cheerio
-    const $ = cheerio.load(html);
+      // Initialize cheerio
+      const $ = cheerio.load(html);
 
-    // Select each option and extract the value and text
-    $('select[name="BH"] option').each(function() {
-      const value = $(this).attr('value');
-      const name = $(this).text().trim();
-      // Ensure the value is defined and it's not the placeholder option
-      if (value && name !== 'SELECT BUDGET HOLDER') {
-        budgetHolders.push({
-          username: value,
-          name: name
-        });
+      // Select each option and extract the value and text
+      const budgetHolders = [];
+      $('select[name="BH"] option').each(function() {
+        const value = $(this).attr('value');
+        const name = $(this).text().trim();
+        // Ensure the value is defined and it's not the placeholder option
+        if (value && name !== 'SELECT BUDGET HOLDER') {
+          budgetHolders.push({
+            username: value,
+            name: name
+          });
+        }
+      });
+
+      //console.log('Budget Holders:', budgetHolders);
+      
+      continueWithCartOperations(budgetHolders);
+    })
+    .catch((error) => {
+      console.error('Failed to fetch budget holders:', error.message);
+      if (error.response) {
+        console.error('Response Data:', error.response.data);
+        console.error('Response Status:', error.response.status);
+        console.error('Response Headers:', error.response.headers);
       }
+      continueWithCartOperations([]);
     });
-    
-    continueWithCartOperations();
-  }).catch((error) => {
-    console.error('Failed to fetch budget holders:', error);
-    continueWithCartOperations();
-  });
 
-  function continueWithCartOperations() {
+  function continueWithCartOperations(budgetHolders) {
     ShoppingCart.ensureCart(req.user.username, { items: true })
       .then((cart) => {
         if (!cart.items) {
@@ -102,7 +129,8 @@ ShoppingCart.index = (req, res) => {
 
             const adminButtonText = (req.query.adminForceShowPricing === 'true') ? 'Disable Pricing View' : 'Enable Pricing View';
 
-            const budgetHoldersToReturn = (budgetHolders && budgetHolders.length) ? budgetHolders : [];
+
+            console.log('hewwo', budgetHolders)
 
             return res.render("cart/index", { 
               cart, 
@@ -110,7 +138,7 @@ ShoppingCart.index = (req, res) => {
               forceShowPricing: force, 
               adminButtonText, 
               isAdmin, 
-              budgetHolders: budgetHoldersToReturn, 
+              budgetHolders, 
             });
           })
           .catch((err) => {
