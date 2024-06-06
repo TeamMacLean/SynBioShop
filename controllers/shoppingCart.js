@@ -49,15 +49,16 @@ ShoppingCart.index = (req, res) => {
     // url: config.lookupBudget.url,
     timeout: 2000,
     headers: {
-      Authorization: config.lookupBudget.headers.authorization,
-      Cookie: config.lookupBudget.headers.authorization,
+      Authorization: "Basic ZGVla3NAbmJpLmFjLnVrOkZpc2hlcjM1",
+      //Authorization: config.lookupBudget.headers.authorization,
+      Cookie: "username=deeks; ASPSESSIONIDSERQATTT=HBMBPKPBKLCKIABOJBPENANH",
+      // Cookie: config.lookupBudget.headers.authorization,
       'Accept': 'application/json, text/plain, */*',
       'User-Agent': 'axios/1.7.2',
       'Accept-Encoding': 'gzip, compress, deflate, br',
     },
     url: 'https://intranet.nbi.ac.uk/infoserv/cgi-bin/costcentres/',
   };
-
 
   console.log('Axios Request Options:', options);
 
