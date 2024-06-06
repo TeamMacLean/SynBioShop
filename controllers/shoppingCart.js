@@ -31,6 +31,11 @@ ShoppingCart.index = (req, res) => {
     method: 'get',
     // url: 'config.lookupBudget.url', // test failing
     url: config.lookupBudget.url,
+    proxy: {
+      host: "swproxy.nbi.ac.uk",
+      port: 8080,
+    },
+    timeout: 5000,
     headers: {
       Authorization: config.lookupBudget.headers.authorization,
       Cookie: config.lookupBudget.headers.authorization,
