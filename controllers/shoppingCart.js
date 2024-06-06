@@ -11,68 +11,41 @@ const Flash = require("../lib/flash");
 const config = require("../config.json");
 const axios = require("axios");
 const cheerio = require('cheerio');
+const { exec } = require('child_process');
 
 const pricePerUnit = config.pricePerUnit;
 
 const ShoppingCart = {};
 
 
-// proxy: {
-//   protocol: 'http',
-//   host: 'swproxy.nbi.ac.uk',
-//   port: 8080,
-// },
-// Axios Request Options: {
-//   method: 'get',
-//   url: 'http://intranet.nbi.ac.uk/infoserv/cgi-bin/costcentres/',
-//   timeout: 2000,
-//   headers: {
-//     Authorization: 'Basic ZGVla3NAbmJpLmFjLnVrOkZpc2hlcjM1',
-//     Cookie: 'Basic ZGVla3NAbmJpLmFjLnVrOkZpc2hlcjM1',
-//     Accept: 'application/json, text/plain, */*',
-//     'User-Agent': 'axios/1.7.2',
-//     'Accept-Encoding': 'gzip, compress, deflate, br'
-//   }
-// }
-
 ShoppingCart.index = (req, res) => {
   const username = req.user.username;
-
-  // test different companies; takes a while to refresh
 
   if (username === 'deeks'){
     req.user.company = 'JIC';
   }
 
-  const options = {
-    method: 'get',
-    // url: config.lookupBudget.url,
-    timeout: 2000,
-    headers: {
-      Authorization: "Basic ZGVla3NAbmJpLmFjLnVrOkZpc2hlcjM1",
-      //Authorization: config.lookupBudget.headers.authorization,
-      Cookie: "username=deeks; ASPSESSIONIDSERQATTT=HBMBPKPBKLCKIABOJBPENANH",
-      // Cookie: config.lookupBudget.headers.authorization,
-      'Accept': 'application/json, text/plain, */*',
-      'User-Agent': 'axios/1.7.2',
-      'Accept-Encoding': 'gzip, compress, deflate, br',
-    },
-    url: 'https://intranet.nbi.ac.uk/infoserv/cgi-bin/costcentres/',
-  };
+  const curlCommandStr = 
+    'curl -s -H "' + 
+    'Authorization: ' + 
+    config.lookupBudget.headers.authorization + 
+    '" -H "Cookie: ' + 
+    config.lookupBudget.headers.cookie + 
+    '" ' + '-H "Accept: application/json, text/plain, */*" -H "User-Agent: axios/1.7.2" -H "Accept-Encoding: gzip, compress, deflate, br" -H "Connection: close" ' + 
+    config.lookupBudget.url
+  ;
 
-  console.log('Axios Request Options:', options);
-
-  axios(options)
-    .then(response => {
-      console.log('success! budget holders found');
-
-      // Your HTML string
-      const html = response.data;
-
-      // Initialize cheerio
-      const $ = cheerio.load(html);
-
-      // Select each option and extract the value and text
+  exec(curlCommandStr, (error, stdout, stderr) => {
+    if (error) {
+      console.error('stderr:', stderr);
+      console.error('Failed to fetch budget holders:', error.message);
+      return continueWithCartOperations([]);
+    } else {
+      
+      //console.log('success! budget holders found', stdout);
+      
+      const html = stdout;
+      const $ = cheerio.load(html);    
       const budgetHolders = [];
       $('select[name="BH"] option').each(function() {
         const value = $(this).attr('value');
@@ -85,20 +58,11 @@ ShoppingCart.index = (req, res) => {
           });
         }
       });
-
-      //console.log('Budget Holders:', budgetHolders);
       
+      console.log('First 5 budgetHolders:', budgetHolders.slice(0, 5));
       continueWithCartOperations(budgetHolders);
-    })
-    .catch((error) => {
-      console.error('Failed to fetch budget holders:', error.message);
-      if (error.response) {
-        console.error('Response Data:', error.response.data);
-        console.error('Response Status:', error.response.status);
-        console.error('Response Headers:', error.response.headers);
-      }
-      continueWithCartOperations([]);
-    });
+    }
+  });
 
   function continueWithCartOperations(budgetHolders) {
     ShoppingCart.ensureCart(req.user.username, { items: true })
