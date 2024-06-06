@@ -58,8 +58,8 @@ ShoppingCart.index = (req, res) => {
           });
         }
       });
-      
-      console.log('First 5 budgetHolders:', budgetHolders.slice(0, 5));
+
+      //console.log('First 5 budgetHolders:', budgetHolders.slice(0, 5));
       continueWithCartOperations(budgetHolders);
     }
   });
