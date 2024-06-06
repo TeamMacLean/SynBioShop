@@ -16,26 +16,12 @@ const pricePerUnit = config.pricePerUnit;
 
 const ShoppingCart = {};
 
-const options = {
-  method: 'get',
-  // url: config.lookupBudget.url,
-  timeout: 2000,
-  headers: {
-    Authorization: config.lookupBudget.headers.authorization,
-    Cookie: config.lookupBudget.headers.authorization,
-    'Accept': 'application/json, text/plain, */*',
-    'User-Agent': 'axios/1.7.2',
-    'Accept-Encoding': 'gzip, compress, deflate, br',
-  },
-  
-  url: 'https://intranet.nbi.ac.uk/infoserv/cgi-bin/costcentres/',
-  // proxy: {
-  //   protocol: 'http',
-  //   host: 'swproxy.nbi.ac.uk',
-  //   port: 8080,
-  // },
-};
 
+// proxy: {
+//   protocol: 'http',
+//   host: 'swproxy.nbi.ac.uk',
+//   port: 8080,
+// },
 // Axios Request Options: {
 //   method: 'get',
 //   url: 'http://intranet.nbi.ac.uk/infoserv/cgi-bin/costcentres/',
@@ -58,7 +44,22 @@ ShoppingCart.index = (req, res) => {
     req.user.company = 'JIC';
   }
 
-    console.log('Axios Request Options:', options);
+  const options = {
+    method: 'get',
+    // url: config.lookupBudget.url,
+    timeout: 2000,
+    headers: {
+      Authorization: config.lookupBudget.headers.authorization,
+      Cookie: config.lookupBudget.headers.authorization,
+      'Accept': 'application/json, text/plain, */*',
+      'User-Agent': 'axios/1.7.2',
+      'Accept-Encoding': 'gzip, compress, deflate, br',
+    },
+    url: 'https://intranet.nbi.ac.uk/infoserv/cgi-bin/costcentres/',
+  };
+
+
+  console.log('Axios Request Options:', options);
 
   axios(options)
     .then(response => {
