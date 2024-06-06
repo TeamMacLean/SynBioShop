@@ -29,16 +29,17 @@ ShoppingCart.index = (req, res) => {
 
   axios({
     method: 'get',
-    // url: 'config.lookupBudget.url', // test failing
     url: config.lookupBudget.url,
     proxy: {
-      host: "swproxy.nbi.ac.uk",
+      protocol: 'http',
+      host: 'swproxy.nbi.ac.uk',
       port: 8080,
     },
     timeout: 5000,
     headers: {
-      Authorization: config.lookupBudget.headers.authorization,
-      Cookie: config.lookupBudget.headers.authorization,
+      'Content-Type': 'application/json',
+      'Authorization': config.lookupBudget.headers.authorization,
+      'Cookie': config.lookupBudget.headers.cookie,
     },
   }).then(response => {
     // Your HTML string
