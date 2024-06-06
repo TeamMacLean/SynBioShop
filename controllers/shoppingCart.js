@@ -43,7 +43,6 @@ ShoppingCart.index = (req, res) => {
       'User-Agent': 'axios/1.7.2',
       'Accept-Encoding': 'gzip, compress, deflate, br',
     },
-  })
   }).then(response => {
     // Your HTML string
     const html = response.data;
