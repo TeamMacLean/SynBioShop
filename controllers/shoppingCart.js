@@ -29,7 +29,7 @@ ShoppingCart.index = (req, res) => {
 
   axios({
     method: 'get',
-    url: config.lookupBudget.url,
+    url: 'https://intranet.nbi.ac.uk/infoserv/cgi-bin/costcentres/',
     proxy: {
       protocol: 'http',
       host: 'swproxy.nbi.ac.uk',
@@ -37,10 +37,13 @@ ShoppingCart.index = (req, res) => {
     },
     timeout: 5000,
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': config.lookupBudget.headers.authorization,
-      'Cookie': config.lookupBudget.headers.cookie,
+      'Authorization': 'Basic ZGVla3NAbmJpLmFjLnVrOkZpc2hlcjM1',
+      'Cookie': 'username=deeks; ASPSESSIONIDSERQATTT=HBMBPKPBKLCKIABOJBPENANH',
+      'Accept': 'application/json, text/plain, */*',
+      'User-Agent': 'axios/1.7.2',
+      'Accept-Encoding': 'gzip, compress, deflate, br',
     },
+  })
   }).then(response => {
     // Your HTML string
     const html = response.data;
