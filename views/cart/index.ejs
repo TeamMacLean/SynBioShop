@@ -134,6 +134,18 @@
     }
 </script>
 
+<script>
+    function validateForm() {
+        const signatory = document.getElementById('signatory');
+        if (signatory.value === "") {
+            alert('Selection required: Please select a budget holder.');
+            return false;
+        }
+        return true;
+    }
+</script>
+
+
 <div class="container">
     <h1 class="center">Shopping Basket</h1>
     <% if(typeof cart != 'undefined'){ %>
@@ -160,7 +172,7 @@
                 </div>
             <% } %> -->
 
-            <form method="post" action="/cart/order">
+            <form onsubmit="return validateForm()" method="post" action="/cart/order">
                 <input type="hidden" name="pricePerUnit" value="<%=pricePerUnit%>" />
                 <table class="cart">
                     <thead>
@@ -240,7 +252,8 @@
                     </div>
                     <% if(budgetHolders && budgetHolders.length) { %>
                         <span>Select Budget Holder:</span>
-                        <select id="signatory" name="signatory">
+                        <select id="signatory" name="signatory" required>
+                            <option value="" disabled selected>Select budget holder</option>
                             <% budgetHolders.forEach(function(budgetHolder) { %>
                                 <option value="<%= budgetHolder.username %>"><%= budgetHolder.name %></option>
                             <% }) %>
