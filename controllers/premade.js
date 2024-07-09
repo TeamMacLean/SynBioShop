@@ -42,14 +42,21 @@ premade.export = async (req, res) => {
             const type = Type.getByTypeNumber(category.db.type);
 
             const items = types.map(t => {
+                // Determine the value for whoMadeIt or source
+                const whoMadeIt = t.whoMadeIt || t.source || 'Unknown'; // Use whoMadeIt, then source, or empty string if neither is present
+
                 const itemData = [
-                    t.whoMadeIt,   // First column
-                    t.description, // Second column
+                    whoMadeIt,      // First column (whoMadeIt or source)
+                    t.description,  // Second column
                 ];
+
+                // if (!whoMadeIt) {
+                //     console.log(`Missing 'whoMadeIt' or 'source' for type ID: ${t.id}, category ID: ${category.id}`);
+                // }
 
                 // Add the rest of the fields
                 type.fields.forEach(tt => {
-                    if (tt.name !== 'whoMadeIt' && tt.name !== 'description') {
+                    if (tt.name !== 'whoMadeIt' && tt.name !== 'description' && tt.name !== 'source') {
                         itemData.push(t[tt.name] || ''); // Add field value or empty string if undefined
                     }
                 });
