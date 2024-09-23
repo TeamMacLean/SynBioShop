@@ -308,8 +308,8 @@
 </div>
 
 <script>
-const showAltSignatoryInput = budgetHolders.length && displayPricing;
-console.log('any budget hodlers?', budgetHolders.length, 'deisplayPricign?', displayPricing, 'showAltSignatoryInput?', showAltSignatoryInput);
+const showAltSignatoryInput = !budgetHolders.length && displayPricing;
+//console.log('any budget hodlers?', budgetHolders.length, 'deisplayPricign?', displayPricing, 'showAltSignatoryInput?', showAltSignatoryInput);
 if (showAltSignatoryInput) {
     document.getElementById('signatory').addEventListener('blur', function() {
     const signatoryToCheck = this.value;
