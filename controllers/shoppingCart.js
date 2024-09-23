@@ -37,8 +37,7 @@ ShoppingCart.index = (req, res) => {
     if (error) {
       console.error('stderr:', stderr);
       console.error('Failed to fetch budget holders:', error.message);
-      // Redirect to an error page or send an error message
-      return res.redirect('/error'); // Redirects to a generic error page
+      continueWithCartOperations([]);
     } else {
       const html = stdout;
       const $ = cheerio.load(html);
