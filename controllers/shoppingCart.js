@@ -91,12 +91,12 @@ ShoppingCart.index = (req, res) => {
 
             const isAdmin = config.admins.includes(username);
 
-            const force = (isAdmin && req.query.adminForceShowPricing === 'true') || false;
+            //const force = (isAdmin && req.query.adminForceShowPricing === 'true') || false;
+            const force = true; // temp testing
 
             const adminButtonText = (req.query.adminForceShowPricing === 'true') ? 'Disable Pricing View' : 'Enable Pricing View';
 
-
-            console.log('hewwo', budgetHolders)
+            console.log('frontend receiveing this many budgetholders:', budgetHolders.length)
 
             return res.render("cart/index", { 
               cart, 

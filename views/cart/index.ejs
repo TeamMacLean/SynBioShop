@@ -10,7 +10,7 @@
     var signatoryExistsText = "<%- signatoryExistsText %>";
     var displayPricing = "<%= displayPricing %>"; 
     var budgetHolders = <%- JSON.stringify(budgetHolders) %>;
-    var areBudgetHolders = budgetHolders.length > 0;
+    var areBudgetHolders = budgetHolders && budgetHolders.length > 0;
     var isAdmin = <%= JSON.stringify(locals.signedInUser.isAdmin || false) %>;
 </script>
 
@@ -308,7 +308,9 @@
 </div>
 
 <script>
-if (!budgetHolders.length && displayPricing) {
+const showAltSignatoryInput = budgetHolders.length && displayPricing;
+console.log('any budget hodlers?', budgetHolders.length, 'deisplayPricign?', displayPricing, 'showAltSignatoryInput?', showAltSignatoryInput);
+if (showAltSignatoryInput) {
     document.getElementById('signatory').addEventListener('blur', function() {
     const signatoryToCheck = this.value;
     if (signatoryToCheck !== ''){
