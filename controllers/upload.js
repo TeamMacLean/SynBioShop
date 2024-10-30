@@ -1,6 +1,7 @@
 const renderError = require('../lib/renderError');
 const config = require('../config.json');
 const fs = require('fs');
+const fsPromises = fs.promises;
 const path = require('path');
 const File = require('../models/file');
 const SequenceFile = require('../models/sequenceFile');
@@ -88,15 +89,27 @@ upload.uploadFilePost = (req, res) => {
 //
 // };
 
+function fileExists(filePath) {
+    return fsPromises.access(filePath)
+        .then(() => true)
+        .catch(() => false);
+}
+
 upload.download = (req, res)=> {
     const id = req.params.id;
 
     File.get(id)
         .then((file)=> {
-            // .download is part of express
-            // 2nd optional argument renames the file you'll download (to pretty originalName!)
-            // don't use sendFile 
-            return res.download(file.path, file.originalName);
+
+            fileExists(file.path).then(exists => {
+                if (exists) {
+                    // Express's .download sends the file as an attachment and allows renaming
+                    // don't use sendFile 
+                    return res.download(file.path, file.originalName);
+                } else {
+                    return renderError('File not found - sorry about that but it has probably been lost', res);
+                }            
+            });
         })
         .catch((err)=> {
             return renderError(err, res);
