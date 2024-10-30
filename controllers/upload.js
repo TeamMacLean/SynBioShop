@@ -88,31 +88,30 @@ upload.uploadFilePost = (req, res) => {
 //
 // };
 
-upload.download = (req, res) => {
+upload.download = async (req, res) => {
     const id = req.params.id;
 
-    File.get(id)
-        .then((file) => {
-            // Check if the file exists
-            fs.access(file.path, fs.constants.F_OK, (err) => {
-                if (err) {
-                    // File does not exist, respond with a friendly message
-                    return res.status(404).send("Unfortunately, this file doesn't exist.");
-                }
+    try {
+        const file = await File.get(id);
 
-                // File exists, proceed with download
-                return res.download(file.path, file.originalName, (downloadErr) => {
-                    if (downloadErr) {
-                        console.error('Error during file download:', downloadErr);
-                        return res.status(500).send('An error occurred while downloading the file.');
-                    }
-                });
-            });
-        })
-        .catch((err) => {
-            // Handle errors in retrieving the file record
-            return renderError(err, res);
+        // Check if file exists
+        await fs.access(file.path);
+
+        // If the file exists, proceed with download
+        return res.download(file.path, file.originalName, (downloadErr) => {
+            if (downloadErr) {
+                console.error('Error during file download:', downloadErr);
+                return res.status(500).send('An error occurred while downloading the file.');
+            }
         });
+    } catch (err) {
+        // Handle file not found error or any other error
+        if (err.code === 'ENOENT') {
+            return res.status(404).send("Unfortunately, this file doesn't exist.");
+        }
+        // Other errors (e.g., database issues)
+        return renderError(err, res);
+    }
 };
 
 upload.downloadSequenceFile = (req, res)=> {
