@@ -10,3 +10,4 @@ docs
 log/*
 **/.DS_Store
 /mnt/
+demo.http

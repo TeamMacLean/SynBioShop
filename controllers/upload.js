@@ -88,19 +88,31 @@ upload.uploadFilePost = (req, res) => {
 //
 // };
 
-upload.download = (req, res)=> {
+upload.download = (req, res) => {
     const id = req.params.id;
 
     File.get(id)
-        .then((file)=> {
-            // .download is part of express
-            // 2nd optional argument renames the file you'll download (to pretty originalName!)
-            // don't use sendFile 
-            return res.download(file.path, file.originalName);
+        .then((file) => {
+            // Check if the file exists
+            fs.access(file.path, fs.constants.F_OK, (err) => {
+                if (err) {
+                    // File does not exist, respond with a friendly message
+                    return res.status(404).send("Unfortunately, this file doesn't exist.");
+                }
+
+                // File exists, proceed with download
+                return res.download(file.path, file.originalName, (downloadErr) => {
+                    if (downloadErr) {
+                        console.error('Error during file download:', downloadErr);
+                        return res.status(500).send('An error occurred while downloading the file.');
+                    }
+                });
+            });
         })
-        .catch((err)=> {
+        .catch((err) => {
+            // Handle errors in retrieving the file record
             return renderError(err, res);
-        })
+        });
 };
 
 upload.downloadSequenceFile = (req, res)=> {

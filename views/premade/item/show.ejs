@@ -76,16 +76,15 @@
         </fieldset>
 
         <fieldset>
-            <% if(item.mapFile){ %>
+            <% if (item.mapFile && item.mapFile.length > 0) { %>
                 <hr>
-                <h3>MAP file</h3>
-                <% if(item.mapFile){ %>
-                    <span><%- item.mapFile.originalName %></span>
+                <h3>MAP files</h3>
+                <% item.mapFile.forEach(file => { %>
+                    <span><%- file.originalName %></span>
                     <br>
-                <% } %>
-                <a href="<%- item.mapFile.downloadPath() %>" class="icon_download button primary outline">
-                    
-                </a>
+                    <a href="<%- file.downloadPath() %>" class="icon_download button primary outline"></a>
+                    <br>
+                <% }); %>
             <% } %>
         </fieldset>
 
