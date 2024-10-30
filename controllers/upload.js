@@ -88,30 +88,19 @@ upload.uploadFilePost = (req, res) => {
 //
 // };
 
-upload.download = async (req, res) => {
+upload.download = (req, res)=> {
     const id = req.params.id;
 
-    try {
-        const file = await File.get(id);
-
-        // Check if file exists
-        await fs.access(file.path);
-
-        // If the file exists, proceed with download
-        return res.download(file.path, file.originalName, (downloadErr) => {
-            if (downloadErr) {
-                console.error('Error during file download:', downloadErr);
-                return res.status(500).send('An error occurred while downloading the file.');
-            }
-        });
-    } catch (err) {
-        // Handle file not found error or any other error
-        if (err.code === 'ENOENT') {
-            return res.status(404).send("Unfortunately, this file doesn't exist.");
-        }
-        // Other errors (e.g., database issues)
-        return renderError(err, res);
-    }
+    File.get(id)
+        .then((file)=> {
+            // .download is part of express
+            // 2nd optional argument renames the file you'll download (to pretty originalName!)
+            // don't use sendFile 
+            return res.download(file.path, file.originalName);
+        })
+        .catch((err)=> {
+            return renderError(err, res);
+        })
 };
 
 upload.downloadSequenceFile = (req, res)=> {
