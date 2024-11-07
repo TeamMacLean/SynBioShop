@@ -75,19 +75,17 @@
             <% } %>
         </fieldset>
 
-        <div><% item.mapFile %></div>
-        <div><% typeof(item.mapFile) %></div>
-
         <fieldset>
-            <% if (item.mapFile && item.mapFile.length > 0) { %>
+            <% if(item.mapFile){ %>
                 <hr>
-                <h3>MAP files</h3>
-                <% item.mapFile.forEach(file => { %>
-                    <span><%- file.originalName %></span>
+                <h3>MAP file</h3>
+                <% if(item.mapFile){ %>
+                    <span><%- item.mapFile.originalName %></span>
                     <br>
-                    <a href="<%- file.downloadPath() %>" class="icon_download button primary outline"></a>
-                    <br>
-                <% }); %>
+                <% } %>
+                <a href="<%- item.mapFile.downloadPath() %>" class="icon_download button primary outline">
+                    
+                </a>
             <% } %>
         </fieldset>
 
