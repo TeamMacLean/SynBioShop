@@ -9,7 +9,6 @@ const Email = require("../lib/email");
 const Csv = require("../lib/csv");
 const Flash = require("../lib/flash");
 const config = require("../config.json");
-const axios = require("axios");
 const cheerio = require('cheerio');
 const { exec } = require('child_process');
 
@@ -17,93 +16,59 @@ const pricePerUnit = config.pricePerUnit;
 
 const ShoppingCart = {};
 
+function renderShoppingCartError(err, res) {
+  console.error('Error processing cart:', err);
+  res.status(500).send('Error processing cart');
+}
+
 ShoppingCart.index = (req, res) => {
-  const username = req.user.username;
+  const {user} = req;
+  const {username} = user;
 
-  if (username === 'deeks') {
-    req.user.company = 'JIC';
-  }
+  ShoppingCart.ensureCart(username, { items: true })
+    .then((cart) => {
+      if (!cart.items) {
+        cart.items = [];
+      }
 
-  const curlCommandStr = 
-    'curl --max-time 4 -s -H "' + // Added --max-time 5 for a 5-second timeout
-    'Authorization: ' + 
-    config.lookupBudget.headers.authorization + 
-    '" -H "Cookie: ' + 
-    config.lookupBudget.headers.cookie + 
-    '" ' + '-H "Accept: application/json, text/plain, */*" -H "User-Agent: axios/1.7.2" -H "Accept-Encoding: gzip, compress, deflate, br" -H "Connection: close" ' + 
-    config.lookupBudget.url;
-
-  exec(curlCommandStr, (error, stdout, stderr) => {
-    if (error) {
-      console.error('stderr:', stderr);
-      console.error('Failed to fetch budget holders:', error.message);
-      continueWithCartOperations([]);
-    } else {
-      const html = stdout;
-      const $ = cheerio.load(html);
-      const budgetHolders = [];
-      $('select[name="BH"] option').each(function () {
-        const value = $(this).attr('value');
-        const name = $(this).text().trim();
-        if (value && name !== 'SELECT BUDGET HOLDER') {
-          budgetHolders.push({
-            username: value,
-            name: name
-          });
-        }
-      });
-      continueWithCartOperations(budgetHolders);
-    }
-  });
-
-  function continueWithCartOperations(budgetHolders) {
-    ShoppingCart.ensureCart(req.user.username, { items: true })
-      .then((cart) => {
-        if (!cart.items) {
-          cart.items = [];
-        }
-
-        const promises = cart.items.map((item) =>
-          new Promise((resolve, reject) => {
-            item.getType()
-              .then((type) => {
-                item.type = type;
-                return resolve(item);
-              })
-              .catch((err) => {
-                return reject(err);
-              });
-          })
-        );
-        
-        Promise.all(promises)
-          .then((updatedItems) => {
-            cart.items = [].concat(...updatedItems);
-
-            const isAdmin = config.admins.includes(username);
-            const force = (isAdmin && req.query.adminForceShowPricing === 'true') || false;
-            const adminButtonText = req.query.adminForceShowPricing === 'true' ? 'Disable Pricing View' : 'Enable Pricing View';
-
-            console.log('frontend receiving this many budget holders:', budgetHolders.length);
-
-            return res.render('cart/index', {
-              cart,
-              pricePerUnit,
-              forceShowPricing: force,
-              adminButtonText,
-              isAdmin,
-              budgetHolders
+      const promises = cart.items.map((item) =>
+        new Promise((resolve, reject) => {
+          item.getType()
+            .then((type) => {
+              item.type = type;
+              return resolve(item);
+            })
+            .catch((err) => {
+              return reject(err);
             });
-          })
-          .catch((err) => renderError(err, res));
-      })
-      .catch((err) => renderError(err, res));
-  }
+        })
+      );
+      
+      Promise.all(promises)
+        .then((updatedItems) => {
+          cart.items = [].concat(...updatedItems);
 
-  function renderError(err, res) {
-    console.error('Error processing cart:', err);
-    res.status(500).send('Error processing cart');
-  }
+          const adminForceShowPricing = req.query && req.query.adminForceShowPricing;
+
+          const userIsInTSL = user.company === 'TSL';
+
+          const isAdmin = config.admins.includes(username);
+
+          const userShouldPay = !userIsInTSL && !isAdmin;
+
+          const displayPricing = adminForceShowPricing || userShouldPay;
+
+          return res.render('cart/index', {
+            cart,
+            pricePerUnit,
+            isAdmin,
+            displayPricing,
+            adminForceShowPricing,
+          });
+        })
+        .catch((err) => renderShoppingCartError(err, res));
+    })
+    .catch((err) => renderShoppingCartError(err, res));
 };
 
 ShoppingCart.ensureCart = (username, join) =>
@@ -168,11 +133,6 @@ ShoppingCart.placeOrder = (req, res) => {
         .map((item) => item.quantity)
         .reduce((a, b) => a + b, 0);
 
-      // determine if 'total cost' will exist (populates emails/orders)
-
-      // TODO need to sort this out
-      // const isCostApplicable = req.user.company !== "TSL" ||
-      //   (config.admins.includes(username) && req.query.adminForceShowPricing === 'true');
       const isCostApplicable = req.user.company !== "TSL" && !config.admins.includes(username);
 
       var totalCostCalculated = isCostApplicable

@@ -34,5 +34,6 @@
     "emailDomain": "@example.org"
   },
   "admins": ["deeks"],
-  "emailAdmins": ["deeks"]
+  "emailAdmins": ["deeks"],
+  "devMode": false
 }
