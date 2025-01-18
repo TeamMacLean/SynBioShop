@@ -221,12 +221,11 @@ premade.db.save = (req, res) => {
     const description = req.body.description;
     const id = req.body.id;
 
-
     if (id) {
         DB.get(id)
             .then((db) => {
                 db.name = name;
-                // db.type=type; //should not be allowed to change this!!!!
+                //db.type=type; //should not be allowed to change this!!!!
                 db.description = description;
                 db.save().then(() => {
                     res.redirect('/premade');
@@ -298,10 +297,16 @@ premade.db.edit = (req, res) => {
         .then((db) => {
             getDbs().then((dbs) => {
                 // type 1 is at index 0, etc.
-                const types = [Type.TYPES[db.type - 1]];
+                const types = Type.TYPES;
+                const selectedType = types[db.type - 1];
                 // console.log('hardcoded types', Type.TYPES);
                 // console.log('db.type', db.type)
-                const data = { db, dbs, types }
+                // console.log('selectedType', selectedType.type);
+
+                // currently we don't want the user to be able to change the type
+                // therefore we're only passing the selected type to the view
+                // see: premade.category.save (this file, line ~324)
+                const data = { db, dbs, types: [selectedType], selectedType }
                 return res.render('premade/db/edit', data);
             }).catch(err => renderError(err, res));
         })
