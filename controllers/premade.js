@@ -297,7 +297,12 @@ premade.db.edit = (req, res) => {
     DB.get(id)
         .then((db) => {
             getDbs().then((dbs) => {
-                return res.render('premade/db/edit', { db, dbs, types: [Type.TYPES[db.type]] });
+                // type 1 is at index 0, etc.
+                const types = [Type.TYPES[db.type - 1]];
+                // console.log('hardcoded types', Type.TYPES);
+                // console.log('db.type', db.type)
+                const data = { db, dbs, types }
+                return res.render('premade/db/edit', data);
             }).catch(err => renderError(err, res));
         })
         .catch((err) => {
