@@ -22,7 +22,7 @@
                 <label for="type">Type</label>
                 <select id="type" name="type" class="wide" required>
                     <% types.map(function(type) { %>
-                        <option value="<%- type.type %>" <%= type.type === selectedType.type ? 'selected' : '' %>><%- type.typeName %></option>
+                        <option value="<%- type.type %>"><%- type.typeName %></option>
                     <% }); %>
                 </select>
             </div>
