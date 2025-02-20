@@ -1,54 +1,161 @@
 <% include ../head.ejs %>
 
-<table>
-    <tr>
-        <th>createdAt</th>
-        <th>Name</th>
-        <th>items</th>
-        <th>Total cost</th>
-        <th>Cost code</th>
-    </tr>
+<style>
+  .table-wrapper {
+    max-width: 100vw;
+    overflow: hidden;
+    padding: 0 15px;
+    display: flex;
+    justify-content: center;
+  }
+  table {
+    width: 95%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 1rem;
+  }
+  th, td {
+    padding: 10px 15px;
+    text-align: left;
+    vertical-align: top;
+    border: 1px solid #ddd;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  th {
+    background-color: #f9f9f9;
+    font-size: 1.5rem;
+  }
+  ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+  .pagination {
+    margin: 20px auto;
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+  }
+  .pagination button {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  .pagination button:disabled {
+    background-color: #eee;
+    cursor: default;
+  }
+  .pagination button.active {
+    font-weight: bold;
+    background-color: #ddd;
+  }
+</style>
 
-    <% orders.map(order=>{ %>
-
-        <style>
-            ul, li {
-                list-style: none;
-            }
-        </style>
-
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Created At</th>
+        <th style="width: 20%;">Name</th>
+        <th style="width: 35%;">Items</th>
+        <th style="width: 10%;">Total Cost</th>
+        <th style="width: 10%;">Cost Code</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% orders.forEach(order => { %>
         <tr>
-            <td><%- order.createdAt %></td>
-            <td><%- order.fullName %></td>
-            <td>
-                <ul>
-                    <% order.items.map(item=>{ %>
-                        <% if(item.type.name){ %>
-                            <li><%- item.type.name %> X<%- item.quantity %></li>
-                        <% } else { %>
-                            <li>type not found, possibly deleted</li>
-                        <% } %>
-                    <% }) %>
-                </ul>
-            </td>
-            <td><%= order.totalCost ? ("£" + order.totalCost) : "n/a" %></td>
-            <td><%- order.costCode || "n/a" %></td>
+          <td>
+            <%- new Date(order.createdAt).toString().split(' GMT')[0] %>
+          </td>
+          <td><%- order.fullName %></td>
+          <td>
+            <ul>
+              <% order.items.forEach(item => { %>
+                <% if (item.type.name) { %>
+                  <li><%- item.type.name %> X<%- item.quantity %></li>
+                <% } else { %>
+                  <li>type not found, possibly deleted</li>
+                <% } %>
+              <% }) %>
+            </ul>
+          </td>
+          <td><%= order.totalCost ? ("£" + order.totalCost) : "n/a" %></td>
+          <td><%- order.costCode || "n/a" %></td>
         </tr>
-
-    <% }) %>
-
-</table>
-
-<% var pages = count / perPage; %>
-<div class="pagination">
-    <% for(var i = 1; i < pages; i++){ %>
-        <a 
-            href="/order/summary?page=<%- i %>" 
-            class="pagination-link <%- i === page ? 'active' : '' %>"
-            aria-label="page-<%- i %>"
-        >
-            <%- i %>
-        </a>
-    <% } %>
+      <% }) %>
+    </tbody>
+  </table>
 </div>
+
+<% 
+  var pages = Math.ceil(count / perPage);
+  // Default to page 1 if no param is set.
+  page = page || 1;
+  
+  var start, end;
+  if (page === 1) {
+    start = 2;
+    end = 3;
+  } else if (page === pages) {
+    start = pages - 2;
+    end = pages - 1;
+  } else {
+    start = Math.max(2, page - 1);
+    end = Math.min(pages - 1, page + 1);
+  }
+%>
+<div class="pagination">
+  <!-- Previous button -->
+  <button <% if (page <= 1) { %>disabled<% } else { %>onclick="window.location='/order/summary?page=<%- page - 1 %>'"<% } %>>
+    &lsaquo;
+  </button>
+  
+  <!-- Always show first page -->
+  <% if (page === 1) { %>
+    <button class="active" disabled>1</button>
+  <% } else { %>
+    <button onclick="window.location='/order/summary?page=1'">1</button>
+  <% } %>
+  
+  <!-- Ellipsis if gap between first and start -->
+  <% if (start > 2) { %>
+    <span>...</span>
+  <% } %>
+  
+  <!-- Middle page buttons -->
+  <% for (var i = start; i <= end; i++) { %>
+    <% if (i === page) { %>
+      <button class="active" disabled><%- i %></button>
+    <% } else { %>
+      <button onclick="window.location='/order/summary?page=<%- i %>'"><%- i %></button>
+    <% } %>
+  <% } %>
+  
+  <!-- Ellipsis if gap between end and last page -->
+  <% if (end < pages - 1) { %>
+    <span>...</span>
+  <% } %>
+  
+  <!-- Always show last page if there is more than one page -->
+  <% if (pages > 1) { %>
+    <% if (page === pages) { %>
+      <button class="active" disabled><%- pages %></button>
+    <% } else { %>
+      <button onclick="window.location='/order/summary?page=<%- pages %>'"><%- pages %></button>
+    <% } %>
+  <% } %>
+  
+  <!-- Next button -->
+  <button <% if (page >= pages) { %>disabled<% } else { %>onclick="window.location='/order/summary?page=<%- page + 1 %>'"<% } %>>
+    &rsaquo;
+  </button>
+</div>
+
+
 <% include ../foot.ejs %>
