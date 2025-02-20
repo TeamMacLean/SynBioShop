@@ -250,7 +250,7 @@
 </div>
 
 <% 
-  var pages = Math.ceil(count / perPage);
+  var pages = (Math.ceil(count / perPage) - 1); 
   // Default to page 1 if no param is set.
   page = page || 1;
   
