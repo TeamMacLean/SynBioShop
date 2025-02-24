@@ -271,6 +271,8 @@ router
   .all(isAdmin)
   .get(orders.simonSummary);
 
+router.get('/order/export', orders.exportOrders)
+
 router
   .route("/dupes")
   .all(isAuthenticated)

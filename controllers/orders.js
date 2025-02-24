@@ -55,11 +55,13 @@ orders.showAll = (req, res) => {
 
 orders.simonSummary = (req, res) => {
   const perPage = 50;
-  let page = req.query.page || 0;
-  page = parseInt(page, 10);
+  // Default to page 1 if no page is provided, and ensure page is at least 1.
+  let page = req.query.page ? parseInt(req.query.page, 10) : 1;
+  if (page < 1) page = 1;
 
+  // Use (page-1)*perPage for slicing so that page=1 shows the first 50 results.
   Order.orderBy(thinky.r.desc("createdAt"))
-    .slice(page * perPage, page * perPage + perPage)
+    .slice((page - 1) * perPage, page * perPage)
     .getJoin({ items: true })
     .then((orders) => {
       return Promise.all(
@@ -69,7 +71,7 @@ orders.simonSummary = (req, res) => {
       );
     })
     .then((ordersWithTypes) => {
-      //get their full names from ldap
+      // Get their full names from LDAP
       return Promise.all(
         ordersWithTypes.map((owt) => {
           return new Promise((good, bad) => {
@@ -83,7 +85,7 @@ orders.simonSummary = (req, res) => {
                 good(owt);
               })
               .catch(() => {
-                owt.fullName = owt.username; //fallback
+                owt.fullName = owt.username; // Fallback
                 good(owt);
               });
           });
@@ -103,6 +105,49 @@ orders.simonSummary = (req, res) => {
         });
     })
     .catch((err) => renderError(err, res));
+};
+
+
+orders.exportOrders = (req, res, next) => {
+  const startParam = req.query.start;
+  const endParam = req.query.end;
+
+  if (!startParam || !endParam) {
+    return res.status(400).json({ error: 'Please provide both start and end dates.' });
+  }
+
+  // Parse dates
+  const startDate = new Date(startParam);
+  const endDate = new Date(endParam);
+  // Include the entire end date
+  endDate.setHours(23, 59, 59, 999);
+
+  Order
+    .between(startDate, endDate, {
+      index: "createdAt",
+      leftBound: "closed",
+      rightBound: "closed"
+    })
+    .orderBy({ index: "createdAt" })
+    .filter(order =>
+      order("costCode").ne(null)
+        .and(order("totalCost").ne(null))
+        .and(order("totalCost").ne(""))
+    )
+    // Ensure the results are ordered in ascending order by createdAt (earliest first)
+    .getJoin({ items: true })
+    .run()
+    .then(orders => {
+      return Promise.all(orders.map(order => order.getTypes()));
+    })
+    .then(ordersWithTypes => {
+      res.json(ordersWithTypes);
+    })
+    .catch(err => {
+      console.error('Error in exportOrders middleware:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    });
+
 };
 
 orders.simonRepeatOrders = (req, res) => {
