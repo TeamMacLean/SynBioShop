@@ -1,5 +1,6 @@
 <% include ../head.ejs %>
 
+<!-- Export Widget -->
 <div class="export-widget">
   <h2>Download all Orders with a Total Cost and Cost Code</h2>
   <label for="start-date">Start date:</label>
@@ -213,6 +214,70 @@
   });
 </script>
 
+<%
+  var pages = Math.ceil(count / perPage);
+  page = page || 1;
+  var start, end;
+  if (page === 1) {
+    start = 2;
+    end = 3;
+  } else if (page === pages) {
+    start = pages - 2;
+    end = pages - 1;
+  } else {
+    start = Math.max(2, page - 1);
+    end = Math.min(pages - 1, page + 1);
+  }
+%>
+
+<!-- Pagination above table -->
+<div class="pagination">
+  <!-- Previous button -->
+  <button <% if (page <= 1) { %>disabled<% } else { %>onclick="window.location='/order/summary?page=<%- page - 1 %>'"<% } %>>
+    &lsaquo;
+  </button>
+  
+  <!-- Always show first page -->
+  <% if (page === 1) { %>
+    <button class="active" disabled>1</button>
+  <% } else { %>
+    <button onclick="window.location='/order/summary?page=1'">1</button>
+  <% } %>
+  
+  <!-- Ellipsis if gap between first and middle -->
+  <% if (start > 2) { %>
+    <span>...</span>
+  <% } %>
+  
+  <!-- Middle page buttons -->
+  <% for (var i = start; i <= end; i++) { %>
+    <% if (i === page) { %>
+      <button class="active" disabled><%- i %></button>
+    <% } else { %>
+      <button onclick="window.location='/order/summary?page=<%- i %>'"><%- i %></button>
+    <% } %>
+  <% } %>
+  
+  <!-- Ellipsis if gap between middle and last -->
+  <% if (end < pages - 1) { %>
+    <span>...</span>
+  <% } %>
+  
+  <!-- Always show last page if more than one page -->
+  <% if (pages > 1) { %>
+    <% if (page === pages) { %>
+      <button class="active" disabled><%- pages %></button>
+    <% } else { %>
+      <button onclick="window.location='/order/summary?page=<%- pages %>'"><%- pages %></button>
+    <% } %>
+  <% } %>
+  
+  <!-- Next button -->
+  <button <% if (page >= pages) { %>disabled<% } else { %>onclick="window.location='/order/summary?page=<%- page + 1 %>'"<% } %>>
+    &rsaquo;
+  </button>
+</div>
+
 <div class="table-wrapper">
   <table>
     <thead>
@@ -250,21 +315,7 @@
   </table>
 </div>
 
-<% 
-  var pages = Math.ceil(count / perPage);
-  page = page || 1;
-  var start, end;
-  if (page === 1) {
-    start = 2;
-    end = 3;
-  } else if (page === pages) {
-    start = pages - 2;
-    end = pages - 1;
-  } else {
-    start = Math.max(2, page - 1);
-    end = Math.min(pages - 1, page + 1);
-  }
-%>
+<!-- Pagination below table (duplicate of above) -->
 <div class="pagination">
   <!-- Previous button -->
   <button <% if (page <= 1) { %>disabled<% } else { %>onclick="window.location='/order/summary?page=<%- page - 1 %>'"<% } %>>
