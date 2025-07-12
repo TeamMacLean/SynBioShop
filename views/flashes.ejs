@@ -31,3 +31,22 @@
 </div>
 <% }); %>
 <% } %>
+
+<% /* JavaScript to handle closing flash messages */ %>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('[data-close="true"]').forEach(function(closeButton) {
+            closeButton.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent the default link behavior
+                // Find the closest parent flash message div
+                const flashMessageDiv = closeButton.closest('.flash');
+                if (flashMessageDiv) {
+                    flashMessageDiv.style.display = 'none'; // Simple hide
+                    // Or for a smoother transition, add a class and use CSS for fadeOut:
+                    // flashMessageDiv.classList.add('flash-hidden');
+                    // setTimeout(() => flashMessageDiv.remove(), 500); // Remove after animation
+                }
+            });
+        });
+    });
+</script>

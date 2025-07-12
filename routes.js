@@ -177,6 +177,7 @@ router.get('/search', isAuthenticated, search.index);
 // Removed `if (!config.disableCart)` around the block.
 router.get('/cart', isAuthenticated, shoppingCart.index);
 router.post('/cart/order', isAuthenticated, shoppingCart.placeOrder);
+router.post('/cart/add', isAuthenticated, shoppingCart.addViaPostRoute); // Use a new method name
 
 // --- File Upload & Management Routes (General) ---
 // Changed from .route('/upload') to separate GET/POST for clarity

@@ -12,8 +12,12 @@ const cookieParser = require("cookie-parser");
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
 require("./sockets")(io); // index file for sockets
-// const Cart = require("./models/cart"); // Moved to relevant controllers
-// const Order = require("./models/order"); // Moved to relevant controllers
+
+// --- IMPORT NECESSARY MODELS FOR res.locals DATA ---
+const Cart = require("./models/cart"); // <-- ADDED: Import Cart model
+const Order = require("./models/order"); // <-- ADDED: Import Order model
+// --- END MODEL IMPORTS ---
+
 const flash = require("express-flash");
 const Billboard = require("./models/billboard");
 
@@ -36,7 +40,7 @@ app.use(bodyParser.urlencoded({ extended: false, limit: "50mb" }));
 app.use(cookieParser());
 
 // Session Middleware
-const r = require("./lib/thinky").r;
+const r = require("./lib/thinky").r; // r is needed for RethinkDB queries (like in Order.filter)
 const store = new rethinkSession(r);
 app.use(
   session({
@@ -62,11 +66,10 @@ app.use(
 );
 
 // --- CRITICAL: Call Passport Setup Here ---
-// This ensures all Passport strategies are registered *before* routes are processed.
 util.setupPassport();
 
-// --- res.locals Middleware (Simplified and non-blocking) ---
-app.use((req, res, next) => {
+// --- res.locals Middleware (NOW ASYNCHRONOUS for DB fetches) ---
+app.use(async (req, res, next) => { // <<< CHANGED: Made this middleware 'async' <<<
   // Make general config values available to all views
   res.locals.disablePremade = config.disablePremade;
   res.locals.disableCart = config.disableCart;
@@ -82,18 +85,47 @@ app.use((req, res, next) => {
       company: validator.escape(req.user.company),
       iconURL: req.user.iconURL ? req.user.iconURL : config.defaultUserIcon
     };
-    // Initialize cart items and incomplete count, but these are populated by specific controllers on demand.
-    res.locals.signedInUser.cart = { items: [] }; // Default to empty array for EJS safety
-    res.locals.incompleteCount = 0; // Default to 0, actual count loaded by ordersController.
-  } else {
-    res.locals.signedInUser = null;
-    res.locals.incompleteCount = 0;
-  }
 
-  next(); // Continue to next middleware
+    // --- NEW/MODIFIED: Asynchronously fetch Cart Item Count ---
+    try {
+      const carts = await Cart.filter({ username: req.user.username })
+                              .getJoin({ items: true }) // Need items to count length
+                              .run(); // Execute the query
+
+      if (carts && carts.length === 1 && carts[0].items) { // Safe access
+        res.locals.signedInUser.cart = carts[0]; // Assign the actual cart object
+        res.locals.signedInUser.cart.items.length = carts[0].items.length; // Set the length property for the count
+      } else {
+        res.locals.signedInUser.cart = { items: [] }; // Default to empty cart
+        res.locals.signedInUser.cart.items.length = 0; // Explicitly set length to 0
+      }
+    } catch (err) {
+      console.error('Error fetching cart count for locals:', err);
+      res.locals.signedInUser.cart = { items: [] }; // Default empty on error
+      res.locals.signedInUser.cart.items.length = 0;
+    }
+
+    // --- NEW/MODIFIED: Asynchronously fetch Incomplete Order Count ---
+    try {
+        const incompleteCount = await Order.filter(
+            r.and(r.row("complete").eq(false), r.row("cancelled").eq(false))
+        ).count().execute();
+        res.locals.incompleteCount = incompleteCount;
+    } catch (err) {
+        console.error('Error fetching incomplete order count for locals:', err);
+        res.locals.incompleteCount = 0; // Default to 0 on error
+    }
+
+    next(); // Proceed to next middleware ONLY after async fetches complete
+  } else {
+    // Not logged in
+    res.locals.signedInUser = null;
+    res.locals.incompleteCount = 0; // Default 0 if not logged in
+    next(); // Proceed to next middleware
+  }
 });
 
-// Middleware to load Billboard (non-blocking)
+// Middleware to load Billboard (non-blocking) - This middleware is separate and doesn't affect main user data loading flow.
 app.use((req, res, next) => {
   Billboard.run()
     .then((billboards) => {

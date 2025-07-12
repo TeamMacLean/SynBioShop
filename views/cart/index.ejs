@@ -84,10 +84,6 @@
     $('body').on('click', 'a[name="removeItem"].areyousure', function(e) {
       e.preventDefault();
       const itemId = $(this).data('id');
-      
-      if (!confirm('Are you sure you want to remove this item from your cart?')) {
-          return;
-      }
 
       if (typeof socket !== 'undefined') {
         socket.emit('removeFromCart', { id: itemId });
@@ -207,20 +203,11 @@
 <div class="container">
     <h1 class="center">Shopping Basket</h1>
 
-    <% /* Flash Messages Display */ %>
-    <% if (typeof messages !== 'undefined') { %>
-        <% if (messages.success && messages.success.length > 0) { %>
-            <div class="flash-messages flash-success"><%= messages.success %></div>
-        <% } %>
-        <% if (messages.error && messages.error.length > 0) { %>
-            <div class="flash-messages flash-error"><%= messages.error %></div>
-        <% } %>
-        <% if (messages.warning && messages.warning.length > 0) { %>
-            <div class="flash-messages flash-warning"><%= messages.warning %></div>
-        <% } %>
-        <% if (messages.info && messages.info.length > 0) { %>
-            <div class="flash-messages flash-info"><%= messages.info %></div>
-        <% } %>
+
+    <% if (typeof orderId !== 'undefined' && orderId && orderJanCode) { %>
+        <div class="flash-messages flash-success">
+            Your order #<%= orderJanCode %> has been successfully placed! 
+        </div>
     <% } %>
 
     <% if(typeof cart !== 'undefined' && cart.items && cart.items.length > 0){ %>
@@ -265,23 +252,8 @@
                         <td data-th="Item"><a href="/premade/item/<%- item.type.id %>"><%- item.type.name %></a></td>
                         <td data-th="Quantity" class="center">
                             <% const itemQuantity = item.quantity || 1; %>
-                            <% if (displayPricing){ %>
-                                <!-- Use SPAN for display, HIDDEN INPUT for form submission -->
-                                <span class="item-quantity" id="<%= 'quantity_' + index %>" data-id="<%- item.id %>"><%= itemQuantity %></span>
-                                <input type="hidden" name="itemQuantity" value="<%= itemQuantity %>" />
-                            <% } else { %>
-                                <!-- Use INPUT for interactive quantity (max=1 enforced by min/max and JS) -->
-                                <input
-                                    type="number"
-                                    class="item-quantity"
-                                    value="<%= itemQuantity %>"
-                                    name="itemQuantity"
-                                    id="<%= 'quantity_' + index %>"
-                                    min="1"
-                                    max="1"
-                                    data-id="<%- item.id %>"
-                                    />
-                            <% } %>
+                            <span class="item-quantity" id="<%= 'quantity_' + index %>" data-id="<%- item.id %>"><%= itemQuantity %></span>
+                            <input type="hidden" name="itemQuantity" value="<%= itemQuantity %>" />
                         </td>
                         <% if (displayPricing){ %>
                             <td data-th="Price" class="center">
@@ -340,6 +312,204 @@
                     <option value="" disabled selected>Select budget holder</option>
                     <option value='adriaens'>ADRIAENSSENS Evelien Adriaenssens [Food, Microbiome and Health (QIB)]</option>
                     <option value='ahnjarj'>AHN-JARVIS Jennifer Ahn-Jarvis [Food, Microbiome and Health (QIB)]</option>
+                                        <option value='yel23dof'>ALDRIDGE Alan Aldridge [Facilities (NBIP)]</option>
+                    <option value='angiolie'>ANGIOLINI Emily Angiolini [Advanced Training (EI)]</option>
+                    <option value='aroras'>ARORA Sanu Arora [Biochemistry and Metabolism (JIC)]</option>
+                    <option value='dbaker'>BAKER David Baker [Science Operations (QIB)]</option>
+                    <option value='bakht'>BAKHT Saleha Bakht [Crop Genetics (JIC)]</option>
+                    <option value='balkj'>BALK Janneke Balk [Biochemistry and Metabolism (JIC)]</option>
+                    <option value='banfielm'>BANFIELD Mark Banfield [Biochemistry and Metabolism (JIC)]</option>
+                    <option value='bealesj'>BEALES Jessica Beales [Finance & Accounts (NBIP)]</option>
+                    <option value='bella'>BELL Andrew Bell [Science Operations (QIB)]</option>
+                    <option value='timmonss'>BENNION Sarah Bennion [Finance & Accounts (NBIP)]</option>
+                    <option value='berazan'>BERAZA Naiara Beraza [Food, Microbiome and Health (QIB)]</option>
+                    <option value='bestj'>BEST Julia Best [Directorate (QIB)]</option>
+                    <option value='bexson'>BEXSON Grant Bexson [Operations (EI)]</option>
+                    <option value='bibb'>BIBB Mervyn Bibb [Molecular Microbiology (JIC)]</option>
+                    <option value='symonl'>BOLTON Lisa Bolton [Finance & Accounts (NBIP)]</option>
+                    <option value='bornemas'>BORNEMANN Stephen Bornemann [Sainsbury Laboratory (TSL)]</option>
+                    <option value='borrillp'>BORRILL Philippa Borrill [Crop Genetics (JIC)]</option>
+                    <option value='gjones'>BOWKER Greg Bowker [Communications (EI)]</option>
+                    <option value='brailsfo'>BRAILSFORD Alan Brailsford [QIB Extra (QIBX)]</option>
+                    <option value='briona'>BRION Arlaine Brion [Core Science Resources (QIB)]</option>
+                    <option value='browng'>BROWN Graeme Brown [Directorate (QIB)]</option>
+                    <option value='jbrown'>BROWN James Brown [Crop Genetics (JIC)]</option>
+                    <option value='byers'>BYERS Kelsey Byers [Cell & Developmental Biology (JIC)]</option>
+                    <option value='cardings'>CARDING Simon Carding [Food, Microbiome and Health (QIB)]</option>
+                    <option value='carellap'>CARELLA Phil Carella [Cell & Developmental Biology (JIC)]</option>
+                    <option value='clissold'>CATCHPOLE Leah Catchpole [Genomics Pipelines (EI)]</option>
+                    <option value='chalmerl'>CHALMERS Lee Chalmers [Finance & Accounts (NBIP)]</option>
+                    <option value='charlesi'>CHARLES Ian Charles [Directorate (QIB)]</option>
+                    <option value='charpenm'>CHARPENTIER Myriam Charpentier [Cell & Developmental Biology (JIC)]</option>
+                    <option value='chayutn'>CHAYUT Noam Chayut [Crop Genetics (JIC)]</option>
+                    <option value='jclarke'>CLARKE Jonathan Clarke [Business Development (JIC)]</option>
+                    <option value='coenen'>COEN Enrico COEN [Cell & Developmental Biology (JIC)]</option>
+                    <option value='cosseys'>COSSEY Sarah Cossey [Directors Office (EI)]</option>
+                    <option value='creissen'>CREISSEN Gary Creissen [Laboratory Support (JIC)]</option>
+                    <option value='cdarby'>DARBY Chris Darby [Crop Genetics (JIC)]</option>
+                    <option value='deolivl'>DE OLIVEIRA MARTINS Leonardo de Oliveira Martins [Science Operations (QIB)]</option>
+                    <option value='devegaj'>DE VEGA Jose De Vega [Research Faculty (EI)]</option>
+                    <option value='deanc'>DEAN Caroline Dean [Cell & Developmental Biology (JIC)]</option>
+                    <option value='devine'>DEVINE Rebecca Devine [Molecular Microbiology (JIC)]</option>
+                    <option value='yding'>DING Yiliang Ding [Cell & Developmental Biology (JIC)]</option>
+                    <option value='dixonr'>DIXON Ray Dixon [Molecular Microbiology (JIC)]</option>
+                    <option value='dodd'>DODD Antony Dodd [Cell & Developmental Biology (JIC)]</option>
+                    <option value='domoney'>DOMONEY Claire Domoney [Biochemistry and Metabolism (JIC)]</option>
+                    <option value='cip23wis'>DORAI-RAJ Siobhan Dorai-Raj [Operations (EI)]</option>
+                    <option value='downie'>DOWNIE Allan Downie [Molecular Microbiology (JIC)]</option>
+                    <option value='dunford'>DUNFORD Roy Dunford [Laboratory Support (JIC)]</option>
+                    <option value='eastman'>EASTMAN Michelle Eastman [Graduate School Office (GSO)]</option>
+                    <option value='edwardsc'>EDWARDS Cathrina Edwards [Food, Microbiome and Health (QIB)]</option>
+                    <option value='ellispa'>ELLIS Paul Ellis [Finance & Accounts (NBIP)]</option>
+                    <option value='elumogo'>ELUMOGO Ngozi Elumogo [Food, Microbiome and Health (QIB)]</option>
+                    <option value='faulknec'>FAULKNER Christine Faulkner [Cell & Developmental Biology (JIC)]</option>
+                    <option value='feather'>FEATHER Debbie Feather [Sainsbury Laboratory (TSL)]</option>
+                    <option value='wifey'>FINDLAY Kim Findlay [Cell & Developmental Biology (JIC)]</option>
+                    <option value='finglas'>FINGLAS Paul Finglas [Food and Nutrition � NBRI (QIB)]</option>
+                    <option value='dforeman'>FOREMAN Dave Foreman [Directors Office (JIC)]</option>
+                    <option value='birdc'>FOSKER Christine Fosker [Research Faculty Office (EI)]</option>
+                    <option value='fosters'>FOSTER Simon Foster [Sainsbury Laboratory (TSL)]</option>
+                    <option value='funnells'>FUNNELL Simon Funnell [Food, Microbiome and Health (QIB)]</option>
+                    <option value='garrido'>GARRIDO-OTER Ruben Garrido-Oter [Research Faculty (EI)]</option>
+                    <option value='gharbik'>GHARBI Karim Gharbi [Genomics Pipelines (EI)]</option>
+                    <option value='ghilarov'>GHILAROV Dmitry Ghilarov [Molecular Microbiology (JIC)]</option>
+                    <option value='gilmour'>GILMOUR Matthew Gilmour [Microbes and Food Safety (QIB)]</option>
+                    <option value='goramr'>GORAM Richard Goram [Crop Genetics (JIC)]</option>
+                    <option value='sharpe'>GORDON-SHARPE Eva Gordon-Sharpe [Directors Office (JIC)]</option>
+                    <option value='gottsk'>GOTTS Kathryn Gotts [Core Science Resources (QIB)]</option>
+                    <option value='fos24jas'>GRAHAM Anne Graham [Directors Office (JIC)]</option>
+                    <option value='grandell'>GRANDELLIS Carolina Grandellis [Research Faculty (EI)]</option>
+                    <option value='griff'>GRIFFITHS Simon Griffiths [Crop Genetics (JIC)]</option>
+                    <option value='reg23vok'>GUIZIOU Sarah Guiziou [Research Faculty (EI)]</option>
+                    <option value='guys'>GUY Steven Guy [Facilities (NBIP)]</option>
+                    <option value='haertyw'>HAERTY Wilfried Haerty [Research Faculty (EI)]</option>
+                    <option value='halla'>HALL Anthony Hall [Research Faculty (EI)]</option>
+                    <option value='hallli'>HALL Lindsay Hall [Food, Microbiome and Health (QIB)]</option>
+                    <option value='halln'>HALL Neil Hall [Directors Office (EI)]</option>
+                    <option value='hartp'>HART Patricia Hart [Directorate (QIB)]</option>
+                    <option value='harwood'>HARWOOD Wendy Harwood [Crop Genetics (JIC)]</option>
+                    <option value='melchina'>HAYHOE Antonietta Hayhoe [Science Operations (QIB)]</option>
+                    <option value='haytas'>HAYTA Sadiye Hayta [Crop Genetics (JIC)]</option>
+                    <option value='hazardb'>HAZARD Brittany Hazard [Food, Microbiome and Health (QIB)]</option>
+                    <option value='hildebra'>HILDEBRAND Falk Hildebrand [Food, Microbiome and Health (QIB)]</option>
+                    <option value='hilll'>HILL Lionel Hill [Biochemistry and Metabolism (JIC)]</option>
+                    <option value='hindmars'>HINDMARSH Steve Hindmarsh [Research Computing (NBIP)]</option>
+                    <option value='hinkova'>HINKOVA Andrea Hinkova [Science Operations (QIB)]</option>
+                    <option value='hogenhos'>HOGENHOUT Saskia Hogenhout [Crop Genetics (JIC)]</option>
+                    <option value='hopwood'>HOPWOOD David Hopwood [Molecular Microbiology (JIC)]</option>
+                    <option value='horlerr'>HORLER Richard Horler [Research Computing (NBIP)]</option>
+                    <option value='howardm'>HOWARD Martin Howard [Computational and Systems Biology (JIC)]</option>
+                    <option value='sparrow'>HUNDLEBY Penny Hundleby [Directors Office (JIC)]</option>
+                    <option value='hutchinm'>HUTCHINGS Matt Hutchings [Molecular Microbiology (JIC)]</option>
+                    <option value='yar24wap'>JABBUR Luisa Jabbur [Cell & Developmental Biology (JIC)]</option>
+                    <option value='jachec'>JACHEC Chris Jachec [Finance & Accounts (NBIP)]</option>
+                    <option value='janeckon'>JANECKO Nicol Janecko [Microbes and Food Safety (QIB)]</option>
+                    <option value='blakesle'>JONES Emily Jones [Food, Microbiome and Health (QIB)]</option>
+                    <option value='jonesj'>JONES Jonathan Jones [Sainsbury Laboratory (JJ) (TSL)]</option>
+                    <option value='jugen'>JUGE Nathalie Juge [Food, Microbiome and Health (QIB)]</option>
+                    <option value='juodeiki'>JUODEIKIS Rokas Juodeikis [Science Operations (QIB)]</option>
+                    <option value='kamouns'>KAMOUN Sophien Kamoun [Sainsbury Laboratory (SK) (TSL)]</option>
+                    <option value='katsikia'>KATSIKIDES Andrew Katsikides [Finance & Accounts (NBIP)]</option>
+                    <option value='kingsler'>KINGSLEY Rob Kingsley [Microbes and Food Safety (QIB)]</option>
+                    <option value='kroon'>KROON Paul Kroon [Food, Microbiome and Health (QIB)]</option>
+                    <option value='lamprindi'>LAMPRINAKI Dimitra Lamprinaki [Science Operations (QIB)]</option>
+                    <option value='langridg'>LANGRIDGE Gemma Langridge [Microbes and Food Safety (QIB)]</option>
+                    <option value='lawrenso'>LAWRENSON Tom Lawrenson [Crop Genetics (JIC)]</option>
+                    <option value='lawsond'>LAWSON David Lawson [Biochemistry and Metabolism (JIC)]</option>
+                    <option value='lazenby'>LAZENBY James Lazenby [Microbes and Food Safety (QIB)]</option>
+                    <option value='letu'>LE Tung Le [Molecular Microbiology (JIC)]</option>
+                    <option value='leggettr'>LEGGETT Richard Leggett [Research Faculty (EI)]</option>
+                    <option value='lomonoss'>LOMONOSSOFF George Lomonossoff [Biochemistry and Metabolism (JIC)]</option>
+                    <option value='lordj'>LORD John Lord [Horticultural Services (JIC)]</option>
+                    <option value='maw'>MA Wenbo Ma [Sainsbury Laboratory (WM) (TSL)]</option>
+                    <option value='macaulai'>MACAULAY Iain Macaulay [Research Faculty (EI)]</option>
+                    <option value='macleand'>MACLEAN Dan MacLean [Sainsbury Laboratory (TSL)]</option>
+                    <option value='malonej'>MALONE Jacob Malone [Molecular Microbiology (JIC)]</option>
+                    <option value='maqbool'>MAQBOOL Abbas Maqbool [Biochemistry and Metabolism (JIC)]</option>
+                    <option value='marchiol'>MARCHIORETTO Lisa Marchioretto [Microbes and Food Safety (QIB)]</option>
+                    <option value='martin'>MARTIN Cathie Martin [Biochemistry and Metabolism (JIC)]</option>
+                    <option value='mathera'>MATHER Alison Mather [Microbes and Food Safety (QIB)]</option>
+                    <option value='maxwellt'>MAXWELL Tony Maxwell [Molecular Microbiology (JIC)]</option>
+                    <option value='mcmullam'>MCMULLAN Mark McMullan [Research Faculty (EI)]</option>
+                    <option value='mctaggar'>MCTAGGART Seanna McTaggart [Research Faculty Office (EI)]</option>
+                    <option value='meadows'>MEADOWS Lizzie Meadows [Directorate (QIB)]</option>
+                    <option value='menkef'>MENKE Frank Menke [Sainsbury Laboratory (TSL)]</option>
+                    <option value='amiller'>MILLER Tony Miller [Biochemistry and Metabolism (JIC)]</option>
+                    <option value='mooreg'>MOORE Graham Moore [Directors Office (JIC)]</option>
+                    <option value='morganch'>MORGAN Chris Morgan [Cell & Developmental Biology (JIC)]</option>
+                    <option value='morrisr'>MORRIS Richard Morris [Computational and Systems Biology (JIC)]</option>
+                    <option value='morrison'>MORRISON Ben Morrison [Research Grants and Contracts (NBIP)]</option>
+                    <option value='moscoum'>MOSCOU Matthew Moscou [Sainsbury Laboratory (TSL)]</option>
+                    <option value='moubayil'>MOUBAYIDIN Laila Moubayidin [Cell & Developmental Biology (JIC)]</option>
+                    <option value='narbad'>NARBAD Arjan Narbad [Food, Microbiome and Health (QIB)]</option>
+                    <option value='neequaye'>NEEQUAYE Mikhaela Neequaye [Cell & Developmental Biology (JIC)]</option>
+                    <option value='nicholsn'>NICHOLSON Paul Nicholson [Crop Genetics (JIC)]</option>
+                    <option value='nieduszc'>NIEDUSZYNSKI Conrad Nieduszynski [Research Faculty (EI)]</option>
+                    <option value='jep23kod'>NOBORI Tatsuya Nobori [Sainsbury Laboratory (TN) (TSL)]</option>
+                    <option value='nolan'>NOLAN Laura Nolan [Microbes and Food Safety (QIB)]</option>
+                    <option value='palop'>NUENO PALOP Carmen Nueno Palop [QIB Extra (QIBX)]</option>
+                    <option value='ohallera'>O'HALLERON Anne O'Halleron [Human Resources (NBIP)]</option>
+                    <option value='osbourna'>OSBOURN Anne Osbourn [Biochemistry and Metabolism (JIC)]</option>
+                    <option value='pallenm'>PALLEN Mark Pallen [Microbes and Food Safety (QIB)]</option>
+                    <option value='taz23zir'>PAPATHEODOROU Irene Papatheodorou [Research Faculty (EI)]</option>
+                    <option value='patronn'>PATRON Nicola Patron [Research Faculty (EI)]</option>
+                    <option value='paynes'>PAYNE Sally Payne [Purchasing (NBIP)]</option>
+                    <option value='penfiels'>PENFIELD Steve Penfield [Crop Genetics (JIC)]</option>
+                    <option value='perryf'>PERRY Felicity Perry [Communications & Engagement (JIC)]</option>
+                    <option value='philom'>PHILO Mark Philo [Core Science Resources (QIB)]</option>
+                    <option value='playford'>PLAYFORD Darryl Playford [Crop Genetics (JIC)]</option>
+                    <option value='quince'>QUINCE Christopher Quince [Research Faculty (EI)]</option>
+                    <option value='ridout'>RIDOUT Chris Ridout [Crop Genetics (JIC)]</option>
+                    <option value='robinsop'>ROBINSON Phil Robinson [Cell & Developmental Biology (JIC)]</option>
+                    <option value='robinsst'>ROBINSON Stephen Robinson [Food, Microbiome and Health (QIB)]</option>
+                    <option value='sablow'>SABLOWSKI Robert Sablowski [Cell & Developmental Biology (JIC)]</option>
+                    <option value='saha'>SAHA Shikha Saha [Food, Microbiome and Health (QIB)]</option>
+                    <option value='saunderd'>SAUNDERS Diane Saunders [Crop Genetics (JIC)]</option>
+                    <option value='sayavedl'>SAYAVEDRA Lizbeth Sayavedra [Food, Microbiome and Health (QIB)]</option>
+                    <option value='schlimps'>SCHLIMPERT Susan Schlimpert [Molecular Microbiology (JIC)]</option>
+                    <option value='jaf24yik'>SELF Andy Self [Human Resources (NBIP)]</option>
+                    <option value='serazetd'>SERAZETDINOVA Liliya Serazetdinova [Business Development and Impact (EI)]</option>
+                    <option value='seungd'>SEUNG David Seung [Biochemistry and Metabolism (JIC)]</option>
+                    <option value='fshaw'>SHAW Felix Shaw [Research Faculty (EI)]</option>
+                    <option value='singh'>SINGH Dipali Singh [Science Operations (QIB)]</option>
+                    <option value='smitha'>SMITH Alison Smith [Biochemistry and Metabolism (JIC)]</option>
+                    <option value='smithe'>SMITH Emily Smith [Food, Microbiome and Health (QIB)]</option>
+                    <option value='smithh'>SMITH Phil Smith [Teacher Scientist Network (TSN)]</option>
+                    <option value='rismith'>SMITH Richard Smith [Computational and Systems Biology (JIC)]</option>
+                    <option value='soranzon'>SORANZO Nicola Soranzo [Research Faculty (EI)]</option>
+                    <option value='soriaca'>SORIA-CARRASCO Victor Soria-Carrasco [Crop Genetics (JIC)]</option>
+                    <option value='southwol'>SOUTHWOOD Louise Southwood [Finance & Accounts (NBIP)]</option>
+                    <option value='steuernb'>STEUERNAGEL Burkhard Steuernagel [Computational and Systems Biology (JIC)]</option>
+                    <option value='cwilliam'>STEVENSON Clare Stevenson [Directors Office (JIC)]</option>
+                    <option value='stringer'>STRINGER Sandra Stringer [Science Operations (QIB)]</option>
+                    <option value='stronaca'>STRONACH Andrew Stronach [Communications (QIB)]</option>
+                    <option value='suligojt'>SULIGOJ Tanja Suligoj [Food, Microbiome and Health (QIB)]</option>
+                    <option value='swarbred'>SWARBRECK David Swarbreck [Research Faculty (EI)]</option>
+                    <option value='talbotn'>TALBOT Nick Talbot [Sainsbury Laboratory (NT) (TSL)]</option>
+                    <option value='telatina'>TELATIN Andrea Telatin [Food, Microbiome and Health (QIB)]</option>
+                    <option value='tomlinsl'>TOMLINSON Laurence Tomlinson [Health, Safety, Environment and Quality Assurance (NBIP)]</option>
+                    <option value='traka'>TRAKA Maria Traka [Food and Nutrition � NBRI (QIB)]</option>
+                    <option value='trumana'>TRUMAN Andrew Truman [Molecular Microbiology (JIC)]</option>
+                    <option value='uauyc'>UAUY Cristobal Uauy [Crop Genetics (JIC)]</option>
+                    <option value='wainj'>WAIN John Wain [Microbes and Food Safety (QIB)]</option>
+                    <option value='warrenf'>WARREN Fred Warren [Food, Microbiome and Health (QIB)]</option>
+                    <option value='warrenm'>WARREN Martin Warren [Food, Microbiome and Health (QIB)]</option>
+                    <option value='watkinsc'>WATKINS Chris Watkins [Genomics Pipelines (EI)]</option>
+                    <option value='webberm'>WEBBER Mark Webber [Microbes and Food Safety (QIB)]</option>
+                    <option value='websterm'>WEBSTER Michael Webster [Biochemistry and Metabolism (JIC)]</option>
+                    <option value='wellsr'>WELLS Rachel Wells [Crop Genetics (JIC)]</option>
+                    <option value='dudleyk'>WEST Kate West [Library (NBIP)]</option>
+                    <option value='whitchur'>WHITCHURCH Cynthia Whitchurch [Microbes and Food Safety (QIB)]</option>
+                    <option value='wilde'>WILDE Pete Wilde [Food, Microbiome and Health (QIB)]</option>
+                    <option value='wilemant'>WILEMAN Tom Wileman [Food, Microbiome and Health (QIB)]</option>
+                    <option value='wilkinsb'>WILKINSON Barrie Wilkinson [Molecular Microbiology (JIC)]</option>
+                    <option value='witekk'>WITEK Kamil Witek [Sainsbury Laboratory (2Blades) (TSL)]</option>
+                    <option value='wojtowic'>WOJTOWICZ Edyta Wojtowicz [Research Faculty (EI)]</option>
+                    <option value='jon23ran'>WOODHOUSE Shannon Woodhouse [Communications & Engagement (JIC)]</option>
+                    <option value='woodsh'>WOODS Hannah Woods [Facilities (NBIP)]</option>
+                    <option value='wortleyg'>WORTLEY Gary Wortley [Laboratory Support (JIC)]</option>
+                    <option value='zanchir'>ZANCHI Roberto Zanchi [Business Development (QIB)]</option>
+                    <option value='zipfelc'>ZIPFEL Cyril Zipfel [Sainsbury Laboratory (CZ) (TSL)]</option>
                 </select>
             </div>
 

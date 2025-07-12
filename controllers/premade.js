@@ -9,6 +9,7 @@ const fs = require('fs').promises;
 const Flash = require('../lib/flash');
 const Log = require('../lib/log');
 const mkdirp = require('mkdirp');
+const Cart = require('../models/cart');
 
 const premadeController = {};
 
@@ -670,7 +671,24 @@ premadeController.item.show = async (req, res) => {
         }
 
         const dbs = await getSortedDBs();
-        res.render('premade/item/show', { headings, values, dbs, item });
+
+        let isInCart = false;
+        if (req.user) { // Only check if user is logged in
+            try {
+                // Ensure the user's cart is fetched with items
+                const cart = await Cart.filter({ username: req.user.username }).getJoin({ items: true }).run();
+                if (cart && cart.length > 0 && cart[0].items) {
+                    // Check if any item in the cart has a matching typeID (the current item's ID)
+                    isInCart = cart[0].items.some(cartItem => cartItem.typeID === item.id);
+                }
+            } catch (cartErr) {
+                console.error('Error checking if item is in cart for premade/item/show:', cartErr);
+                // Fail gracefully: assume not in cart on error.
+            }
+        }
+
+
+        res.render('premade/item/show', { headings, values, dbs, item, isInCart });
     } catch (err) {
         handleError(err, res);
     }

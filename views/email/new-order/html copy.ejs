@@ -6,7 +6,7 @@
     <title>New SynBio Order</title>
     <style type="text/css">
         body { margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif; line-height: 1.6; }
-        .email-container { width: 100%; margin: 20px auto; background-color: #ffffff; border: 1px solid #dddddd; border-collapse: collapse; }
+        .email-container { width: 100%; max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #dddddd; border-collapse: collapse; }
         .header { background-color: #f8f8f8; padding: 20px; text-align: center; border-bottom: 1px solid #dddddd; }
         .header img { max-width: 80px; height: 80px; display: block; margin: 0 auto 10px auto; }
         .header h1 { margin: 0; font-size: 24px; color: #333333; }
@@ -30,51 +30,34 @@
 </head>
 <body>
     <table class="email-container" border="0" cellpadding="0" cellspacing="0">
+        <!-- Header -->
         <tr>
             <td class="header">
-                <img src="<%= baseURL %>/img/logo.png" alt="TSL SynBio Logo">
+                <img src="<%- baseURL %>/img/logo.png" alt="TSL SynBio Logo">
                 <h1>New SynBio Order</h1>
             </td>
         </tr>
         
+        <!-- Order Info -->
         <tr>
             <td class="order-info">
-                <p><%= (locals.order && locals.order.janCode) || 'N/A' %> placed by <a href="mailto:<%= locals.user && locals.user.mail || '' %>"><%= locals.user && locals.user.name || 'N/A' %></a></p>
+                <p><%- locals.order.janCode || 'N/A' %> placed by <a href="mailto:<%- locals.user.mail %>"><%- locals.user.name %></a></p>
             </td>
         </tr>
 
+        <!-- Agreement Text -->
         <tr>
             <td class="agreement-text">
                 <p>
-                    TSL SynBio material supplied to TSL and JIC scientists is subject to a Material Transfer Agreement.
-                </p> 
-
+                    TSL SynBio material supplied to TSL and JIC scientists is subject to a Material Transfer Agreement and must not be distributed or shared with any parties beyond TSL and JIC. Any third parties who request use of such material should be directed to TSL SynBio (please email <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a>).
+                </p>
                 <p>
-                    It must not be distributed or shared with any parties beyond TSL and JIC.
-                </p> 
-
-                <p>
-                    Any third parties who request use of such material should be directed to TSL SynBio.
-                </p> 
-
-                <p>
-                    For this, please email <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a>.
-                </p> 
-
-                <p>
-                    Material supplied by TSL SynBio is for non-commercial research purposes only.
-                </p> 
-
-                <p>
-                    If you wish to use supplied material for commercial purposes, please contact <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a>.
-                </p> 
-
-                <p>
-                    This is in order that an appropriate MTA can be drawn up.
-                </p> 
+                    Material supplied by TSL SynBio is for non-commercial research purposes only. If you wish to use supplied material for commercial purposes, please contact <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a> in order that an appropriate MTA can be drawn up.
+                </p>
             </td>
         </tr>
         
+        <!-- Order Details Table -->
         <tr>
             <td class="section-title">Order Details</td>
         </tr>
@@ -85,7 +68,7 @@
                         <tr>
                             <th class="center">Item</th>
                             <th class="center">Quantity</th>
-                            <% if (locals.order && locals.order.totalCost) { %>
+                            <% if (locals.order.totalCost) { %>
                                 <th class="center">Price (£)</th>
                             <% } %>
                             <th class="center">Concentration</th>
@@ -93,53 +76,51 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <% if (locals.order && locals.order.items && locals.order.items.length > 0) { %>
-                            <% locals.order.items.forEach(function(item){ %>
-                                <tr>
-                                    <td><%= (item && item.type && item.type.name) || 'N/A' %></td>
-                                    <td class="center"><%= item.quantity || 0 %></td>
-                                    <% if (locals.order && locals.order.totalCost) { %>
-                                        <td class="center">£<%= ((item.quantity || 0) * (locals.order.pricePerUnit || 0)).toFixed(2) %></td>
-                                    <% } %>
-                                    <td class="center"><%= (item && item.type && item.type.concentration) || 'N/A' %></td>
-                                    <td class="center"><%= (item && item.type && item.type.synBioID) || 'N/A' %></td>
-                                </tr>
-                            <% }); %>
-                        <% } else { %>
+                        <% locals.order.items.forEach(function(item){ %>
                             <tr>
-                                <td colspan="5" class="center">No items found for this order.</td>
+                                <td><%- (item && item.type && item.type.name) || 'N/A' %></td> <%-- Added parentheses for robustness --%>
+                                <td class="center"><%- item.quantity || 0 %></td>
+                                <% if (locals.order.totalCost) { %>
+                                    <td class="center">£<%- (item.quantity * locals.order.pricePerUnit).toFixed(2) %></td>
+                                <% } %>
+                                <td class="center"><%- (item && item.type && item.type.concentration) || 'N/A' %></td> <%-- Added parentheses for robustness --%>
+                                <td class="center"><%- (item && item.type && item.type.synBioID) || 'N/A' %></td> <%-- Added parentheses for robustness --%>
                             </tr>
-                        <% } %>
+                        <% }); %>
                     </tbody>
                     <tfoot>
                         <tr>
                             <td><b>Total</b></td>
-                            <td class="center"><b><%= (locals.order && locals.order.totalQuantity) || 0 %></b></td>
-                            <% if (locals.order && locals.order.totalCost) { %>
-                                <td class="center"><b>£<%= Number((locals.order && locals.order.totalCost) || 0).toFixed(2) %></b></td>
+                            <td class="center"><b><%- locals.order.totalQuantity || 0 %></b></td>
+                            <% if (locals.order.totalCost) { %>
+                                <td class="center"><b>£<%- Number(locals.order.totalCost).toFixed(2) %></b></td>
                             <% } %>
-                            <td></td>
-                            <td></td>
+                            <td></td> <%-- Spacer for concentration column --%>
+                            <td></td> <%-- Spacer for SynBio ID column --%>
                         </tr>
                     </tfoot>
                 </table>
             </td>
         </tr>
 
-        <tr>
-            <td style="padding: 20px;">
-                <% if (locals.order && locals.order.costCode) { %>
-                    <p><strong>Cost code:</strong> <%= locals.order.costCode %></p>
-                <% } %>
-                <% if (locals.order && locals.order.signatory) { %>
-                    <p><strong>Budget holder:</strong> <%= locals.order.signatory %></p>
-                <% } %>
-            </td>
-        </tr>
-        
+        <!-- Cost/Budget Holder Info -->
+        <% if (locals.order.costCode || locals.order.signatory) { %>
+            <tr>
+                <td style="padding: 20px;">
+                    <% if (locals.order.costCode) { %>
+                        <p><strong>Cost code:</strong> <%= locals.order.costCode %></p>
+                    <% } %>
+                    <% if (locals.order.signatory) { %>
+                        <p><strong>Budget holder:</strong> <%= locals.order.signatory %></p>
+                    <% } %>
+                </td>
+            </tr>
+        <% } %>
+
+        <!-- Footer Link -->
         <tr>
             <td class="footer">
-                <a href="<%= baseURL %>/order/<%= (locals.order && locals.order.id) || '' %>">View order on site</a>
+                <a href="<%- baseURL %>/order/<%- locals.order.id %>">View order on site</a>
             </td>
         </tr>
     </table>

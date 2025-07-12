@@ -80,8 +80,13 @@
             <!-- "Add to cart" should be a POST request -->
             <form action="/cart/add" method="POST" style="display:inline;"> <% /* Assuming '/cart/add' is your add-to-cart route */ %>
                 <input type="hidden" name="typeID" value="<%- item.id %>" />
-                <button type="submit" class="button success areyousure">
-                    Add to cart
+                <button 
+                    type="submit" 
+                    class="button success areyousure" 
+                    <%= isInCart ? 'disabled' : '' %>
+                >
+                    <%= isInCart ? 'Added to Cart' : 'Add to cart' %>
+                </button>
                 </button>
             </form>
             <% } %>
