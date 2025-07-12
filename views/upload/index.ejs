@@ -3,45 +3,55 @@
 <div class="container">
 
     <h1 class="center">File Manager</h1>
-    <h5 class="center"><i>(<b>N.B.</b> This does not currently include sequence files.)</i></h5>
+    <h5 class="center muted-text"><i>(<b>N.B.</b> This does not currently include sequence files.)</i></h5> <% /* Added muted-text for consistency */ %>
     <hr>
 
     <h2>Upload New File</h2>
 
     <form action="/upload" method="post" enctype="multipart/form-data">
         <div class="form-group">
-            <input type="file" name="file">
+            <label for="fileUploadInput" class="form-label">Select File:</label> <% /* Added label for accessibility */ %>
+            <input type="file" name="file" id="fileUploadInput" required> <% /* Added id and required */ %>
         </div>
         <div class="form-group">
-            <input class="primary" type="submit"></input>
+            <button class="button primary" type="submit">Upload File</button> <% /* Changed to button, clarified text */ %>
         </div>
     </form>
     <hr>
 
     <h2>Existing Files</h2>
     <div class="row ">
-        <% files.map(function(file){ %>
-        <div class="col4 auto-clear">
-            <div class="tile">
-                <% if(file.isImage()){ %>
-                <img class="tile-img-top short" src="<%- file.downloadPath() %>">
-                <% } else { %>
-                <div class="tile-img-top short">
-                </div>
-                <% } %>
-                <div class="tile-block">
-                    <p><%- file.originalName %></p>
-                    <div class="form-group has-feedback">
-                        <input type="text" class="has-button" id="<%- file.id %>" value="<%- file.downloadPath() %>">
-                        <button class="inputbutton clipboard" data-clipboard-target="#<%- file.id %>">
-                            <img src="/img/clippy.svg" alt="Copy to clipboard">
-                        </button>
+        <% if (files && files.length > 0) { %> <% /* Check if files exist */ %>
+            <% files.forEach(function(file){ %> <% /* Changed map to forEach */ %>
+            <div class="col4 auto-clear">
+                <div class="tile">
+                    <% if(file.isImage()){ %>
+                    <img class="tile-img-top short" src="<%- file.downloadPath() %>" alt="Image for <%- file.originalName %>"> <% /* Added alt attribute */ %>
+                    <% } else { %>
+                    <div class="tile-img-top short">
+                        <% /* Placeholder or icon for non-image files */ %>
                     </div>
-                    <a href="/filemanager/<%- file.id %>/delete" class="button danger areyousure">Delete</a>
+                    <% } %>
+                    <div class="tile-block">
+                        <p><strong>Name:</strong> <%- file.originalName %></p> <% /* Added strong tag for label */ %>
+                        <div class="form-group has-feedback">
+                            <label for="file-path-<%- file.id %>" class="sr-only">File Path:</label> <% /* Screen reader only label */ %>
+                            <input type="text" class="has-button" id="file-path-<%- file.id %>" value="<%- file.downloadPath() %>" readonly> <% /* Added readonly */ %>
+                            <button class="inputbutton clipboard" data-clipboard-target="#file-path-<%- file.id %>" title="Copy to clipboard"> <% /* Added title for accessibility */ %>
+                                <img src="/img/clippy.svg" alt="Copy to clipboard">
+                            </button>
+                        </div>
+                        <% /* Convert DELETE <a> to POST form */ %>
+                        <form action="/filemanager/<%- file.id %>/delete" method="POST" style="display:inline;">
+                            <button type="submit" class="button danger areyousure">Delete File</button> <% /* Clarified button text */ %>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
-        <% }); %>
+            <% }); %>
+        <% } else { %>
+            <p class="center muted-text">No general files uploaded yet.</p> <% /* Message for no files */ %>
+        <% } %>
     </div>
 
 </div>
@@ -50,10 +60,13 @@
 <script>
     var clipboard = new Clipboard('.clipboard');
     clipboard.on('success', function (e) {
-        console.log(e);
+        // You might want to provide visual feedback here (e.g., "Copied!").
+        console.log('Text copied:', e.text);
+        e.clearSelection();
     });
     clipboard.on('error', function (e) {
-        console.log(e);
+        console.error('Failed to copy text:', e.action);
+        // Provide feedback to the user that copying failed.
     });
 </script>
 

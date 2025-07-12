@@ -119,13 +119,13 @@ searchController.index = async (req, res, next) => {
         res.render('search/index', {
             queryString,
             documentation: searchResults.documents || [],
-            premadeLevelUnknown: searchResults.premade?.levelUnknown || [],
-            premadeLevel0: searchResults.premade?.level0 || [],
-            premadeLevel1: searchResults.premade?.level1 || [],
-            premadeLevel2: searchResults.premade?.level2 || [],
-            premadeLevelM: searchResults.premade?.levelM || [],
-            premadeLevelP: searchResults.premade?.levelP || [],
-            premadeLevelMinus1: searchResults.premade?.levelMinus1 || [],
+            premadeLevelUnknown: (searchResults && searchResults.premade && searchResults.premade.levelUnknown) || [],
+            premadeLevel0: (searchResults && searchResults.premade && searchResults.premade.level0) || [],
+            premadeLevel1: (searchResults && searchResults.premade && searchResults.premade.level1) || [],
+            premadeLevel2: (searchResults && searchResults.premade && searchResults.premade.level2) || [],
+            premadeLevelM: (searchResults && searchResults.premade && searchResults.premade.levelM) || [],
+            premadeLevelP: (searchResults && searchResults.premade && searchResults.premade.levelP) || [],
+            premadeLevelMinus1: (searchResults && searchResults.premade && searchResults.premade.levelMinus1) || [],
         });
     } catch (err) {
         // Use a consistent error handler

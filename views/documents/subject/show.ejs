@@ -6,21 +6,24 @@
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
         <div class="tile pad inverted">
-            <h4>Admin</h4>
-            <div class="form-group">
-                <a href="/docs/<%- subject.id %>/rename" class="button primary">Rename</a>
+            <h4>Admin Actions</h4>
+            <div class="form-group button-group"> <% /* Added button-group class for styling */ %>
+                <a href="/docs/<%- subject.id %>/rename" class="button primary">Rename Subject</a>
                 <a href="/docs/<%- subject.id %>/new" class="button primary">Add Document</a>
                 <a href="/docs/<%- subject.id %>/addsubject" class="button primary">Add Sub-Subject</a>
 
                 <% if(subject.disabled){ %>
-                <a href="/docs/<%- subject.id %>/enable" class="button success areyousure">Enable
-                    Subject</a>
-                <a href="/docs/<%- subject.id %>/delete" class="button danger areyousure">Delete Subject</a>
+                    <form action="/docs/<%- subject.id %>/enable" method="POST" style="display:inline;">
+                        <button type="submit" class="button success areyousure">Enable Subject</button>
+                    </form>
+                    <form action="/docs/<%- subject.id %>/delete" method="POST" style="display:inline;">
+                        <button type="submit" class="button danger areyousure">Delete Subject</button>
+                    </form>
                 <% } else { %>
-                <a href="/docs/<%- subject.id %>/disable" class="button danger areyousure">Disable
-                    Subject</a>
+                    <form action="/docs/<%- subject.id %>/disable" method="POST" style="display:inline;">
+                        <button type="submit" class="button danger areyousure">Disable Subject</button>
+                    </form>
                 <% } %>
-
             </div>
         </div>
         <% } %>
@@ -29,32 +32,47 @@
 
         <div class="simon-list">
 
-            <% subject.documents.map(function(document){ %>
-            <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
-            <li><a class="<% if(document.disabled){ %>disabled<% } %>"
-                   href="/docs/item/<%- document.id %>"><span data-icon="&#x68;"></span> <%- document.title %></a></li>
-            <% } %>
+            <% /* Display direct documents of this subject */ %>
+            <% subject.documents.forEach(function(document){ %>
+                <% if (!document.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Show if not disabled OR if admin */ %>
+                    <li>
+                        <a 
+                            class="<% if(document.disabled){ %>disabled<% } %>"
+                            href="/docs/item/<%- document.id %>"
+                        >
+                            <span data-icon="&#x68;"></span> <%- document.title %>
+                        </a>
+                    </li>
+                <% } %>
             <% }); %>
 
-            <% subject.subjects.map(function(subSubject){ %>
-            <% if(subSubject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subSubject.disabled){ %>
-            <!--<div class="indent">-->
-            <h3><a class="<% if(subSubject.disabled){ %>disabled<% } %>"
-                   href="/docs/<%- subSubject.id %>"><%- subSubject.name %></a>
-            </h3>
-            <!--</div>-->
-            <% } %>
+            <% /* Display sub-subjects and their documents */ %>
+            <% subject.subjects.forEach(function(subSubject){ %>
+                <% if (!subSubject.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Show if not disabled OR if admin */ %>
+                    <h3>
+                        <a 
+                            class="<% if(subSubject.disabled){ %>disabled<% } %>"
+                            href="/docs/<%- subSubject.id %>"
+                        >
+                            <%- subSubject.name %>
+                        </a>
+                    </h3>
 
-            <% subSubject.documents.map(function(document){ %>
-            <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
-            <div class="indent">
-                <li><a class="<% if(document.disabled){ %>disabled<% } %>"
-                       href="/docs/item/<%- document.id %>"><span data-icon="&#x68;"></span> <%- document.title %></a>
-                </li>
-            </div>
-            <% } %>
-
-            <% }); %>
+                    <% subSubject.documents.forEach(function(document){ %>
+                        <% if (!document.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Show if not disabled OR if admin */ %>
+                            <div class="indent">
+                                <li>
+                                    <a 
+                                        class="<% if(document.disabled){ %>disabled<% } %>"
+                                        href="/docs/item/<%- document.id %>"
+                                    >
+                                        <span data-icon="&#x68;"></span> <%- document.title %>
+                                    </a>
+                                </li>
+                            </div>
+                        <% } %>
+                    <% }); %>
+                <% } %>
             <% }); %>
         </div>
 

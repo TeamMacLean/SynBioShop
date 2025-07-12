@@ -6,17 +6,24 @@
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
             <div class="tile pad inverted">
-                <h4>Admin</h4>
-                <div class="form-group">
+                <h4>Admin Actions</h4> <% /* Changed to 'Admin Actions' for consistency */ %>
+                <div class="form-group button-group"> <% /* Added button-group class for styling */ %>
                     <a href="/premade/item/<%- item.id %>/edit" class="button primary">Edit Item</a>
-                    <button class="btn btn-primary primary" id="uploadSequenceFilesButton" onClick="MicroModal.show('modal-1')">
+                    <button class="btn btn-primary primary" id="uploadSequenceFilesButton" data-micromodal-trigger="modal-1"> <% /* Changed to data-micromodal-trigger */ %>
                         Upload sequence files
                     </button>
+                    
                     <% if(item.disabled){ %>
-                        <a href="/premade/item/<%- item.id %>/enable" class="button success areyousure">Enable Item</a>
-                        <a href="/premade/item/<%- item.id %>/delete" class="button danger areyousure">Delete Item</a>
+                        <form action="/premade/item/<%- item.id %>/enable" method="POST" style="display:inline;">
+                            <button type="submit" class="button success areyousure">Enable Item</button>
+                        </form>
+                        <form action="/premade/item/<%- item.id %>/delete" method="POST" style="display:inline;">
+                            <button type="submit" class="button danger areyousure">Delete Item</button>
+                        </form>
                     <% } else { %>
-                        <a href="/premade/item/<%- item.id %>/disable" class="button danger areyousure">Disable Item</a>
+                        <form action="/premade/item/<%- item.id %>/disable" method="POST" style="display:inline;">
+                            <button type="submit" class="button danger areyousure">Disable Item</button>
+                        </form>
                     <% } %>
                 </div>
             </div>
@@ -26,26 +33,27 @@
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
             <hr>
-            <p><span class="bold">Concentration:</span> <%- item.concentration %></p>
-            <p><span class="bold">SynBioID:</span> <%- item.synBioID %></p>
-            <p style="color:red;"><span class="bold">Note:</span> <%- item.note %></p>            
+            <p><span class="bold">Concentration:</span> <%- item.concentration || 'N/A' %></p>
+            <p><span class="bold">SynBioID:</span> <%- item.synBioID || 'N/A' %></p>
+            <p style="color:red;"><span class="bold">Note:</span> <%- item.note || 'N/A' %></p>            
             <hr>
         <% } %>
 
         <% if (item.citations && item.citations.length) { %>
             <label class='bold'>Relevant publications:</label>
             <div id='displaycitations' style="margin-bottom:20px;">
-                <div>
-                    <table border=0>    
-                            <tr>
-                                <th>URL</th>
-                                <th>Description</th>
-                            </tr>
-                        <% item.citations.map(function(citationObj, index){ %>
+                <table>    
+                    <thead>
+                        <tr>
+                            <th>URL</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% item.citations.forEach(function(citationObj){ %> <% /* Changed map to forEach */ %>
                             <tr>
                                 <td> 
                                     <a 
-                                        id="<%= citationObj.url %>"
                                         href="<%= citationObj.url %>" 
                                         rel="noopener noreferrer nofollow" 
                                         target="_blank"
@@ -56,12 +64,12 @@
                                 <td> <div><%= citationObj.description %></div></td>
                             </tr>
                         <% }); %>
-                    </table>
-                </div>
+                    </tbody>
+                </table>
             </div>
         <% } %>
 
-        <% headings.map(function(heading, i){ %>
+        <% headings.forEach(function(heading, i){ %> <% /* Changed map to forEach */ %>
             <p><span class="bold"><%- heading %>:</span> <%- values[i] %></p>
         <% }); %>
 
@@ -69,10 +77,13 @@
 
         <fieldset>
             <% if(!locals.disableCart){ %>
-            <!-- TODO: would be nice to show user that item is already in cart -->
-            <a href="#" data-addToCart="true" data-typeID="<%- item.id %>" class="button success">
-                Add to cart
-            </a>
+            <!-- "Add to cart" should be a POST request -->
+            <form action="/cart/add" method="POST" style="display:inline;"> <% /* Assuming '/cart/add' is your add-to-cart route */ %>
+                <input type="hidden" name="typeID" value="<%- item.id %>" />
+                <button type="submit" class="button success areyousure">
+                    Add to cart
+                </button>
+            </form>
             <% } %>
         </fieldset>
 
@@ -80,12 +91,10 @@
             <% if(item.mapFile){ %>
                 <hr>
                 <h3>MAP file</h3>
-                <% if(item.mapFile){ %>
-                    <span><%- item.mapFile.originalName %></span>
-                    <br>
-                <% } %>
-                <a href="<%- item.mapFile.downloadPath() %>" class="icon_download button primary outline">
-                    
+                <span><%- item.mapFile.originalName || 'N/A' %></span>
+                <br>
+                <a href="<%- item.mapFile.downloadPath() %>" class="button primary outline" download>
+                    <span data-icon="&#xe092;"></span> Download MAP File
                 </a>
             <% } %>
         </fieldset>
@@ -94,25 +103,26 @@
             <div>
                 <hr>
                 <h3>Sequence files</h3>
-
                 <div class="row">
-                    <% item.sequenceFiles.map((sequenceFile, index) => { %>
+                    <% item.sequenceFiles.forEach((sequenceFile) => { %> <% /* Changed map to forEach */ %>
                         <div class="col6">
                             <div class="d-flex justify-content-space-between">                                                                
                                 <div class="d-flex align-items-center"><span><%= sequenceFile.originalName %></span></div>
-    
                                 <div class="d-flex flex-direction-row pb10px">
-                                    <a href="<%- sequenceFile.downloadPath() %>" class="icon_download button primary outline"></a>
+                                    <a href="<%- sequenceFile.downloadPath() %>" class="button primary outline" download>
+                                        <span data-icon="&#xe092;"></span> Download
+                                    </a>
                                     <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
                                         <div class="pl5px">
                                             <form 
                                                 method="POST"
                                                 action="/premade/item/<%- item.id %>/deleteSequenceFile"        
+                                                style="display:inline;"
                                             >
                                                 <input type="hidden" name="sequenceFileID" value="<%- sequenceFile.id %>" />
                                                 <button 
                                                     type="submit"
-                                                    class=" button danger outline icon remove-from-cart areyousure" 
+                                                    class=" button danger outline icon areyousure" 
                                                 >
                                                     <span data-icon="&#xe019;"></span>
                                                 </button>

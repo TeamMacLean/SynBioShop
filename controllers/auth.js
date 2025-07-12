@@ -49,6 +49,8 @@ Auth.signInPost = (req, res, next) => {
 
             req.user.iconURL = gravatar.url(req.user.mail) || config.defaultUserIcon;
 
+            console.log('user', user, 'success login');
+
             //take them to the page they wanted before signing in :)
             if (req.session.returnTo) {
                 return res.redirect(req.session.returnTo);

@@ -6,91 +6,92 @@
             <span>SynBio</span>
         </a>
     </div>
+	<img src="/img/tsl-core-logo-blue.png" class="pull-left nav-top-left" style="height: 100%; padding: 2px;">
+	</img>
+	
+	<div class="pull-right nav-top-right">
+	    <% if(locals.signedInUser){ %>
+	    
+	    <% if(!locals.disablePremade){ %>
+	    <div class="search">
+	        <form method="get" action="/search">
+	            <input name="queryString" id="search-input" type="text" placeholder="Enter text here...">
+	            <button>Search</button>
+	        </form>
+	    </div>
+	
+	    <div id="search-results" class="search-results hidden">
+	        <ul></ul>
+	    </div>
+	    <% } %>
+	
+	    <% if(!locals.disableCart){ %>
+	    <a href="/cart" class="nav-cart">
+	        <span class="icon" data-icon="&#xe015;"></span>
+	        <span class="count"><%- locals.signedInUser.cart.items.length %></span>
+	    </a>
+	    <% } %>
+	    
+	    <% } %>
+	
+	    <div class="user">
+	        <% if(locals.signedInUser){ %>
+	        <div class="image">
+	            <img src="<%- locals.signedInUser.iconURL %>">
+	            <% if(locals.signedInUser.isAdmin){ %>
+	            <span class="badge"><%- locals.incompleteCount %></span>
+	            <% } %>
+	        </div>
+	        <div class="name">
+	            <span><%- locals.signedInUser.name %></span>
+	        </div>
+	        <div class="user-menu hidden">
+	            <ul>
+	                <% if (locals.signedInUser.isAdmin){ %>
+	                <li>
+	                    <a href="/admin/billboard">Billboard</a>
+	                </li>
+	                <li>
+	                    <a href="/filemanager">File Manager</a>
+	                </li>
+	                <% } %>
+	                <li>
+	                    <a href="/orders">My Orders</a>
+	                </li>
+	                <li>
+	                    <a href="/signout">Sign out</a>
+	                </li>
+	            </ul>
+	        </div>
+	
+	        <% } else { %>
+	        <div class="name">
+	            <a href="/signin">Sign in</a>
+	        </div>
+	        <% } %>
+	    </div>
+	</div>
 
-    <img src="/img/tsl-core-logo-blue.png" class="pull-left nav-top-left" style="height: 100%; padding: 2px;">
-    </img>
-    
-    <div class="pull-right nav-top-right">
-        <% if(locals.signedInUser){ %>
-        
-        <% if(!locals.disablePremade){ %>
-        <div class="search">
-            <form method="get" action="/search">
-                <input name="queryString" id="search-input" type="text" placeholder="Enter text here...">
-                <button>Search</button>
-            </form>
-        </div>
-
-        <div id="search-results" class="search-results hidden">
-            <ul></ul>
-        </div>
-        <% } %>
-
-        <% if(!locals.disableCart){ %>
-        <a href="/cart" class="nav-cart">
-            <span class="icon" data-icon="&#xe015;"></span>
-            <span class="count"><%- locals.signedInUser.cart.items.length %></span>
-        </a>
-        <% } %>
-        
-        <% } %>
-
-        <div class="user">
-            <% if(locals.signedInUser){ %>
-            <div class="image">
-                <img src="<%- locals.signedInUser.iconURL %>">
-                <% if(locals.signedInUser.isAdmin){ %>
-                <span class="badge"><%- locals.incompleteCount %></span>
-                <% } %>
-            </div>
-            <div class="name">
-                <span><%- locals.signedInUser.name %></span>
-            </div>
-            <div class="user-menu hidden">
-                <ul>
-                    <% if (locals.signedInUser.isAdmin){ %>
-                    <li>
-                        <a href="/admin/billboard">Billboard</a>
-                    </li>
-                    <li>
-                        <a href="/filemanager">File Manager</a>
-                    </li>
-                    <% } %>
-                    <li>
-                        <a href="/orders">My Orders</a>
-                    </li>
-                    <li>
-                        <a href="/signout">Sign out</a>
-                    </li>
-                </ul>
-            </div>
-
-            <% } else { %>
-            <div class="name">
-                <a href="/signin">Sign in</a>
-            </div>
-            <% } %>
-        </div>
-    </div>
 </nav>
 
 <% /* Flash Messages - Added this block */ %>
 <% if (typeof messages !== 'undefined') { %>
-    <% if (messages.success && messages.success.length > 0) { %>
-        <div class="flash-messages flash-success"><%= messages.success %></div>
-    <% } %>
-    <% if (messages.error && messages.error.length > 0) { %>
-        <div class="flash-messages flash-error"><%= messages.error %></div>
-    <% } %>
-    <% if (messages.warning && messages.warning.length > 0) { %>
-        <div class="flash-messages flash-warning"><%= messages.warning %></div>
-    <% } %>
-    <% if (messages.info && messages.info.length > 0) { %>
-        <div class="flash-messages flash-info"><%= messages.info %></div>
-    <% } %>
+<% if (messages.success && messages.success.length > 0) { %>
+<div class="flash-messages flash-success"><%= messages.success %></div>
+<% } %>
+<% if (messages.error && messages.error.length > 0) { %>
+<div class="flash-messages flash-error"><%= messages.error %></div>
+<% } %>
+<% if (messages.warning && messages.warning.length > 0) { %>
+<div class="flash-messages flash-warning"><%= messages.warning %></div>
+<% } %>
+<% if (messages.info && messages.info.length > 0) { %>
+<div class="flash-messages flash-info"><%= messages.info %></div>
+<% } %>
 <% } %>
 
 <% /* Inline styles for flash messages, to ensure they work */ %>
+
 <style>
     .flash-messages {
         padding: 10px;

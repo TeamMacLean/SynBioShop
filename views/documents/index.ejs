@@ -6,10 +6,10 @@
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
         <div class="tile pad inverted">
-            <h3>Admin</h3>
-            <div class="form-group">
-                <a href="/docs/new" class="button primary">New</a>
-                <a href="/docs/rearrange" class="button primary">Rearrange</a>
+            <h4>Admin Actions</h4> <% /* Changed to Admin Actions for consistency */ %>
+            <div class="form-group button-group"> <% /* Added button-group class for styling */ %>
+                <a href="/docs/new" class="button primary">New Subject</a> <% /* Clarified 'New' */ %>
+                <a href="/docs/rearrange" class="button primary">Rearrange Documents</a> <% /* Clarified 'Rearrange' */ %>
             </div>
         </div>
         <% } %>
@@ -18,57 +18,65 @@
 
         <div class="simon-list">
 
-            <% subjects.sort(function (a, b) {
-                return a.position - b.position;
-            }).map(function(subject){ %>
-            <% if(subject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subject.disabled){ %>
+            <% /* Iterate through top-level subjects */ %>
+            <% subjects.sort((a, b) => a.position - b.position).forEach(function(subject){ %>
+                <% if (!subject.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Show if not disabled OR if admin */ %>
 
-            <h2 class="<% if(subject.disabled){ %>disabled<% } %>">
-                <%- subject.name %>
-            </h2>
+                <h2 class="<% if(subject.disabled){ %>disabled<% } %>">
+                    <%- subject.name %>
+                </h2>
 
-            <% subject.documents.sort(function (a, b) {
-                return a.position - b.position;
-            }).map(function(document){ %>
-            <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
-            <div class="indent">
-
-                <li><a class="<% if(document.disabled){ %>disabled<% } %>"
-                       href="/docs/item/<%- document.id %>"><span
-                                data-icon="&#x68;"></span> <%- document.title %>
-                    </a></li>
-
-            </div>
-            <% } %>
-            <% }); %>
-
-            <% subject.subjects.sort(function (a, b) {
-                return a.position - b.position;
-            }).map(function(subSubject){ %>
-            <% if(subject.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !subject.disabled){ %>
-            <div class="indent">
-                <h3 class="<% if(subSubject.disabled){ %>disabled<% } %>"><%- subSubject.name %></h3>
-
-                <% subSubject.documents.sort(function (a, b) {
-                    return a.position - b.position;
-                }).map(function(document){ %>
-                <% if(document.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !document.disabled){ %>
-                <div class="indent">
-
-                    <li><a class="<% if(document.disabled){ %>disabled<% } %>"
-                           href="/docs/item/<%- document.id %>"><span
-                                    data-icon="&#x68;"></span> <%- document.title %></a></li>
-                </div>
-                <% } %>
+                <% /* Iterate through documents directly under this subject */ %>
+                <% subject.documents.sort((a, b) => a.position - b.position).forEach(function(document){ %>
+                    <% if (!document.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Show if not disabled OR if admin */ %>
+                        <div class="indent">
+                            <li>
+                                <a 
+                                    class="<% if(document.disabled){ %>disabled<% } %>"
+                                    href="/docs/item/<%- document.id %>"
+                                >
+                                    <span data-icon="&#x68;"></span> <%- document.title %>
+                                </a>
+                            </li>
+                        </div>
+                    <% } %>
                 <% }); %>
-            </div>
-            <% } %>
-            <% }); %>
+
+                <% /* Iterate through sub-subjects under this subject */ %>
+                <% subject.subjects.sort((a, b) => a.position - b.position).forEach(function(subSubject){ %>
+                    <% if (!subSubject.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Show if not disabled OR if admin */ %>
+                        <div class="indent">
+                            <h3 class="<% if(subSubject.disabled){ %>disabled<% } %>">
+                                <a 
+                                    class="<% if(subSubject.disabled){ %>disabled<% } %>"
+                                    href="/docs/<%- subSubject.id %>"
+                                >
+                                    <%- subSubject.name %>
+                                </a>
+                            </h3>
+
+                            <% /* Iterate through documents under this sub-subject */ %>
+                            <% subSubject.documents.sort((a, b) => a.position - b.position).forEach(function(document){ %>
+                                <% if (!document.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Show if not disabled OR if admin */ %>
+                                    <div class="indent">
+                                        <li>
+                                            <a 
+                                                class="<% if(document.disabled){ %>disabled<% } %>"
+                                                href="/docs/item/<%- document.id %>"
+                                            >
+                                                <span data-icon="&#x68;"></span> <%- document.title %>
+                                            </a>
+                                        </li>
+                                    </div>
+                                <% } %>
+                            <% }); %>
+                        </div>
+                    <% } %>
+                <% }); %>
             <% } %>
             <% }); %>
         </div>
     </div>
 </div>
-
 
 <% include ../foot.ejs %>

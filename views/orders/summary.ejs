@@ -399,7 +399,7 @@
               <ul>
                 <% if (order.items && order.items.length > 0) { %>
                   <% order.items.forEach(item => { %>
-                    <% if (item.type?.name) { %>
+                    <% if (item && item.type && item.type.name) { %>
                       <li><%- item.type.name %> X<%- item.quantity || 0 %></li>
                     <% } else { %>
                       <li>Item type not found or deleted</li>

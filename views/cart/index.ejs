@@ -11,13 +11,11 @@
     const pricePerUnit = parseFloat('<%= pricePerUnit %>');
 
     // --- DOM Element Selectors ---
-    const quantityElements = document.querySelectorAll('.item-quantity');
     const navCartCountElement = document.querySelector('.nav-cart .count'); // For header cart count
 
     /**
      * Calculates and updates the total quantity and total cost for the cart.
      * Also updates individual item prices if displayPricing is true.
-     * THIS FUNCTION NO LONGER TRIGGERS RELOAD.
      */
     function updateTotals() {
       // Re-query elements to account for items being added/removed from DOM dynamically.
@@ -26,9 +24,11 @@
       let calculatedSumCost = 0;
 
       currentQuantityElements.forEach((element) => {
+        // Read quantity from input's value or span's textContent.
         const quantity = parseInt(element.value || element.textContent, 10) || 0;
         calculatedSumQuantity += quantity;
 
+        // If pricing is displayed, update individual row prices and sum for total cost.
         if (displayPricing) {
           const parentRow = element.closest('tr');
           if (parentRow) {
@@ -58,20 +58,28 @@
           totalCostInput.value = calculatedSumCost.toFixed(2);
         }
       }
+
+      // If cart becomes empty after removal, trigger a full page reload.
+      if (currentQuantityElements.length === 0) {
+        location.reload();
+      }
     }
 
     // --- Event Listeners for Quantity Inputs (only editable ones) ---
+    // This targets only <input> elements with class 'item-quantity'.
     document.querySelectorAll('input.item-quantity').forEach((inputElement) => {
       const handleUpdate = () => {
         let currentValue = parseInt(inputElement.value, 10) || 1;
+        // Basic validation: ensure quantity is at least 1.
         if (currentValue < 1) {
           currentValue = 1;
         }
-        if (!displayPricing && currentValue > 1) {
+        // This input only exists when !displayPricing, so enforce max=1 here.
+        if (currentValue > 1) {
           currentValue = 1;
         }
-        inputElement.value = currentValue;
-        updateTotals();
+        inputElement.value = currentValue; // Update input field if value was clamped.
+        updateTotals(); // Recalculate totals after any change.
       };
 
       inputElement.addEventListener('keyup', handleUpdate);
@@ -79,23 +87,25 @@
       inputElement.addEventListener('blur', handleUpdate);
     });
 
-    // --- Event Listeners for Remove Item Buttons ---
-    document.getElementsByName("removeItem").forEach(button => {
-      button.addEventListener('click', function(e) {
-        e.preventDefault();
-        const itemId = this.getAttribute('data-id');
-        
-        if (!confirm('Are you sure you want to remove this item from your cart?')) {
-            return;
-        }
+    // --- Event Listeners for Remove Item Buttons (Delegated for dynamic elements) ---
+    // Using jQuery's .on() for event delegation on the document body.
+    // This correctly handles elements added/removed dynamically and ensures 'areyousure' confirmation.
+    $('body').on('click', 'a[name="removeItem"].areyousure', function(e) {
+      e.preventDefault(); // Prevent default link behavior.
+      const itemId = $(this).data('id'); // Get data-id from the button.
 
-        if (typeof socket !== 'undefined') {
-          socket.emit('removeFromCart', { id: itemId });
-        } else {
-          console.warn('Socket.IO not available for removeFromCart. Attempting full page reload as fallback.');
-          location.reload();
-        }
-      });
+      // Custom confirmation logic using native confirm()
+      if (!confirm('Are you sure you want to remove this item from your cart?')) {
+          return; // Stop if user cancels.
+      }
+
+      // Call the server to remove the item via Socket.IO.
+      if (typeof socket !== 'undefined') {
+        socket.emit('removeFromCart', { id: itemId });
+      } else {
+        console.warn('Socket.IO not available for removeFromCart. Cannot send removal request.');
+        location.reload(); // Fallback for basic visual reset (though server state won't update).
+      }
     });
 
     // --- Socket.IO Integration ---
@@ -105,15 +115,13 @@
         const row = document.querySelector(`tr[data-id="${data.id}"]`);
         if (row) {
           $(row).fadeOut(500, function () {
-            this.remove();
-            // Update cart count in navigation bar.
+            this.remove(); // Remove the row from the DOM.
             const currentNavCartCount = parseInt(navCartCountElement.textContent, 10) || 0;
             navCartCountElement.textContent = Math.max(0, currentNavCartCount - 1);
             
-            // AFTER removal and DOM update, check if cart is empty.
             const remainingItems = document.querySelectorAll('.item-quantity');
             if (remainingItems.length === 0) {
-              location.reload(); // Now it's safe to reload: only if it just became empty.
+              location.reload(); // Reload only if cart just became empty.
             } else {
               updateTotals(); // Only update totals if items still exist.
             }
@@ -121,29 +129,32 @@
         }
       });
 
-      // Listener for server-side quantity updates (for editable inputs).
-      $('input.item-quantity').on('change keyup paste', function (e) {
+      // Listener for client-side quantity changes on INPUTs, sends to server.
+      // Targets INPUT elements by class and name.
+      $('input.item-quantity[name="itemQuantity"]').on('change keyup paste', function (e) {
           let val = parseInt($(this).val(), 10) || 1;
           val = Math.min(Math.max(val, 1), 25);
           $(this).val(val);
           socket.emit('changeQuantity', {
-              id: $(this).data('id'),
+              id: $(this).data('id'), // Ensure data-id is on the INPUT.
               quantity: val
           });
       });
 
       // Handler for 'quantityUpdated' event from server.
       socket.on('quantityUpdated', function (data) {
-          const inputElement = document.querySelector(`input.item-quantity[data-id="${data.id}"]`);
-          if (inputElement) {
-              inputElement.value = data.quantity;
-              inputElement.dispatchEvent(new Event('change'));
-          } else {
-              // If it's a SPAN (displayPricing is true), update its text and totals manually.
-              const spanElement = document.querySelector(`span.item-quantity[id^="quantity_"][data-id="${data.id}"]`); // Note: you may need to add data-id to the SPAN in EJS.
-              if (spanElement) {
-                  spanElement.textContent = data.quantity;
-                  updateTotals();
+          // Find the relevant quantity element (either INPUT or SPAN) by its ID.
+          // Note: HTML now assigns id="quantity_<%- index %>" to both.
+          // If you need data-id on the SPAN, add it in the EJS.
+          const quantityElement = document.getElementById(`quantity_${data.id}`); // This assumes data.id corresponds to index
+          
+          if (quantityElement) {
+              if (quantityElement.tagName === 'INPUT') {
+                  quantityElement.value = data.quantity;
+                  quantityElement.dispatchEvent(new Event('change')); // Trigger event on input.
+              } else if (quantityElement.tagName === 'SPAN') {
+                  quantityElement.textContent = data.quantity;
+                  updateTotals(); // Manual update for SPAN changes.
               }
           }
       });
@@ -266,9 +277,23 @@
                         <td data-th="Item"><a href="/premade/item/<%- item.type.id %>"><%- item.type.name %></a></td>
                         <td data-th="Quantity" class="center">
                             <% const itemQuantity = item.quantity || 1; %>
-                            <!-- Use SPAN for display, HIDDEN INPUT for form submission -->
-                            <span class="item-quantity" id="<%= 'quantity_' + index %>"><%= itemQuantity %></span>
-                            <input type="hidden" name="itemQuantity" value="<%= itemQuantity %>" />
+                            <% if (displayPricing){ %>
+                                <!-- Use SPAN for display, HIDDEN INPUT for form submission -->
+                                <span class="item-quantity" id="<%= 'quantity_' + index %>" data-id="<%- item.id %>"><%= itemQuantity %></span>
+                                <input type="hidden" name="itemQuantity" value="<%= itemQuantity %>" />
+                            <% } else { %>
+                                <!-- Use INPUT for interactive quantity (max=1 enforced by min/max and JS) -->
+                                <input
+                                    type="number"
+                                    class="item-quantity"
+                                    value="<%= itemQuantity %>"
+                                    name="itemQuantity"
+                                    id="<%= 'quantity_' + index %>"
+                                    min="1"
+                                    max="1"
+                                    data-id="<%- item.id %>" <% /* ADDED: data-id for consistency with span */ %>
+                                    />
+                            <% } %>
                         </td>
                         <% if (displayPricing){ %>
                             <td data-th="Price" class="center">
@@ -277,7 +302,7 @@
                         <% } %>
                         <td data-th="Actions" class="center">
                             <a href="#" name="removeItem"
-                                class="button danger outline icon remove-from-cart" data-id="<%- item.id %>">
+                                class="button danger outline icon areyousure" data-id="<%- item.id %>">
                                 <span data-icon="&#xe019;"></span>
                             </a>
                         </td>

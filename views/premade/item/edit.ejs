@@ -6,233 +6,157 @@
 
         <h2>Edit Item for <%- category.name %></h2>
 
-        <form id="my-form" method="post" action="/premade/category/<%- category.id %>/new"
-            enctype='multipart/form-data'>
+        <form id="itemForm" method="post" action="/premade/category/<%- category.id %>/new" enctype='multipart/form-data'>
 
             <input type="hidden" name="dbID" value="<%- db.id %>">
 
-            <% if (typeof type == 'undefined') {
-                var type = {};
-            } else { %>
-            <input type="hidden" name="id" id="id" value="<%- type.id %>">
+            <% // Use 'item' or 'document' consistency. Assuming 'type' is the item object. %>
+            <% // Conditionally set a hidden ID field for existing items. %>
+            <% if (typeof type !== 'undefined' && type.id) { %>
+                <input type="hidden" name="id" id="id" value="<%- type.id %>">
             <% } %>
 
             <div class="form-group">
                 <label for="name">Name</label>
-                <input type="text" id="name" name="name" value="<%- type.name %>" required>
+                <input type="text" id="name" name="name" value="<%- type.name || '' %>" required>
             </div>
 
             <div class="form-group">
                 <label for="description">Description</label>
-                <input type="text" name="description" id="description" value="<%- type.description %>">
+                <input type="text" name="description" id="description" value="<%- type.description || '' %>">
             </div>
 
             <div class="form-group">
                 <label for="level">Level</label>
                 <select name="level" id="level">
-                    <option
-                        value="null"
-                        <%- type.level === 'Unknown' ? 'selected' : '' %>
-                    >
-                        Unknown
-                    </option>
-                    <option
-                        value="0"
-                        <%- type.level === '0' ? 'selected' : '' %>
-                    >
-                        Level 0
-                    </option>
-                    <option
-                        value="1"
-                        <%- type.level === '1' ? 'selected' : '' %>
-                    >
-                        Level 1
-                    </option>
-                    <option
-                        value="2"
-                        <%- type.level === '2' ? 'selected' : '' %>
-                    >
-                        Level 2
-                    </option>
-                    <option
-                        value="M"
-                        <%- type.level === 'M' ? 'selected' : '' %>
-                    >
-                        Level M
-                    </option>
-                    <option
-                        value="P"
-                        <%- type.level === 'P' ? 'selected' : '' %>
-                    >
-                        Level P
-                    </option>
-                    <option
-                        value="-1 (pUAP)"
-                        <%- type.level === '-1 (pUAP)' ? 'selected' : '' %>
-                    >
-                        Level -1 (pUAP)
-                    </option>
-                </select>                
+                    <option value="null" <%- type.level === 'Unknown' || type.level === null ? 'selected' : '' %>>Unknown</option>
+                    <option value="0" <%- type.level === '0' ? 'selected' : '' %>>Level 0</option>
+                    <option value="1" <%- type.level === '1' ? 'selected' : '' %>>Level 1</option>
+                    <option value="2" <%- type.level === '2' ? 'selected' : '' %>>Level 2</option>
+                    <option value="M" <%- type.level === 'M' ? 'selected' : '' %>>Level M</option>
+                    <option value="P" <%- type.level === 'P' ? 'selected' : '' %>>Level P</option>
+                    <option value="-1 (pUAP)" <%- type.level === '-1 (pUAP)' ? 'selected' : '' %>>Level -1 (pUAP)</option>
+                </select>
             </div>
 
             <br />
 
-            <% if (type.citations && type.citations.length) { %>
+            <% /* Citation Section */ %>
+            <div class="form-group">
                 <label>Relevant publications</label>
-                <div id='displaycitations'>
-                    <div>
-                        <table border=0>    
-                            <tr>
-                                <th>URL</th>
-                                <th>Description</th>
-                            </tr>
-                            <% type.citations.map(function (citationObj, index) { %>
-                                <tr>
-                                    <td> <div><%= citationObj.url %></div></td>
-                                    <td> <div><%= citationObj.description %></div></td>
-                                </tr>
-                            <% }); %>
-                        </table>
-                    </div>
-                    <a href="javascript:show_edit()">Reset all citations</a>
-                </div>
 
-                <div id="newlink" style="display:none">
-                    <div>
-                        <br />
-                        <table border=0>            
+                <% if (type.citations && type.citations.length) { %>
+                    <div id='display-citations'>
+                        <table>    
+                            <thead>
+                                <tr>
+                                    <th>URL</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="citation-list-display">
+                                <% type.citations.forEach(function (citationObj, index) { %>
+                                    <tr data-citation-index="<%= index %>">
+                                        <td><a href="<%= citationObj.url %>" target="_blank" rel="noopener noreferrer"><%= citationObj.url %></a></td>
+                                        <td><%= citationObj.description %></td>
+                                        <td>
+                                            <button type="button" class="button danger outline remove-citation" data-index="<%= index %>">Remove</button>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                        <p style="margin-top: 10px;">
+                            <a href="#" id="reset-citations-link">Reset all citations (re-add empty fields below)</a>
+                        </p>
+                    </div>
+                <% } %>
+
+                <div id="new-citation-fields" class="citation-fields-group">
+                    <% if (!(type.citations && type.citations.length)) { %>
+                        <% /* Initial empty citation fields if no citations or citations were reset */ %>
+                        <div class="citation-entry">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <div style="display:flex;flex-direction:column">
+                                            <div>Publication URL</div>
+                                            <div><i>(<b>MUST</b> use http:// or https:// for external links)</i></div>
+                                        </div>
+                                    </td>
+                                    <td><input type="text" name="linkurl[]" value=""></td>
+                                </tr>
+                                <tr>
+                                    <td>Publication Description:</td>
+                                    <td><textarea name="linkdesc[]" cols="50" rows="5"></textarea></td>
+                                </tr>
+                            </table>
+                        </div>
+                    <% } %>
+                </div>
+                <p id="add-new-citation-link-wrapper" style='margin-top: 10px;'>
+                    <a href="#" id="add-new-citation-link">Add Another Publication</a>
+                </p>
+
+                <% /* Citation Template (Hidden) */ %>
+                <div id="citation-template" style="display:none;">
+                    <div class="citation-entry">
+                        <table>
                             <tr>
                                 <td>
                                     <div style="display:flex;flex-direction:column">
                                         <div>Publication URL</div>
-                                        <div>
-                                            <i>
-                                                (<b>MUST</b> use http:// or https:// for external links)
-                                            </i>
-                                        </div>
+                                        <div><i>(<b>MUST</b> use http:// or https:// for external links)</i></div>
                                     </div>
                                 </td>
-                                <td id='linkurlinput'></td>
+                                <td><input type="text" name="linkurl[]" value=""></td>
                             </tr>
                             <tr>
-                                <td> Publication Description: </td>
-                                <td id='linkdescinput'></td>
+                                <td>Publication Description:</td>
+                                <td><textarea name="linkdesc[]" cols="50" rows="5"></textarea></td>
                             </tr>
                         </table>
                     </div>
                 </div>
-                <p id="addnew" style='display:none'>
-                    <a href="javascript:new_link()">Add Another Publication</a>
-                </p>
-                <!-- Template -->
-                <div id="newlinktpl" style="display:none">
-                    <div>
-                        <table border=0>
-                            <tr>
-                                <td> 
-                                    <div style="display:flex;flex-direction:column">
-                                        <div>Publication URL</div>
-                                        <div>
-                                            <i>
-                                                (<b>MUST</b> use http:// or https:// for external links)
-                                            </i>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td> <input type="text" name="linkurl[]" value="Enter URL here"> </td>
-                            </tr>
-                            <tr>
-                                <td> Publication Description: </td>
-                                <td> 
-                                    <textarea name="linkdesc[]" cols="50" rows="5">Enter description here</textarea> 
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-                <br />              
-                
-            <% } else {
-                
-                // NEW ONE (or maybe as a result of being deleted)
-                // http://jsfiddle.net/t656N/1/
-            
-            %>            
-
-                <div id="newlink">
-                    <label>Relevant publications (note: there are currently none)</label>
-                    <div>
-                        <br />
-                    <table border=0>            
-                        <tr>
-                            <td> Publication URL: </td>
-                            <td> <input type="text" name="linkurl[]" value=""> </td>
-                        </tr>
-                        <tr>
-                            <td> Publication Description: </td>
-                            <td>  <textarea name="linkdesc[]" cols="50" rows="5" ></textarea> </td>
-                        </tr>
-                    </table>
-                    </div>
-                    </div>
-                    <p id="addnew">
-                        <a href="javascript:new_link()">Add Another Publication </a>
-                    </p>
-                    <!-- Template -->
-                    <div id="newlinktpl" style="display:none">
-                        <div>
-                            <table border=0>
-                                <tr>
-                                    <td> Publication URL: </td>
-                                    <td> <input type="text" name="linkurl[]" value=""> </td>
-                                </tr>
-                                <tr>
-                                    <td> Publication Description: </td>
-                                    <td> <textarea name="linkdesc[]" cols="50" rows="5" ></textarea> </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                <br />
-
-            <% } %>
+            </div>
 
             <div class="form-group">
                 <label for="comments">Comments</label>
-                <input type="text" name="comments" id="comments" value="<%- type.comments %>">
+                <input type="text" name="comments" id="comments" value="<%- type.comments || '' %>">
             </div>
 
-            <% type.fields.map(function(field){ %>
+            <% type.fields && type.fields.forEach(function(field){ %> <% /* Ensure type.fields exists */ %>
                 <div class="form-group">
                     <label for="<%- field.name %>"><%- field.text %></label>
                     <input 
                         type="<%- field.type %>" 
                         id="<%- field.name %>" 
                         name="<%- field.name %>"
-                        value="<%- type[field.name] %>" 
-                        required
+                        value="<%- type[field.name] || '' %>" 
+                        <%= field.required ? 'required' : '' %> <% /* Add required conditionally */ %>
                     >
                 </div>
             <% }); %>
 
             <div class="form-group">
-                <label for="concentration">Concentration</label>
-                <input type="text" name="concentration" id="concentration" value="<%- type.concentration %>">
+                <label for="concentration">Concentration (MUST be finite number or leave empty)</label>
+                <input type="text" name="concentration" id="concentration" value="<%- type.concentration || '' %>">
             </div>
             <div class="form-group">
-                <label for="synBioID">SynBio ID (Mark's Labeling)</label>
-                <input type="text" name="synBioID" id="synBioID" value="<%- type.synBioID %>">
+                <label for="synBioID">SynBio ID (Mark's Labelling)</label>
+                <input type="text" name="synBioID" id="synBioID" value="<%- type.synBioID || '' %>">
             </div>
 
             <div class="form-group">
                 <label for="note">Admin note</label>
-                <input type="text" name="note" id="note" value="<%- type.note %>">
+                <input type="text" name="note" id="note" value="<%- type.note || '' %>">
             </div>
 
             <div class="form-group">
                 <label for="mapFile"><b>MAP file</b></label>
                 <% if(type.mapFile){ %>
-                    <span>Currently: <a href="<%- type.mapFile.downloadPath() %>"><%- type.mapFile.originalName %></a></span>
+                    <span>Currently: <a href="<%- type.mapFile.downloadPath() %>" target="_blank" rel="noopener noreferrer"><%- type.mapFile.originalName %></a></span>
                     <br>
                 <% } %>
                 <input type="file" id="mapFile" name="mapFile">
@@ -243,20 +167,20 @@
             </div>
 
             <div class="form-group">
-                <label for="tinymce">Documentation</label>
-                <% if(typeof type != 'undefined'){ %>
-                    <textarea id="tinymce" class="wide" name="documentation"><%- type.documentation %></textarea>
+                <label for="documentation">Documentation</label>
+                <% if(typeof type !== 'undefined'){ %>
+                    <textarea id="documentation-tinymce" class="wide" name="documentation"><%- type.documentation || '' %></textarea>
                 <% } else { %>
-                    <textarea id="tinymce" class="wide" name="documentation"></textarea>
+                    <textarea id="documentation-tinymce" class="wide" name="documentation"></textarea>
                 <% } %>
             </div>
 
             <div class="form-group">
                 <label for="includeonrecentlyadded">Include on recently added list?</label>
-                <input 
-                    type="checkbox" 
-                    name="includeonrecentlyadded" 
-                    id="includeonrecentlyadded" 
+                <input
+                    type="checkbox"
+                    name="includeonrecentlyadded"
+                    id="includeonrecentlyadded"
                     <%- type.includeOnRecentlyAdded ? 'checked' : '' %>
                 >
             </div>
@@ -269,52 +193,126 @@
     </div>
 </div>
 
-<script type="text/javascript">
-    var ct = 1;
-    function new_link()
-    {
-        ct++;
-        var div1 = document.createElement('div');
-        div1.id = ct;
-        // link to delete extended form elements
-        var delLink = '<div style="text-align:right;margin-right:65px"><a href="javascript:delIt('+ ct +')">Del</a></div>';
-        div1.innerHTML = document.getElementById('newlinktpl').innerHTML + delLink;
-        document.getElementById('newlink').appendChild(div1);
-    }
-    // function to delete the newly added set of elements
-    function delIt(eleId)
-    {
-        d = document;
-        var ele = d.getElementById(eleId);
-        var parentEle = d.getElementById('newlink');
-        parentEle.removeChild(ele);
-    }
-    function show_edit()
-    {
-        d = document;
-        var ele = d.getElementById('displaycitations')
-        ele.style.display = ele.style.display === 'none' ? '' : 'none';      
-        var ele2 = d.getElementById('newlink');
-        ele2.style.display = ele.style.display === 'none' ? '' : 'none';
-        var ele3 = d.getElementById('addnew');
-        ele3.style.display = ele.style.display === 'none' ? '' : 'none';
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- Citation Management (Modernized) ---
+    const newCitationFieldsContainer = document.getElementById('new-citation-fields');
+    const addCitationLink = document.getElementById('add-new-citation-link');
+    const citationTemplate = document.getElementById('citation-template');
+    const resetCitationsLink = document.getElementById('reset-citations-link');
+    const displayCitationsDiv = document.getElementById('display-citations');
+    const citationListDisplayBody = document.getElementById('citation-list-display');
 
-        // only gets added to form because clicked reset,
-        // otherwise would reset data via backend
-        ct++;
-        var div1 = document.createElement('div');
-        div1.id = ct;
-        var parentLinkEl = d.getElementById('linkurlinput');
-        var inputUrlEl = '<input type="text" name="linkurl[]" value="Enter URL here">';
-        div1.innerHTML = inputUrlEl;
-        parentLinkEl.appendChild(div1)
-        var div2 = document.createElement('div');
-        div2.id = ct + 100;
-        var parentDescEl = d.getElementById('linkdescinput');
-        var inputDescEl = '<textarea name="linkdesc[]" cols="50" rows="5" >Enter description here</textarea>';
-        div2.innerHTML = inputDescEl;
-        parentDescEl.appendChild(div2)
+    // Function to add a new empty citation field
+    function addNewCitationField() {
+        if (!citationTemplate) return;
+        const templateContent = citationTemplate.querySelector('.citation-entry').cloneNode(true);
+        const inputUrl = templateContent.querySelector('input[name="linkurl[]"]');
+        const textareaDesc = templateContent.querySelector('textarea[name="linkdesc[]"]');
+        if (inputUrl) inputUrl.value = '';
+        if (textareaDesc) textareaDesc.value = '';
+        newCitationFieldsContainer.appendChild(templateContent);
     }
-    </script>
+
+    // Event listener for "Add Another Publication"
+    if (addCitationLink) {
+        addCitationLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            addNewCitationField();
+        });
+    }
+
+    // Event listener for "Reset all citations"
+    if (resetCitationsLink) {
+        resetCitationsLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('Are you sure you want to reset all current citations? This will remove existing ones and add new empty fields.')) {
+                if (displayCitationsDiv) {
+                    displayCitationsDiv.style.display = 'none';
+                }
+                newCitationFieldsContainer.innerHTML = '';
+                addNewCitationField();
+                const addnewWrapper = document.getElementById('add-new-citation-link-wrapper');
+                if (addnewWrapper) addnewWrapper.style.display = '';
+            }
+        });
+    }
+
+    // Event listener for "Remove" button on existing citations (delegated)
+    if (citationListDisplayBody) {
+        citationListDisplayBody.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-citation')) {
+                e.preventDefault();
+                const button = e.target;
+                const row = button.closest('tr');
+                if (row && confirm('Are you sure you want to remove this publication? This change will be permanent once you save the item.')) {
+                    row.remove();
+                }
+            }
+        });
+    }
+
+    // --- New: Concentration Validation Function ---
+    function validateConcentration() {
+        const concentrationInput = document.getElementById('concentration');
+        if (!concentrationInput) return true; // If input not found, assume valid
+
+        const value = concentrationInput.value.trim();
+
+        if (value === '') {
+            return true; // Empty is allowed
+        }
+
+        // Check if it's a valid number (integer or float)
+        // Using Number() and isNaN() is robust for numerical checks.
+        // String.match() with a regex can ensure it only contains digits and optionally one decimal point.
+        // For simplicity and common use case of "whole number or empty", let's use a regex that allows floats
+        // but it could be stricter for *only* whole numbers.
+        // Given 'finite number', let's allow floats.
+        const isNumeric = /^-?\d+(\.\d+)?$/.test(value);
+
+        if (!isNumeric) {
+            alert('Error: Concentration must be a finite number (e.g., 10, 5.5, or empty).');
+            concentrationInput.focus();
+            return false;
+        }
+
+        // You might want additional checks, e.g., if it's positive.
+        // if (parseFloat(value) < 0) {
+        //     alert('Error: Concentration cannot be negative.');
+        //     concentrationInput.focus();
+        //     return false;
+        // }
+
+        return true;
+    }
+
+    // --- Form Submission Handler (Pre-validation) ---
+    const itemForm = document.getElementById('itemForm');
+    if (itemForm) {
+        itemForm.addEventListener('submit', function(event) {
+            if (!validateConcentration()) {
+                event.preventDefault(); // Stop form submission
+                return;
+            }
+            // Add other pre-submission validations here if any
+        });
+    }
+
+    // --- TinyMCE Initialization ---
+    if (typeof tinymce !== 'undefined') {
+        tinymce.init({
+            selector: '#documentation-tinymce',
+            plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
+            toolbar_mode: 'floating',
+            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+            images_upload_url: '/imageupload',
+            images_upload_base_path: '/uploads',
+        });
+    } else {
+        console.warn('TinyMCE not loaded. Documentation textarea will be plain text.');
+    }
+});
+</script>
 
 <% include ../../foot.ejs %>

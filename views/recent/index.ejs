@@ -1,69 +1,56 @@
 <% include ../head.ejs %>
 
+<%
+<style>
+    .wrapper-for-recently-added-items {
+        font-size: 0.875rem;
+    }
+</style>
+%>
+
 <div class="container">
 
-    <h2 class="center">Recently added items</h2>
+    <h2 class="center">Recently Added Items</h2>
 
     <div>
-        <% if (items.length) { %>
+        <% if (items.length > 0) { %> <% /* Check for items.length > 0 */ %>
 
             <table class='table wrapper-for-recently-added-items'>
-
-                <tr>
-                    <th style='marginRight:100px'> Item </th>
-                    <!-- <th>Date Added</th> -->
-                    <th> Description </th>
-                </tr>
-            
-                <% items.map(function(item){ %>
-                
+                <thead> <% /* Added thead for semantic table structure */ %>
                     <tr>
-                        <td width='25%'>
-                            <a 
-                                href="<%- '/premade/item/' + item.id %>"
-                            >
-                                <%-                             
-                                    item.name.length > 48 ? (
-                                        item.name.substring(0, 24) + 
-                                            '...' + 
-                                            item.name.substring((item.name.length - 24), item.name.length)
-
-                                    ) : item.name    
-                                %>
-                            </a>
-                        </td>
-                        <!-- <td width='15%'>
-                            < % - item.humanFormattedDate %>
-                        </td> -->
-                        <td> 
-                            <%- 
-                                item.description.length > 240 ? (
-                                    item.description.substring(0, 240) + 
-                                            '...' + 
-                                            item.description.substring((item.description.length - 240), item.description.length)
-
-                                ) : item.description 
-                            %> 
-                        </td>
+                        <th style='marginRight:100px'>Item</th>
+                        <!-- <th>Date Added</th> -->
+                        <th>Description</th>
                     </tr>
-
-                <% }) %>
-
+                </thead>
+                <tbody> <% /* Added tbody for semantic table structure */ %>
+                    <% items.forEach(function(item){ %> <% /* Changed map to forEach */ %>
+                        <tr>
+                            <td width='25%'>
+                                <a href="/premade/item/<%- item.id %>">
+                                    <% /* Simplified and safer truncation logic */ %>
+                                    <%- item.name && item.name.length > 48 ? item.name.substring(0, 45) + '...' : item.name %>
+                                </a>
+                            </td>
+                            <!-- <td width='15%'>
+                                < % - item.humanFormattedDate %>
+                            </td> -->
+                            <td> 
+                                <% /* Simplified and safer truncation logic */ %>
+                                <%- item.description && item.description.length > 240 ? item.description.substring(0, 237) + '...' : item.description %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
             </table>
             
         <% } else { %>
-            <p>
+            <p class="center muted-text"> <% /* Added muted-text for consistency */ %>
                 No items found. Please contact system administrator if you think this is in error.
             </p>
         <% } %>
     </div>
 
 </div>
-
-<style>
-    .wrapper-for-recently-added-items {
-        font-size: 0.875rem;
-    }
-</style>
 
 <% include ../foot.ejs %>

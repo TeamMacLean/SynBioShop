@@ -1,53 +1,48 @@
 <% include ../head.ejs %>
 <% include ./sidebar.ejs %>
 
-<!---->
 <div class="sidebar-push">
     <div class="container">
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
         <div class="tile pad inverted">
-            <h4>Admin</h4>
-            <div class="form-group">
-                <a href="/premade/new" class="button primary">New</a>
-                <a href="/premade/rearrange" class="button primary">Rearrange</a>
+            <h4>Admin Actions</h4> <% /* Changed from 'Admin' to 'Admin Actions' for consistency */ %>
+            <div class="form-group button-group"> <% /* Added button-group class for styling */ %>
+                <a href="/premade/new" class="button primary">New Database</a> <% /* Clarified button text */ %>
+                <a href="/premade/rearrange" class="button primary">Rearrange Databases/Categories</a> <% /* Clarified button text */ %>
                 <a href="/premade/export" class="button primary">Export to CSV</a>
             </div>
         </div>
         <% } %>
 
-        <h1 class="center">Pre Made</h1>
+        <h1 class="center">Pre Made Items</h1> <% /* Changed to 'Pre Made Items' for clarity */ %>
 
         <div class="simon-list">
-            <% dbs.sort(function (a, b) {
-                return a.position - b.position;
-            }).map(function(db){ %>
-            <% if(db.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !db.disabled){ %>
-            <!--<div class="indent">-->
-            <h2 class="<% if(db.disabled){ %>disabled<% } %>"><%- db.name %></h2>
-            <ul>
-                <% db.categories.sort(function (a, b) {
-                    return a.position - b.position;
-                }).map(function(category){ %>
-                <% if(category.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !category.disabled){ %>
-                <div class="indent">
-                    <li>
-                        <a 
-                            class="<% if(category.disabled){ %>disabled<% } %>"
-                            href="/premade/category/<%- category.id %>"
-                        >
-                            <span data-icon="&#xe017;"></span> <%- category.name %>
-                        </a>
-                    </li>
-                </div>
+            <% /* Iterate through top-level Databases */ %>
+            <% dbs.sort((a, b) => a.position - b.position).forEach(function(db){ %> <% /* Changed map to forEach */ %>
+                <% if (!db.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Simplified admin display logic */ %>
+                    <h2 class="<% if(db.disabled){ %>disabled<% } %>"><%- db.name %></h2>
+                    <ul>
+                        <% /* Iterate through Categories within this DB */ %>
+                        <% db.categories.sort((a, b) => a.position - b.position).forEach(function(category){ %> <% /* Changed map to forEach */ %>
+                            <% if (!category.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Simplified admin display logic */ %>
+                                <div class="indent"> <% /* Keep this div if essential for styling */ %>
+                                    <li>
+                                        <a 
+                                            class="<% if(category.disabled){ %>disabled<% } %>"
+                                            href="/premade/category/<%- category.id %>"
+                                        >
+                                            <span data-icon="&#xe017;"></span> <%- category.name %>
+                                        </a>
+                                    </li>
+                                </div>
+                            <% } %>
+                        <% }); %>
+                    </ul>
                 <% } %>
-                <% }); %>
-            </ul>
-            <% } %>
             <% }); %>
         </div>
     </div>
 </div>
-
 
 <% include ../foot.ejs %>

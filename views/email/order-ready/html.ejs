@@ -20,7 +20,7 @@
         .instructions .important-note { text-decoration: underline; margin-bottom: 1em; display: block; }
         .instructions a { color: #007bff; text-decoration: underline; }
         .section-title { background-color: #eeeeee; padding: 10px 20px; font-size: 18px; color: #333333; border-bottom: 1px solid #dddddd; }
-        .content-table { width: 100%; border-collapse: collapse; padding: 0 20px; } /* Padding on cells, not table */
+        .content-table { width: 100%; border-collapse: collapse; padding: 0 20px; }
         .content-table th, .content-table td { padding: 12px; text-align: left; border-bottom: 1px solid #dddddd; }
         .content-table th.center, .content-table td.center { text-align: center; }
         .content-table th { background-color: #f8f8f8; font-weight: bold; color: #333333; }
@@ -38,7 +38,7 @@
         <!-- Header -->
         <tr>
             <td class="header">
-                <img src="<%- baseURL %>/img/logo.png" alt="TSL SynBio Logo">
+                <img src="<%- baseURL %> /img/logo.png" alt="TSL SynBio Logo"> <%-- Added space before /img --%>
                 <h1>SynBio Order Ready</h1>
             </td>
         </tr>
@@ -46,7 +46,7 @@
         <!-- Order Info -->
         <tr>
             <td class="order-info">
-                <p><%- locals.order.janCode || 'N/A' %> is ready to collect from SynBio.</p>
+                <p><%- (locals.order && locals.order.janCode) || 'N/A' %> is ready to collect from SynBio.</p> <%-- Added explicit locals check --%>
             </td>
         </tr>
 
@@ -80,7 +80,7 @@
                         <tr>
                             <th class="center">Item</th>
                             <th class="center">Quantity</th>
-                            <% if (locals.order.totalCost) { %>
+                            <% if (locals.order && locals.order.totalCost) { %> <%-- Added locals.order check --%>
                                 <th class="center">Price (£)</th>
                             <% } %>
                             <th class="center">Concentration</th>
@@ -90,22 +90,22 @@
                     <tbody>
                         <% locals.order.items.forEach(function(item){ %>
                             <tr>
-                                <td><%- item.type?.name || 'N/A' %></td>
-                                <td class="center"><%- item.quantity || 0 %></td>
-                                <% if (locals.order.totalCost) { %>
-                                    <td class="center">£<%- (item.quantity * locals.order.pricePerUnit).toFixed(2) %></td>
+                                <td><%- (item && item.type && item.type.name) || 'N/A' %></td>
+                                <td class="center"><%- (item && item.quantity) || 0 %></td> <%-- Added item check for quantity --%>
+                                <% if (locals.order && locals.order.totalCost) { %> <%-- Added locals.order check --%>
+                                    <td class="center">£<%- ((item && item.quantity) * (locals.order && locals.order.pricePerUnit)).toFixed(2) %></td> <%-- Added item.quantity and locals.order.pricePerUnit checks --%>
                                 <% } %>
-                                <td class="center"><%- item.type?.concentration || 'N/A' %></td>
-                                <td class="center"><%- item.type?.synBioID || 'N/A' %></td>
+                                <td class="center"><%- (item && item.type && item.type.concentration) || 'N/A' %></td>
+                                <td class="center"><%- (item && item.type && item.type.synBioID) || 'N/A' %></td>
                             </tr>
                         <% }); %>
                     </tbody>
                     <tfoot>
                         <tr>
                             <td><b>Total</b></td>
-                            <td class="center"><b><%- locals.order.totalQuantity || 0 %></b></td>
-                            <% if (locals.order.totalCost) { %>
-                                <td class="center"><b>£<%- (locals.order.totalCost).toFixed(2) %></b></td>
+                            <td class="center"><b><%- (locals.order && locals.order.totalQuantity) || 0 %></b></td> <%-- Added locals.order check --%>
+                            <% if (locals.order && locals.order.totalCost) { %> <%-- Added locals.order check --%>
+                                <td class="center"><b>£<%- Number(locals.order.totalCost).toFixed(2) %></b></td>
                             <% } %>
                             <td></td> <%-- Spacer for concentration column --%>
                             <td></td> <%-- Spacer for SynBio ID column --%>
@@ -118,7 +118,7 @@
         <!-- Footer Link -->
         <tr>
             <td class="footer">
-                <a href="<%- baseURL %>/order/<%- locals.order.id %>">View order on site</a>
+                <a href="<%- baseURL %>/order/<%- (locals.order && locals.order.id) || '' %>">View order on site</a> <%-- Added locals.order check --%>
             </td>
         </tr>
     </table>

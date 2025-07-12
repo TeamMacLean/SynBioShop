@@ -8,35 +8,29 @@
 
     <meta name="description" content="">
     <meta name="author" content="">
-    <!--<link rel="icon" href="/favicon.ico">-->
 
     <title>TSL SynBio</title>
 
-    <!--<link href="/components/elegant-icons/css/style.css" rel="stylesheet">-->
-    <!--<link href="/components/animate.css/animate.min.css" rel="stylesheet">-->
     <link rel="stylesheet" type="text/css" href="/style/style.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/dropzone.min.css">
     
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
+</head>
 
 <body>
-
     <script>
-        document.signedInUser = '';
-    <% if (locals.signedInUser) { %>
+        document.signedInUser = null; 
+
+        if (typeof locals !== 'undefined' && locals.signedInUser) {
             document.signedInUser = JSON.parse('<%- JSON.stringify(locals.signedInUser) %>');
-    <% } %>
+        }
     </script>
 
-    <% if(locals.billboard && locals.billboard.enabled && locals.billboard.text){ %>
-    <div class="billboard">
-        <div class="container">
-            <p><%- billboard.text %></p>
+    <% if (typeof locals !== 'undefined' && locals.billboard && locals.billboard.enabled && locals.billboard.text) { %>
+        <div class="billboard">
+            <div class="container">
+                <p><%- locals.billboard.text %></p>
+            </div>
         </div>
-    </div>
     <% } %>
 
     <% include flashes.ejs %>

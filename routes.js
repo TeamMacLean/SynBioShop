@@ -1,339 +1,216 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const Util = require("./lib/util");
-const docs = require("./controllers/documents");
-const premade = require("./controllers/premade");
-const custom = require("./controllers/custom");
-const recent = require("./controllers/recent");
-const search = require("./controllers/search");
-const auth = require("./controllers/auth");
-const shoppingCart = require("./controllers/shoppingCart");
-const orders = require("./controllers/orders");
-const upload = require("./controllers/upload");
-const admin = require("./controllers/admin");
-const config = require("./config.json");
+const path = require('path'); 
 
-router.route("/").get((req, res) => res.render("index"));
-
-//ADMIN
-
-router
-  .route("/admin/billboard")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(admin.billboard.edit)
-  .post(admin.billboard.editPost);
-
-//DOCS
-router.route("/docs").get(docs.index);
-router
-  .route("/docs/rearrange")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(docs.rearrange)
-  .post(docs.rearrangeSave);
-
-router
-  .route("/docs/new")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(docs.subject.new)
-  .post(docs.subject.save);
-router.route("/docs/:subjectID").get(docs.subject.show);
-router
-  .route("/docs/:subjectID/rename")
-  .get(docs.subject.rename)
-  .post(docs.subject.save);
-router
-  .route("/docs/:subjectID/disable")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(docs.subject.disable);
-router
-  .route("/docs/:subjectID/delete")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(docs.subject.delete);
-router
-  .route("/docs/:subjectID/enable")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(docs.subject.enable);
-router
-  .route("/docs/:subjectID/new")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(docs.document.new)
-  .post(docs.document.save);
-router
-  .route("/docs/:subjectID/addsubject")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(docs.subject.new)
-  .post(docs.subject.save);
-router.route("/docs/item/:itemID").get(docs.document.show);
-
-router
-  .route("/docs/item/:itemID/disable")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(docs.document.disable);
-router
-  .route("/docs/item/:itemID/enable")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(docs.document.enable);
-router
-  .route("/docs/item/:itemID/delete")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(docs.document.delete);
-
-router
-  .route("/docs/item/:itemID/edit")
-  .get(docs.document.edit)
-  .post(docs.document.save);
-
-//PREMADE
-if (!config.disablePremade) {
-  router.route("/premade").all(isAuthenticated).get(premade.index);
-  router.route("/premade/export").all(isAuthenticated).get(premade.export);
-  router
-    .route("/premade/rearrange")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.rearrange)
-    .post(premade.rearrangeSave);
-  router
-    .route("/premade/new")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.db.new)
-    .post(premade.db.save);
-  router.route("/premade/:id").all(isAuthenticated).get(premade.db.show);
-
-  router
-    .route("/premade/:id/edit")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.db.edit);
-
-  router
-    .route("/premade/:id/disable")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.db.disable);
-  router
-    .route("/premade/:id/enable")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.db.enable);
-  router
-    .route("/premade/:id/delete")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.db.delete);
-
-  router
-    .route("/premade/:id/new")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.category.new)
-    .post(premade.category.save);
-  router
-    .route("/premade/category/:categoryID")
-    .all(isAuthenticated)
-    .get(premade.category.show);
-  router
-    .route("/premade/category/:categoryID/edit")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.category.edit);
-  router
-    .route("/premade/category/:categoryID/disable")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.category.disable);
-  router
-    .route("/premade/category/:categoryID/enable")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.category.enable);
-  router
-    .route("/premade/category/:categoryID/delete")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.category.delete);
-
-  router
-    .route("/premade/category/:categoryID/new")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.item.new)
-    .post(premade.item.save);
-  router
-    .route("/premade/item/:itemID")
-    .all(isAuthenticated)
-    .get(premade.item.show);
-  router
-    .route("/premade/item/:itemID/edit")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.item.edit);
-  router
-    .route("/premade/item/:itemID/disable")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.item.disable);
-  router
-    .route("/premade/item/:itemID/enable")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.item.enable);
-  router
-    .route("/premade/item/:itemID/delete")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .get(premade.item.delete);
-  router
-    .route("/premade/item/:itemID/uploadSequenceFile")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .post(premade.item.uploadSequenceFile); // post?
-  router
-    .route("/premade/item/:itemID/deleteSequenceFile/")
-    .all(isAuthenticated)
-    .all(isAdmin)
-    .post(premade.item.deleteSequenceFile); // be wary
-}
-
-//CUSTOM
-router.route("/custom").all(isAuthenticated).get(custom.index);
-
-//RECENTLY ADDED
-router.route("/recently-added-items").all(isAuthenticated).get(recent.index);
-
-//SEARCH
-router.route("/search").all(isAuthenticated).get(search.index);
-
-//CART
-if (!config.disableCart) {
-  router.route("/cart").all(isAuthenticated).get(shoppingCart.index);
-
-  router
-    .route("/cart/order")
-    .all(isAuthenticated)
-    .post(shoppingCart.placeOrder);
-}
-
-//FILE UPLOAD
-
-router
-  .route("/upload")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  // .get(upload.uploadFile)
-  .post(upload.uploadFilePost);
-
-//IMAGE UPLOAD
-router
-  .route("/imageupload")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  // .get(upload.uploadImage)
-  .post(upload.uploadImagePost);
-
-router.route("/filemanager/:id/download").get(upload.download);
-
-// Not great
-router
-  .route("/sequencefilemanager/:id/download")
-  .get(upload.downloadSequenceFile);
-
-router
-  .route("/filemanager")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(upload.fileManager);
-//ORDERS
-
-router
-  .route("/filemanager/:id/delete")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(upload.deleteFile);
-
-router.route("/orders").all(isAuthenticated).all(isAdmin).get(orders.showAll);
-
-router
-  .route("/order/summary")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(orders.simonSummary);
-
-router.get('/order/export', orders.exportOrders)
-
-router
-  .route("/dupes")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(orders.simonRepeatOrders);
-
-router.route("/order/:id").all(isAuthenticated).all(isAdmin).get(orders.show);
-
-router
-  .route("/order/:id/complete")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(orders.markAsComplete);
-
-router
-  .route("/order/:id/incomplete")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(orders.markAsIncomplete);
-
-router
-  .route("/order/:id/cancel")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(orders.markAsCancelled);
-
-router
-  .route("/order/:id/uncancel")
-  .all(isAuthenticated)
-  .all(isAdmin)
-  .get(orders.markAsUnCancelled);
-
-//AUTH
-router.route("/signin").get(auth.signIn).post(auth.signInPost);
-
-router.route("/signout").all(isAuthenticated).get(auth.signOut);
-
-router.route("/whoamoi").all(isAuthenticated).get(auth.whoami);
-
-router.post('/check-ldap-user', auth.checkLDAPUser);
-
-router.route("*").get((req, res) => {
-  console.log("404", req.url);
-  res.render("404");
-});
+const Util = require('./lib/util');
+const config = require('./config.json');
 
 function isAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   } else {
     req.session.returnTo = req.path;
-    return res.redirect("/signin");
+    return res.redirect('/signin');
   }
 }
 
 function isAdmin(req, res, next) {
-  if (Util.isAdmin(req.user.username)) {
+  if (req.user && Util.isAdmin(req.user.username)) { 
     return next();
   } else {
-    return res.send("You cannot access this page, you are not an admin.");
+    return res.status(403).send('Access Denied: You do not have administrator privileges.');
   }
 }
+
+// --- Controller Imports ---
+const docs = require('./controllers/documents');
+const premade = require('./controllers/premade');
+const custom = require('./controllers/custom');
+const recent = require('./controllers/recent'); 
+const search = require('./controllers/search'); 
+const auth = require('./controllers/auth');
+const shoppingCart = require('./controllers/shoppingCart');
+const orders = require('./controllers/orders');
+const upload = require('./controllers/upload'); 
+const admin = require('./controllers/admin');
+
+// --- Global/Root Routes ---
+router.get('/', (req, res) => res.render('index'));
+router.get('/whoamoi', isAuthenticated, auth.whoami); 
+router.post('/check-ldap-user', auth.checkLDAPUser); 
+
+// --- Authentication Routes ---
+router.get('/signin', auth.signIn);
+router.post('/signin', auth.signInPost);
+router.get('/signout', isAuthenticated, auth.signOut); 
+
+// --- Admin-Specific Routes ---
+router
+  .route('/admin/billboard')
+  .all(isAuthenticated, isAdmin) // Chained middleware
+  .get(admin.billboard.edit)
+  .post(admin.billboard.editPost);
+
+// --- Documentation (Docs) Routes ---
+router.get('/docs', docs.index);
+router
+  .route('/docs/rearrange')
+  .all(isAuthenticated, isAdmin)
+  .get(docs.rearrange)
+  .post(docs.rearrangeSave); 
+
+router
+  .route('/docs/new')
+  .all(isAuthenticated, isAdmin)
+  .get(docs.subject.new)
+  .post(docs.subject.save); 
+
+router.get('/docs/:subjectID', docs.subject.show);
+router
+  .route('/docs/:subjectID/rename')
+  .all(isAuthenticated, isAdmin) 
+  .get(docs.subject.rename)
+  .post(docs.subject.save);
+
+// use post not get now
+router.post('/docs/:subjectID/disable', isAuthenticated, isAdmin, docs.subject.disable);
+router.post('/docs/:subjectID/delete', isAuthenticated, isAdmin, docs.subject.delete);
+router.post('/docs/:subjectID/enable', isAuthenticated, isAdmin, docs.subject.enable);
+
+router
+  .route('/docs/:subjectID/new') 
+  .all(isAuthenticated, isAdmin)
+  .get(docs.document.new)
+  .post(docs.document.save);
+
+// redundant?
+router 
+  .route('/docs/:subjectID/addsubject')
+  .all(isAuthenticated, isAdmin)
+  .get(docs.subject.new) 
+  .post(docs.subject.save);
+
+router.get('/docs/item/:itemID', docs.document.show);
+router
+  .route('/docs/item/:itemID/edit')
+  .all(isAuthenticated, isAdmin)
+  .get(docs.document.edit)
+  .post(docs.document.save);
+
+// changed from get to post
+router.post('/docs/item/:itemID/disable', isAuthenticated, isAdmin, docs.document.disable);
+router.post('/docs/item/:itemID/enable', isAuthenticated, isAdmin, docs.document.enable);
+router.post('/docs/item/:itemID/delete', isAuthenticated, isAdmin, docs.document.delete);
+
+// --- Premade Item Management Routes ---
+// Removed `if (!config.disablePremade)` around the entire block.
+// Controller logic (e.g., premade.index) should handle redirects if disabled.
+router.get('/premade', isAuthenticated, premade.index);
+router.get('/premade/export', isAuthenticated, premade.export); 
+
+router
+  .route('/premade/rearrange')
+  .all(isAuthenticated, isAdmin)
+  .get(premade.rearrange)
+  .post(premade.rearrangeSave);
+
+router
+  .route('/premade/new') 
+  .all(isAuthenticated, isAdmin)
+  .get(premade.db.new)
+  .post(premade.db.save);
+
+router.get('/premade/:id', isAuthenticated, premade.db.show); // Show DB
+router.post('/premade/:id/edit', isAuthenticated, isAdmin, premade.db.save); // POST to save DB edits
+router.get('/premade/:id/edit', isAuthenticated, isAdmin, premade.db.edit); // GET to show DB edit form
+
+// DB disable/enable/delete (changed from GET to POST for state-changing actions)
+router.post('/premade/:id/disable', isAuthenticated, isAdmin, premade.db.disable);
+router.post('/premade/:id/enable', isAuthenticated, isAdmin, premade.db.enable);
+router.post('/premade/:id/delete', isAuthenticated, isAdmin, premade.db.delete);
+
+router // For new Categories within a DB
+  .route('/premade/:id/new') // The `:id` here refers to DB ID
+  .all(isAuthenticated, isAdmin)
+  .get(premade.category.new)
+  .post(premade.category.save);
+
+router.get('/premade/category/:categoryID', isAuthenticated, premade.category.show);
+router.post('/premade/category/:categoryID/edit', isAuthenticated, isAdmin, premade.category.save); // POST to save category edits
+router.get('/premade/category/:categoryID/edit', isAuthenticated, isAdmin, premade.category.edit); // GET to show category edit form
+
+// Category disable/enable/delete (changed from GET to POST)
+router.post('/premade/category/:categoryID/disable', isAuthenticated, isAdmin, premade.category.disable);
+router.post('/premade/category/:categoryID/enable', isAuthenticated, isAdmin, premade.category.enable);
+router.post('/premade/category/:categoryID/delete', isAuthenticated, isAdmin, premade.category.delete);
+
+router // For new Items within a Category
+  .route('/premade/category/:categoryID/new')
+  .all(isAuthenticated, isAdmin)
+  .get(premade.item.new)
+  .post(premade.item.save);
+
+router.get('/premade/item/:itemID', isAuthenticated, premade.item.show);
+router.post('/premade/item/:itemID/edit', isAuthenticated, isAdmin, premade.item.save); // POST to save item edits
+router.get('/premade/item/:itemID/edit', isAuthenticated, isAdmin, premade.item.edit); // GET to show item edit form
+
+// Item disable/enable/delete (changed from GET to POST)
+router.post('/premade/item/:itemID/disable', isAuthenticated, isAdmin, premade.item.disable);
+router.post('/premade/item/:itemID/enable', isAuthenticated, isAdmin, premade.item.enable);
+router.post('/premade/item/:itemID/delete', isAuthenticated, isAdmin, premade.item.delete); // This is the premade item deletion
+
+// Sequence File Upload and Delete for Items
+// HOWDY
+router.post('/premade/item/:itemID/uploadSequenceFile', isAuthenticated, isAdmin, upload.uploadSequenceFile);
+router.post('/premade/item/:itemID/deleteSequenceFile', isAuthenticated, isAdmin, upload.deleteSequenceFile);
+
+// --- Custom Routes ---
+router.get('/custom', isAuthenticated, custom.index);
+
+// --- Recently Added Items Routes ---
+router.get('/recently-added-items', isAuthenticated, recent.index); // Renamed from '/recent' to match content
+
+// --- Search Routes ---
+router.get('/search', isAuthenticated, search.index);
+
+// --- Shopping Cart Routes ---
+// Removed `if (!config.disableCart)` around the block.
+router.get('/cart', isAuthenticated, shoppingCart.index);
+router.post('/cart/order', isAuthenticated, shoppingCart.placeOrder);
+
+// --- File Upload & Management Routes (General) ---
+// Changed from .route('/upload') to separate GET/POST for clarity
+router.post('/upload', isAuthenticated, isAdmin, upload.uploadFilePost); // For general file uploads
+
+router.post('/imageupload', isAuthenticated, isAdmin, upload.uploadImagePost); // For image uploads (e.g., from TinyMCE)
+
+router.get('/filemanager', isAuthenticated, isAdmin, upload.fileManager); // General file manager view
+router.get('/filemanager/:id/download', upload.download); // Download specific file
+
+// HOWDY
+router.post('/filemanager/:id/delete', isAuthenticated, isAdmin, upload.deleteFile);
+router.get('/sequencefilemanager/:id/download', upload.downloadSequenceFile); // Download sequence file
+
+// --- Orders Routes ---
+router.get('/orders', isAuthenticated, isAdmin, orders.showAll);
+router.get('/order/summary', isAuthenticated, isAdmin, orders.simonSummary);
+router.get('/order/export', isAuthenticated, isAdmin, orders.exportOrders); // Export should be admin only
+
+router.get('/dupes', isAuthenticated, isAdmin, orders.simonRepeatOrders); // Route name 'dupes' could be more descriptive
+
+router.get('/order/:id', isAuthenticated, isAdmin, orders.show); // Show specific order details
+
+// Order state changes (changed from GET to POST for best practice)
+router.post('/order/:id/complete', isAuthenticated, isAdmin, orders.markAsComplete);
+router.post('/order/:id/incomplete', isAuthenticated, isAdmin, orders.markAsIncomplete);
+router.post('/order/:id/cancel', isAuthenticated, isAdmin, orders.markAsCancelled);
+router.post('/order/:id/uncancel', isAuthenticated, isAdmin, orders.markAsUnCancelled);
+
+// --- 404 Catch-all ---
+router.use('*', (req, res) => { // Use router.use for catch-all middleware
+  console.log('404 Not Found:', req.method, req.originalUrl);
+  res.status(404).render('404'); // Ensure 404 status is sent
+});
+
 
 module.exports = router;

@@ -18,10 +18,8 @@
               <p><strong>Ordered:</strong> <%- order.createdHumanDate() %></p>
               <p><strong>Status:</strong> <%- order.cancelled ? 'Cancelled' : (order.complete ? 'Complete' : 'Pending') %></p>
               <p><strong>Customer:</strong> <%- order.username %></p>
-              <p><strong>Total cost:</strong> <%= order.totalCost !== null && order.totalCost !== undefined ? '£' + order.totalCost.toFixed(2) : 'n/a' %></p>
+              <p><strong>Total cost:</strong> <%= order.totalCost !== null && order.totalCost !== undefined ? '£' + Number(order.totalCost).toFixed(2) : 'n/a' %></p>
               <p><strong>Cost code:</strong> <%- order.costCode || 'n/a' %></p>
-              <% /* Signatory line is commented out, keeping it commented */ %>
-              <% /* <p>Signatory: <%- order.signatory || 'n/a' %></p> */ %>
             </div>
             <a href="/order/<%- order.id %>" class="button primary tile-button-bottom">Show Order</a>
           </div>
@@ -65,8 +63,7 @@
                 <%- order.cancelled ? 'CANCELLED' : order.completedHumanDate() %>
               </td>
               <td><%- order.username %></td>
-              <td><%= order.totalCost !== null && order.totalCost !== undefined ? '£' + order.totalCost.toFixed(2) : 'n/a' %></td>
-              <td><%- order.costCode || 'n/a' %></td>
+              <td><%= order.totalCost !== null && order.totalCost !== undefined ? '£' + Number(order.totalCost).toFixed(2) : 'n/a' %></td>              <td><%- order.costCode || 'n/a' %></td>
               <td><a href="/order/<%- order.id %>">View</a></td>
             </tr>
           <% }); %>

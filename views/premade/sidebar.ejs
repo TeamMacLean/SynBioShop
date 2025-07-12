@@ -5,24 +5,23 @@
 </style>
 <div class="nav-left">
 
-    <a href="/premade"><h2>Premade</h2></a>
+    <a href="/premade"><h2>Premade Items</h2></a> <% /* Changed heading text for clarity */ %>
 
     <ul>
         <li>
             <span class="icon arrow_carrot-right"></span>
-            <a href="/premade" class="name">Show All</a>
+            <a href="/premade" class="name">Show All Databases</a> <% /* Clarified link text */ %>
         </li>
-        <% dbs.sort(function (a, b) {
-            return a.position - b.position;
-        }).map(function(db){ %>
-        <% if(db.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !db.disabled){ %>
-        <li>
-            <span class="icon arrow_carrot-right"></span>
-            <a href="/premade/<%- db.id %>">
-                <span class="name <% if(db.disabled){ %>disabled<% } %>"><%- db.name %></span>
-            </a>
-        </li>
-        <% } %>
+        <% dbs.sort((a, b) => a.position - b.position).forEach(function(db){ %>
+            <% /* Show DB if it's not disabled, OR if it's disabled but the user is an admin */ %>
+            <% if (!db.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %>
+                <li>
+                    <span class="icon arrow_carrot-right"></span>
+                    <a href="/premade/<%- db.id %>">
+                        <span class="name <% if(db.disabled){ %>disabled<% } %>"><%- db.name %></span>
+                    </a>
+                </li>
+            <% } %>
         <% }) %>
     </ul>
 

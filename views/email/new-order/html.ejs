@@ -78,13 +78,13 @@
                     <tbody>
                         <% locals.order.items.forEach(function(item){ %>
                             <tr>
-                                <td><%- item.type?.name || 'N/A' %></td>
+                                <td><%- (item && item.type && item.type.name) || 'N/A' %></td> <%-- Added parentheses for robustness --%>
                                 <td class="center"><%- item.quantity || 0 %></td>
                                 <% if (locals.order.totalCost) { %>
                                     <td class="center">£<%- (item.quantity * locals.order.pricePerUnit).toFixed(2) %></td>
                                 <% } %>
-                                <td class="center"><%- item.type?.concentration || 'N/A' %></td>
-                                <td class="center"><%- item.type?.synBioID || 'N/A' %></td>
+                                <td class="center"><%- (item && item.type && item.type.concentration) || 'N/A' %></td> <%-- Added parentheses for robustness --%>
+                                <td class="center"><%- (item && item.type && item.type.synBioID) || 'N/A' %></td> <%-- Added parentheses for robustness --%>
                             </tr>
                         <% }); %>
                     </tbody>
@@ -93,7 +93,7 @@
                             <td><b>Total</b></td>
                             <td class="center"><b><%- locals.order.totalQuantity || 0 %></b></td>
                             <% if (locals.order.totalCost) { %>
-                                <td class="center"><b>£<%- (locals.order.totalCost).toFixed(2) %></b></td>
+                                <td class="center"><b>£<%- Number(locals.order.totalCost).toFixed(2) %></b></td>
                             <% } %>
                             <td></td> <%-- Spacer for concentration column --%>
                             <td></td> <%-- Spacer for SynBio ID column --%>

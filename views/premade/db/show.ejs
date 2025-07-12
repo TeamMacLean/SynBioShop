@@ -6,18 +6,22 @@
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
         <div class="tile pad inverted">
-            <h4>Admin</h4>
-            <div class="form-group">
+            <h4>Admin Actions</h4> <% /* Changed from 'Admin' to 'Admin Actions' for consistency */ %>
+            <div class="form-group button-group"> <% /* Added button-group class for styling */ %>
                 <a href="/premade/<%- db.id %>/edit" class="button primary">Edit DB</a>
                 <a href="/premade/<%- db.id %>/new" class="button primary">New Category</a>
+                
                 <% if(db.disabled){ %>
-                <a href="/premade/<%- db.id %>/enable" class="button success areyousure">Enable
-                    DB</a>
-                <a href="/premade/<%- db.id %>/delete" class="button danger areyousure">Delete
-                    DB</a>
+                    <form action="/premade/<%- db.id %>/enable" method="POST" style="display:inline;">
+                        <button type="submit" class="button success areyousure">Enable DB</button>
+                    </form>
+                    <form action="/premade/<%- db.id %>/delete" method="POST" style="display:inline;">
+                        <button type="submit" class="button danger areyousure">Delete DB</button>
+                    </form>
                 <% } else { %>
-                <a href="/premade/<%- db.id %>/disable" class="button danger areyousure">Disable
-                    DB</a>
+                    <form action="/premade/<%- db.id %>/disable" method="POST" style="display:inline;">
+                        <button type="submit" class="button danger areyousure">Disable DB</button>
+                    </form>
                 <% } %>
             </div>
         </div>
@@ -25,24 +29,23 @@
 
         <h2 class="center"><%- db.name %></h2>
 
-        <div>
-
+        <div class="document"> <% /* Wrap description in div.document for consistent styling */ %>
+            <%- db.description %>
         </div>
 
-        <div>
-            <%-db.description%>
-        </div>
-
-        <% db.categories.sort(function (a, b) {
-            return a.position - b.position;
-        }).map(function (category) { %>
-
-        <h3><a href="/premade/category/<%- category.id %>"><%- category.name %></a></h3>
-
-        <% }) %>
+        <% /* List categories within this DB */ %>
+        <h3 class="center">Categories</h3> <% /* Added a heading for categories */ %>
+        <ul> <% /* Wrapped categories in an unordered list */ %>
+            <% db.categories.sort((a, b) => a.position - b.position).forEach(function (category) { %> <% /* Changed map to forEach */ %>
+                <li>
+                    <a href="/premade/category/<%- category.id %>">
+                        <%- category.name %>
+                    </a>
+                </li>
+            <% }) %>
+        </ul>
 
     </div>
 </div>
-
 
 <% include ../../foot.ejs %>

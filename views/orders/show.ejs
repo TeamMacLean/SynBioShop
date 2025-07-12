@@ -42,8 +42,8 @@
           <% order.items.forEach(item => { %>
             <tr>
               <td>
-                <a href="/premade/item/<%- item.type?.id %>" target="_blank" rel="noopener noreferrer">
-                  <%- item.type?.name || 'N/A' %>
+                <a href="/premade/item/<%- item && item.type && item.type.id %>" target="_blank" rel="noopener noreferrer">
+                  <%- item && item.type && item.type.name || 'N/A' %>
                 </a>
               </td>
               <% if (item.quantity !== undefined && item.quantity !== null) { %>
@@ -66,8 +66,8 @@
                     <td class="center">n/a</td> <% /* Price not applicable for normal? */ %>
                 <% } %>
               <% } %>
-              <td class="center"><%- item.type?.concentration || 'N/A' %></td>
-              <td class="center"><%- item.type?.synBioID || 'N/A' %></td>
+              <td class="center"><%- item && item.type && item.type.concentration || 'N/A' %></td>
+              <td class="center"><%- item && item.type && item.type.synBioID || 'N/A' %></td>
             </tr>
           <% }); %>
         <% } %>
@@ -77,7 +77,7 @@
           <td><b>Total</b></td>
           <td class="center"><b><%- order.totalQuantity || 0 %></b></td>
           <% if (order.totalCost !== null && order.totalCost !== undefined) { %>
-            <td class="center"><b>£<%- (order.totalCost).toFixed(2) %></b></td>
+            <td class="center"><b>£<%- Number(order.totalCost).toFixed(2) %></b></td>
           <% } %>
           <td></td> <% /* Spacer for concentration column */ %>
           <td></td> <% /* Spacer for SynBio ID column */ %>
@@ -86,14 +86,22 @@
     </table>
   </div>
 
-  <div class="order-actions">
+  <div class="order-actions button-group"> <% /* Added button-group class for styling */ %>
     <% if (order.cancelled) { %>
-      <a href="/order/<%- order.id %>/uncancel" class="button primary areyousure">Undo Cancellation</a>
+      <form action="/order/<%- order.id %>/uncancel" method="POST" style="display:inline;">
+          <button type="submit" class="button primary areyousure">Undo Cancellation</button>
+      </form>
     <% } else if (!order.complete) { %>
-      <a href="/order/<%- order.id %>/complete" class="button primary areyousure">Mark as Complete</a>
-      <a href="/order/<%- order.id %>/cancel" class="button danger areyousure">Mark as Cancelled</a>
+      <form action="/order/<%- order.id %>/complete" method="POST" style="display:inline;">
+          <button type="submit" class="button primary areyousure">Mark as Complete</button>
+      </form>
+      <form action="/order/<%- order.id %>/cancel" method="POST" style="display:inline;">
+          <button type="submit" class="button danger areyousure">Mark as Cancelled</button>
+      </form>
     <% } else { %>
-      <a href="/order/<%- order.id %>/incomplete" class="button primary areyousure">Mark as Incomplete</a>
+      <form action="/order/<%- order.id %>/incomplete" method="POST" style="display:inline;">
+          <button type="submit" class="button primary areyousure">Mark as Incomplete</button>
+      </form>
     <% } %>
   </div>
 </div>

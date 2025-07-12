@@ -6,18 +6,21 @@
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
         <div class="tile pad inverted">
-            <h4>Admin</h4>
-            <div class="form-group">
-                <a href="/docs/item/<%- document.id %>/edit" class="button primary">Edit
-                    Document</a>
+            <h4>Admin Actions</h4> <% /* Changed from 'Admin' to 'Admin Actions' for clarity */ %>
+            <div class="form-group button-group"> <% /* Added button-group class for styling */ %>
+                <a href="/docs/item/<%- document.id %>/edit" class="button primary">Edit Document</a>
+                
                 <% if(document.disabled){ %>
-                <a href="/docs/item/<%- document.id %>/enable" class="button success areyousure">Enable
-                    Document</a>
-                <a href="/docs/item/<%- document.id %>/delete" class="button danger areyousure">Delete
-                    Document</a>
+                    <form action="/docs/item/<%- document.id %>/enable" method="POST" style="display:inline;">
+                        <button type="submit" class="button success areyousure">Enable Document</button>
+                    </form>
+                    <form action="/docs/item/<%- document.id %>/delete" method="POST" style="display:inline;">
+                        <button type="submit" class="button danger areyousure">Delete Document</button>
+                    </form>
                 <% } else { %>
-                <a href="/docs/item/<%- document.id %>/disable" class="button danger areyousure">Disable
-                    Document</a>
+                    <form action="/docs/item/<%- document.id %>/disable" method="POST" style="display:inline;">
+                        <button type="submit" class="button danger areyousure">Disable Document</button>
+                    </form>
                 <% } %>
             </div>
         </div>

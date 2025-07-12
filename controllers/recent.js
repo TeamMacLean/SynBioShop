@@ -35,7 +35,7 @@ async function getMostRecentIncludeRecentlyTypes(limit) {
         const enhancedTypes = slicedTypes.map(item => {
             const creationDate = item.includeOnRecentlyAddedTimestamp
                 ? new Date(item.includeOnRecentlyAddedTimestamp)
-                : (item.db?.createdAt ? new Date(item.db.createdAt) : null);
+                : ((item.db && item.db.createdAt) ? new Date(item.db.createdAt) : null);
 
             let humanFormattedDate = 'Date unavailable';
             if (creationDate) {
@@ -45,7 +45,7 @@ async function getMostRecentIncludeRecentlyTypes(limit) {
             return {
                 ...item,
                 // Provide a default timestamp if none exists for sorting consistency, or ensure it's always present
-                createdAt: item.includeOnRecentlyAddedTimestamp || item.db?.createdAt || 0,
+                createdAt: item.includeOnRecentlyAddedTimestamp || (item.db && item.db.createdAt) || 0,
                 humanFormattedDate: humanFormattedDate,
             };
         });

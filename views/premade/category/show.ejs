@@ -1,32 +1,35 @@
 <% include ../../head.ejs %>
 <% include ./../sidebar.ejs %>
 
-<% 
-    const whoMadeItHeaderIndex = headings.indexOf('Who made it')
-    const newHeadings = headings.filter(heading => heading !== 'Who made it')
-%>
-
-<div></div>
-
 <div class="sidebar-push">
     <div class="container">
 
+        <% /* Helper to filter out 'Who made it' from headings if present in JS */ %>
+        <%
+            // This logic processes 'headings' directly in EJS. Ensure 'headings' is passed correctly from controller.
+            const whoMadeItHeaderIndex = headings.indexOf('Who made it');
+            const newHeadings = headings.filter(heading => heading !== 'Who made it');
+        %>
+
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
         <div class="tile pad inverted">
-            <h4>Admin</h4>
-            <div class="form-group">
+            <h4>Admin Actions</h4> <% /* Changed to 'Admin Actions' for consistency */ %>
+            <div class="form-group button-group"> <% /* Added button-group class for styling */ %>
                 <a href="/premade/category/<%- category.id %>/edit" class="button primary">Edit Category</a>
                 <a href="/premade/category/<%- category.id %>/new" class="button primary">New Item</a>
+                
                 <% if(category.disabled){ %>
-                <a href="/premade/category/<%- category.id %>/enable" class="button success areyousure">Enable
-                    Category</a>
-                <a href="/premade/category/<%- category.id %>/delete" class="button danger areyousure">Delete
-                    Category</a>
+                    <form action="/premade/category/<%- category.id %>/enable" method="POST" style="display:inline;">
+                        <button type="submit" class="button success areyousure">Enable Category</button>
+                    </form>
+                    <form action="/premade/category/<%- category.id %>/delete" method="POST" style="display:inline;">
+                        <button type="submit" class="button danger areyousure">Delete Category</button>
+                    </form>
                 <% } else { %>
-                <a href="/premade/category/<%- category.id %>/disable" class="button danger areyousure">Disable
-                    Category</a>
+                    <form action="/premade/category/<%- category.id %>/disable" method="POST" style="display:inline;">
+                        <button type="submit" class="button danger areyousure">Disable Category</button>
+                    </form>
                 <% } %>
-
             </div>
         </div>
         <% } %>
@@ -40,58 +43,48 @@
         <h2 class="center">Items</h2>
 
         <% if(newHeadings.length && items.length){ %>
-        <table class="responsive">
-            <thead>
-            <tr>
-                <th>Name</th>
-                <% newHeadings.map(function(t, index){ %>
-                    <th><%- t %></th>
-                <% }); %>
-                <!--<th class="center">Download</th>-->
-                <!--<th class="center">Add to cart</th>-->
-
-            </tr>
-            </thead>
-            <tbody>
-
-            <% items.sort(function (a, b) {
-                return a.position - b.position;
-            }).map(function(item){ %>
-
-                <% if(item.disabled && locals.signedInUser && locals.signedInUser.isAdmin || !item.disabled){ %>
-                    <tr class="<% if(item.disabled){ %>disabled<% } %>">
-                        
-                        <!-- Name -->
-                        <td width='15%' style="white-space:nowrap;" data-th="Name">
-                            <a href="/premade/item/<%- item.id %>"><%- item.name %></a>
-                        </td style="white-space:nowrap;">
-
-
-                        <!-- Other columns -->
-                        <% item.items.map(function(contents, anotherIndex){ %>
-
-                            <%if (anotherIndex === 0){ /** Wider 2nd column, hopefully means desc */%>
-                                <td width="35%" style="white-space:nowrap;" data-th="<%- newHeadings[anotherIndex] %>">
-                                    <%- contents %>
-                                </td>
-                            <%} else if (anotherIndex !== whoMadeItHeaderIndex) {%>
-                                <td style="white-space:nowrap;" data-th="<%- newHeadings[anotherIndex] %>">
-                                    <%- contents %>
-                                </td>
-                            <%}%>            
-                        
-                        <% }) %>
+        <div class="table-container"> <% /* Added table-container for responsive tables */ %>
+            <table class="responsive">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <% newHeadings.forEach(function(heading){ %> <% /* Changed map to forEach */ %>
+                            <th><%- heading %></th>
+                        <% }); %>
+                        <!-- Consider adding a "View" or "Actions" column if there are item-specific actions not shown here -->
                     </tr>
-                <% } %>
-            <% }) %>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                <% items.sort((a, b) => a.position - b.position).forEach(function(item){ %> <% /* Changed map to forEach */ %>
+                    <% if (!item.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Simplified admin display logic */ %>
+                        <tr class="<% if(item.disabled){ %>disabled<% } %>">
+                            <!-- Name column -->
+                            <td style="white-space:nowrap;" data-th="Name">
+                                <a href="/premade/item/<%- item.id %>"><%- item.name %></a>
+                            </td>
+                            <!-- Other columns (dynamic) -->
+                            <% item.items.forEach(function(contents, contentsIndex){ %> <% /* Changed map to forEach */ %>
+                                <% if (contentsIndex !== whoMadeItHeaderIndex) { %> <% /* Only render if not the 'Who made it' column */ %>
+                                    <td
+                                        <% if (contentsIndex === 0){ %> width="35%" <% /* Apply width to the first 'newHeading' column (description) */ %> <% } %>
+                                        style="white-space:nowrap;"
+                                        data-th="<%- newHeadings[contentsIndex] %>"
+                                    >
+                                        <%- contents %>
+                                    </td>
+                                <% } %>
+                            <% }) %>
+                        </tr>
+                    <% } %>
+                <% }) %>
+                </tbody>
+            </table>
+        </div>
         <% } else { %>
-        <p class="center">None available currently</p>
+        <p class="center muted-text">No items available currently.</p> <% /* Added muted-text for consistency */ %>
         <% } %>
 
     </div>
 </div>
-
 
 <% include ../../foot.ejs %>
