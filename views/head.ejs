@@ -3,7 +3,6 @@
 <nav class="nav">
     <div class="brand">
         <a href="/">
-            <!--<img src="/img/brand.png">-->
             <span>SynBio</span>
         </a>
     </div>
@@ -12,8 +11,6 @@
     </img>
     
     <div class="pull-right nav-top-right">
-
-
         <% if(locals.signedInUser){ %>
         
         <% if(!locals.disablePremade){ %>
@@ -36,13 +33,10 @@
         </a>
         <% } %>
         
-        
         <% } %>
 
         <div class="user">
             <% if(locals.signedInUser){ %>
-
-            <!--<a href="/whoami">-->
             <div class="image">
                 <img src="<%- locals.signedInUser.iconURL %>">
                 <% if(locals.signedInUser.isAdmin){ %>
@@ -52,7 +46,6 @@
             <div class="name">
                 <span><%- locals.signedInUser.name %></span>
             </div>
-            <!--</a>-->
             <div class="user-menu hidden">
                 <ul>
                     <% if (locals.signedInUser.isAdmin){ %>
@@ -79,19 +72,53 @@
             <% } %>
         </div>
     </div>
-    <!-- Matomo
-    <script>
-        var _paq = window._paq = window._paq || [];
-        /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-        _paq.push(['trackPageView']);
-        _paq.push(['enableLinkTracking']);
-        (function() {
-        var u = 'https://matomo.researchcomputing.nbi.ac.uk/';
-        _paq.push(['setTrackerUrl', u+'matomo.php']);
-        _paq.push(['setSiteId', '7']);
-        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-        })();
-    </script>
-    End Matomo Code -->
 </nav>
+
+<% /* Flash Messages - Added this block */ %>
+<% if (typeof messages !== 'undefined') { %>
+    <% if (messages.success && messages.success.length > 0) { %>
+        <div class="flash-messages flash-success"><%= messages.success %></div>
+    <% } %>
+    <% if (messages.error && messages.error.length > 0) { %>
+        <div class="flash-messages flash-error"><%= messages.error %></div>
+    <% } %>
+    <% if (messages.warning && messages.warning.length > 0) { %>
+        <div class="flash-messages flash-warning"><%= messages.warning %></div>
+    <% } %>
+    <% if (messages.info && messages.info.length > 0) { %>
+        <div class="flash-messages flash-info"><%= messages.info %></div>
+    <% } %>
+<% } %>
+
+<% /* Inline styles for flash messages, to ensure they work */ %>
+<style>
+    .flash-messages {
+        padding: 10px;
+        margin: 15px auto; /* Center messages */
+        border-radius: 4px;
+        text-align: center;
+        max-width: 600px; /* Limit width for better readability */
+        border: 1px solid transparent;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Subtle shadow */
+    }
+    .flash-success {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+    }
+    .flash-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+    }
+    .flash-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border-color: #ffeeba;
+    }
+    .flash-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border-color: #bee5eb;
+    }
+</style>

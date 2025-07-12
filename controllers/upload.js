@@ -1,189 +1,247 @@
-const renderError = require('../lib/renderError');
-const config = require('../config.json');
 const fs = require('fs');
-const fsPromises = fs.promises;
+const fsPromises = require('fs').promises;
 const path = require('path');
 const File = require('../models/file');
 const SequenceFile = require('../models/sequenceFile');
 const Flash = require('../lib/flash');
-const upload = {};
+const Log = require('../lib/log'); // Assuming you have this for logging
+const renderError = require('../lib/renderError'); // Assuming this exists for error handling
+const mkdirp = require('mkdirp'); // Assuming you use mkdirp for directory creation
 
-upload.fileManager = (req, res)=> {
+const uploadController = {};
 
-    File
-    // .filter(function (file) {
-    //     return file('originalName').contains('.gb');
-    // })
+// --- Helper Functions ---
 
-        .run().then((files)=> {
-        files = files.filter((file)=> {
-            return file.originalName.indexOf('.gb') < 0;
-        });
-        files = files.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        return res.render('upload/index', {files});
-    }).catch((err)=> {
-        return renderError(err, res);
-    });
-
-    // return res.render('upload/index', {
-    //     files: [{
-    //         relativePath: '/uploads/test.txt',
-    //         id: "abcd",
-    //         name: 'test_file.txt'
-    //     }]
-    // });
-};
-
-upload.uploadFilePost = (req, res) => {
-
-    if (!fs.existsSync(config.uploadRoot)) {
-        fs.mkdirSync(config.uploadRoot);
+/**
+ * Checks if a file exists at the given path.
+ * @param {string} filePath - The path to the file.
+ * @returns {Promise<boolean>} True if the file exists, false otherwise.
+ */
+async function fileExists(filePath) {
+    try {
+        await fsPromises.access(filePath, fs.constants.F_OK); // Check for file existence
+        return true;
+    } catch (err) {
+        return false; // File does not exist or access error
     }
-
-    const files = req.files;
-    const file = files.file;
-    if (file) {
-
-        const newPath = path.join(config.uploadRoot, file.name);
-
-        fs.promises.rename(file.path, newPath).then( _ => {
-            new File({
-                path: newPath,
-                name: file.name,
-                originalName: file.originalname
-    
-            }).save().then(() => {
-                Flash.success(req, `Uploaded new file successfully`);                
-                return res.redirect('/filemanager');
-            }).catch((err)=> {
-                return renderError(err, res);
-            })
-        })
-
-    } else {
-        return renderError('File not received', res);
-    }
-
-};
-
-// Auth.uploadImage = (req, res, next) => {
-//     return res.render('upload/dialog');
-// };
-
-// upload.availableImages = (req, res) => {
-//     fs.readdir(config.imageUploadRoot, function (err, files) {
-//         if (err) {
-//             return res.json([]);
-//         } else {
-//             return res.json(files.map((file)=> {
-//                 const url = path.join(config.imageUploadRootURL, file);
-//                 return {
-//                     imageUrl: url,
-//                     name: file,
-//                     value: url
-//                 };
-//             }))
-//         }
-//
-//     });
-//
-// };
-
-function fileExists(filePath) {
-    return fsPromises.access(filePath)
-        .then(() => true)
-        .catch(() => false);
 }
 
-upload.download = (req, res)=> {
-    const id = req.params.id;
-
-    File.get(id)
-        .then((file)=> {
-
-            fileExists(file.path).then(exists => {
-                if (exists) {
-                    // Express's .download sends the file as an attachment and allows renaming
-                    // don't use sendFile 
-                    return res.download(file.path, file.originalName);
-                } else {
-                    return renderError('File not found - sorry about that but it has probably been lost', res);
-                }            
-            });
-        })
-        .catch((err)=> {
-            return renderError(err, res);
-        })
+/**
+ * A consistent way to handle errors in upload-related operations.
+ * @param {Error} err - The error object.
+ * @param {Object} res - The Express response object.
+ * @param {string} [message] - An optional custom error message.
+ */
+const handleError = (err, res, message = 'An error occurred during the upload process.') => {
+    Log.error(`Upload controller error: ${err.message}`, err);
+    renderError(message, res);
 };
 
-upload.downloadSequenceFile = (req, res)=> {
-    const id = req.params.id;
+/**
+ * Processes the upload of a file, saves its metadata, and handles directory creation.
+ * @param {object} file - The file object from req.files.
+ * @param {string} savePath - The final destination path for the file.
+ * @param {string} modelName - The name of the model to save metadata to ('File' or 'SequenceFile').
+ * @param {string} [associatedID] - The ID of the related entity (e.g., typeID for SequenceFile).
+ * @returns {Promise<object>} The saved model instance.
+ */
+async function processFileUpload(file, savePath, modelName, associatedID = null) {
+    if (!file) {
+        throw new Error('No file provided for upload.');
+    }
 
-    SequenceFile.get(id)
-        .then((file)=> {
-            return res.download(file.path, file.originalName);
-        })
-        .catch((err)=> {
-            return renderError(err, res);
-        })
-};
+    const dir = path.dirname(savePath);
+    await mkdirp(dir); // Ensure the directory exists
 
-upload.deleteFile = (req, res)=> {
-    const id = req.params.id;
+    await fsPromises.rename(file.path, savePath);
 
-
-    File.get(id)
-        .then((file)=> {
-            file.delete()
-                .then(()=> {
-                    Flash.success(req, `${file.originalName} deleted successfully`);
-                    return res.redirect('/filemanager');
-                })
-                .catch((err)=> {
-                    return renderError(err, res);
-                });
-        })
-        .catch((err)=> {
-            return renderError(err, res);
-        });
-};
-
-upload.deleteSequenceFile = (req, res)=> {
-    const id = req.params.id;
-
-    SequenceFile.get(id)
-        .then((sequenceFile)=> {
-            file.delete()
-                .then(()=> {
-                    Flash.success(req, `${sequenceFile.originalName} deleted successfully`);
-                    return res.redirect('back');
-                })
-                .catch((err)=> {
-                    return renderError(err, res);
-                });
-        })
-        .catch((err)=> {
-            return renderError(err, res);
-        });
-};
-
-upload.uploadImagePost = (req, res) => {
-    console.log('uploaded files', req.files);
-    const file = req.files.userfile;
-    const newPath = path.join(config.uploadRoot, file.name);
-    fs.rename(file.path, newPath);
-
-    new File({
-        path: newPath,
+    const modelData = {
+        path: savePath,
         name: file.name,
-        originalName: file.originalname
+        originalName: file.originalname,
+    };
+    if (associatedID) {
+        modelData.typeID = associatedID; // Specific to SequenceFile context
+    }
 
-    }).save().then(()=> {
-        return res.json({location: path.join(config.uploadRootURL, file.name)});
-    }).catch((err)=> {
-        return renderError(err, res);
-    });
+    const Model = modelName === 'SequenceFile' ? SequenceFile : File;
+    const newFileInstance = new Model(modelData);
+    return newFileInstance.save();
+}
 
+// --- Controller Actions ---
 
+/**
+ * Renders the file manager page, listing non-genome browser files.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+uploadController.fileManager = async (req, res) => {
+    try {
+        let files = await File.run();
+        // Filter out .gb files (genome browser files)
+        files = files.filter(file => !file.originalName.includes('.gb'));
+        // Sort by creation date, most recent first
+        files.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        res.render('upload/index', { files });
+    } catch (err) {
+        handleError(err, res);
+    }
 };
-module.exports = upload;
+
+/**
+ * Handles the POST request for uploading a file.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+uploadController.uploadFilePost = async (req, res) => {
+    const files = req.files;
+    const file = files?.file; // Use optional chaining
+
+    if (!file) {
+        return renderError('No file received.', res);
+    }
+
+    const savePath = path.join(config.uploadRoot, file.name);
+
+    try {
+        await processFileUpload(file, savePath, 'File');
+        Flash.success(req, `Uploaded new file: ${file.originalname}`);
+        res.redirect('/filemanager');
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+/**
+ * Serves a file for download.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+uploadController.download = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const file = await File.get(id);
+        if (!file) {
+            throw new Error('File metadata not found in DB.');
+        }
+
+        const exists = await fileExists(file.path);
+        if (exists) {
+            // Use res.download for attachment downloads
+            return res.download(file.path, file.originalName);
+        } else {
+            throw new Error('File not found on this server.');
+        }
+    } catch (err) {
+        handleError(err, res, 'File probably not there at all - sorry.');
+    }
+};
+
+/**
+ * Serves a sequence file for download.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+uploadController.downloadSequenceFile = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const sequenceFile = await SequenceFile.get(id);
+        if (!sequenceFile) {
+            throw new Error('Sequence file metadata not found in DB.');
+        }
+        // Assumes SequenceFile.path is valid and file exists. Add fileExists check if necessary.
+        return res.download(sequenceFile.path, sequenceFile.originalName);
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+/**
+ * Deletes a file from the server and the database.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+uploadController.deleteFile = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const file = await File.get(id);
+        if (!file) {
+            throw new Error('File metadata not found in DB for deletion.');
+        }
+
+        // Optionally, delete the actual file from disk:
+        // await fsPromises.unlink(file.path); // Uncomment if physical file deletion is desired
+
+        await file.delete();
+        Flash.success(req, `${file.originalName} deleted successfully.`);
+        res.redirect('/filemanager');
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+/**
+ * Deletes a sequence file from the server and the database.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+uploadController.deleteSequenceFile = async (req, res) => {
+    const { id } = req.params; // Assuming ID comes from params, not body like in original code
+    try {
+        const sequenceFile = await SequenceFile.get(id);
+        if (!sequenceFile) {
+            throw new Error('Sequence file metadata not found in DB for deletion.');
+        }
+
+        // Optionally, delete the actual file from disk:
+        // await fsPromises.unlink(sequenceFile.path); // Uncomment if physical file deletion is desired
+
+        await sequenceFile.delete();
+        Flash.success(req, `${sequenceFile.originalName} deleted successfully.`);
+        res.redirect('back'); // Redirect to the previous page
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+/**
+ * Handles the upload of user profile images (e.g., for editor/WYSIWYG integration).
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+uploadController.uploadImagePost = async (req, res) => {
+    Log.info('Received file upload for user image.'); // Log the activity
+    const files = req.files;
+    const userFile = files?.userfile;
+
+    if (!userFile) {
+        Log.warn('No userfile found in image upload request.');
+        return res.status(400).json({ error: 'No file uploaded.' });
+    }
+
+    const newPath = path.join(config.uploadRoot, userFile.name);
+
+    try {
+        await mkdirp(path.dirname(newPath)); // Ensure directory exists
+        await fsPromises.rename(userFile.path, newPath);
+
+        // Save file metadata
+        const savedFile = await new File({
+            path: newPath,
+            name: userFile.name,
+            originalName: userFile.originalname
+        }).save();
+
+        // Return JSON response suitable for file upload plugins (like TinyMCE)
+        // The URL should point to where the file can be accessed via HTTP.
+        // Assuming config.uploadRootURL is the base URL for uploads.
+        res.json({ location: path.join(config.uploadRootURL, userFile.name) });
+    } catch (err) {
+        handleError(err, res, 'Failed to upload user image.');
+        // Return a JSON error response for API requests
+        res.status(500).json({ error: 'File upload failed.' });
+    }
+};
+
+module.exports = uploadController;

@@ -3,79 +3,77 @@
 <div class="container">
   <h1 class="center">Orders</h1>
 
-  <h3 class="center">Open</h3>
+  <h3 class="center">Open Orders</h3>
   <div class="row">
-    <% if(orders.open.length == 0){ %>
-    <p class="center">None</p>
-    <% } else { %> <% orders.open.sort(function (a, b) { return b.createdAt -
-    a.createdAt }).map(function(order){ %>
-    <div class="col4 auto-clear">
-      <div class="tile">
-        <div class="tile-block">
-          <p>ID: <%- order.janCode %></p>
-          <p>Ordered: <%- order.createdHumanDate() %></p>
-          <p>
-            Status: <%- order.cancelled ? 'Cancelled' : (order.complete ?
-            'Complete' : 'Pending') %>
-          </p>
-          <p>Customer: <%- order.username %></p>
-          <p>
-            Total cost: <%= order.totalCost ? ("£" + order.totalCost) : "n/a" %>
-          </p>
-          <p>Cost code: <%= order.costCode || "n/a" %></p>
-          <%/**<p>Signatory: /</%/=/ order.signatory || "n/a" /%/>/</p> */ %>
+    <% if (orders.open.length === 0) { %>
+      <p class="center muted-text">No open orders.</p>
+    <% } else { %>
+      <% orders.open
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort by date, descending
+        .forEach(order => { %>
+        <div class="col4 auto-clear">
+          <div class="tile">
+            <div class="tile-block">
+              <p><strong>ID:</strong> <%- order.janCode %></p>
+              <p><strong>Ordered:</strong> <%- order.createdHumanDate() %></p>
+              <p><strong>Status:</strong> <%- order.cancelled ? 'Cancelled' : (order.complete ? 'Complete' : 'Pending') %></p>
+              <p><strong>Customer:</strong> <%- order.username %></p>
+              <p><strong>Total cost:</strong> <%= order.totalCost !== null && order.totalCost !== undefined ? '£' + order.totalCost.toFixed(2) : 'n/a' %></p>
+              <p><strong>Cost code:</strong> <%- order.costCode || 'n/a' %></p>
+              <% /* Signatory line is commented out, keeping it commented */ %>
+              <% /* <p>Signatory: <%- order.signatory || 'n/a' %></p> */ %>
+            </div>
+            <a href="/order/<%- order.id %>" class="button primary tile-button-bottom">Show Order</a>
+          </div>
         </div>
-        <a
-          href="/order/<%- order.id %>"
-          class="button primary tile-button-bottom"
-          >Show</a
-        >
-      </div>
-    </div>
-    <% }) %> <% } %>
+      <% }); %>
+    <% } %>
   </div>
 
-  <h3 class="center">Closed</h3>
+  <hr class="spacer"> <%/* Add a separator for visual clarity */%>
 
-  <% if(orders.closed.length == 0){ %>
-  <p class="center">None</p>
-  <% } else { %>
-
-  <table class="table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Order Placed</th>
-        <th>Completion Date</th>
-        <th>Customer</th>
-        <th>Total cost</th>
-        <th>Cost code</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <% if (orders.closed.length === 0) { %>
-      <tr>
-        <td colspan="7">No closed orders.</td>
-      </tr>
-      <% } else { %> <% orders.closed.sort((a, b) => b.janCode -
-      a.janCode).forEach(order => { %>
-      <tr>
-        <td><%- order.janCode %></td>
-        <td><%- order.createdHumanDate() %></td>
-        <td>
-          <%- order.cancelled ? 'CANCELLED' : order.completedHumanDate() %>
-        </td>
-        <td><%- order.username %></td>
-        <td><%= order.totalCost ? ("£" + order.totalCost) : "n/a" %></td>
-        <td><%- order.costCode || "n/a" %></td>
-        <td><a href="/order/<%- order.id %>">View</a></td>
-      </tr>
-      <% }) %> <% } %>
-    </tbody>
-  </table>
-
-  <% } %>
+  <h3 class="center">Closed Orders</h3>
+  <div class="table-container"> <%/* Wrap table for potential responsiveness */%>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Order Placed</th>
+          <th>Completion Date</th>
+          <th>Customer</th>
+          <th>Total Cost</th>
+          <th>Cost Code</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (orders.closed.length === 0) { %>
+          <tr>
+            <td colspan="7" class="center muted-text">No closed orders.</td>
+          </tr>
+        <% } else { %>
+          <% orders.closed
+            .sort((a, b) => { /* Sort by janCode descending if available, else by createdAt */
+              if (a.janCode && b.janCode) return b.janCode - a.janCode;
+              return new Date(b.createdAt) - new Date(a.createdAt);
+            })
+            .forEach(order => { %>
+            <tr>
+              <td><%- order.janCode %></td>
+              <td><%- order.createdHumanDate() %></td>
+              <td>
+                <%- order.cancelled ? 'CANCELLED' : order.completedHumanDate() %>
+              </td>
+              <td><%- order.username %></td>
+              <td><%= order.totalCost !== null && order.totalCost !== undefined ? '£' + order.totalCost.toFixed(2) : 'n/a' %></td>
+              <td><%- order.costCode || 'n/a' %></td>
+              <td><a href="/order/<%- order.id %>">View</a></td>
+            </tr>
+          <% }); %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <% include ../foot.ejs %>

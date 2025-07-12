@@ -3,401 +3,363 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
 <script>
-    const displayPricing = "<%= displayPricing %>"; 
-    const adminForceShowPricing = "<%= adminForceShowPricing %>"; 
-    const isAdmin = "<%= isAdmin %>"; 
-    const pricePerUnit = "<%=pricePerUnit%>";
+  document.addEventListener('DOMContentLoaded', function () {
+    // --- Constants from server ---
+    const displayPricing = <%- JSON.stringify(displayPricing) %>;
+    const adminForceShowPricing = <%- JSON.stringify(adminForceShowPricing) %>;
+    const isAdmin = <%- JSON.stringify(isAdmin) %>;
+    const pricePerUnit = parseFloat('<%= pricePerUnit %>');
 
-    window.onload = function () {
+    // --- DOM Element Selectors ---
+    const quantityElements = document.querySelectorAll('.item-quantity');
+    const navCartCountElement = document.querySelector('.nav-cart .count'); // For header cart count
 
-        const allItemQuantityElements = document.getElementsByName("itemQuantity");
+    /**
+     * Calculates and updates the total quantity and total cost for the cart.
+     * Also updates individual item prices if displayPricing is true.
+     * THIS FUNCTION NO LONGER TRIGGERS RELOAD.
+     */
+    function updateTotals() {
+      // Re-query elements to account for items being added/removed from DOM dynamically.
+      const currentQuantityElements = document.querySelectorAll('.item-quantity');
+      let calculatedSumQuantity = 0;
+      let calculatedSumCost = 0;
 
-        allItemQuantityElements.forEach((element, index) => {
-            const quantityEl = document.getElementById("quantity_" + index);
+      currentQuantityElements.forEach((element) => {
+        const quantity = parseInt(element.value || element.textContent, 10) || 0;
+        calculatedSumQuantity += quantity;
 
-            const priceEl = document.getElementById("price_" + index);
-
-            if (priceEl){
-                priceEl.innerHTML = quantityEl.value * pricePerUnit;
+        if (displayPricing) {
+          const parentRow = element.closest('tr');
+          if (parentRow) {
+            const priceEl = parentRow.querySelector('[id^="price_"]');
+            if (priceEl) {
+              priceEl.textContent = (quantity * pricePerUnit).toFixed(2);
             }
+          }
+          calculatedSumCost += quantity * pricePerUnit;
+        }
+      });
 
-            const onAnyChange = e => {
-                const priceElement = document.getElementById("price_" + index);
+      // Update Total Quantity display
+      const totalQuantityEl = document.getElementById('totalQuantity');
+      const totalQuantityInput = document.getElementById('totalQuantity-input');
+      if (totalQuantityEl && totalQuantityInput) {
+        totalQuantityEl.textContent = calculatedSumQuantity;
+        totalQuantityInput.value = calculatedSumQuantity;
+      }
 
-                if (priceElement) {
-                    priceElement.innerHTML = e.target.value * pricePerUnit;
-                }
+      // Update Total Cost display if applicable
+      if (displayPricing) {
+        const totalCostEl = document.getElementById('totalCost');
+        const totalCostInput = document.getElementById('totalCost-input');
+        if (totalCostEl && totalCostInput) {
+          totalCostEl.textContent = calculatedSumCost.toFixed(2);
+          totalCostInput.value = calculatedSumCost.toFixed(2);
+        }
+      }
+    }
 
-                updateTotals();
-            }
-
-            quantityEl.addEventListener('keyup', onAnyChange);
-            quantityEl.addEventListener('change', onAnyChange);
-            quantityEl.addEventListener('blur', onAnyChange);
-        });
-
+    // --- Event Listeners for Quantity Inputs (only editable ones) ---
+    document.querySelectorAll('input.item-quantity').forEach((inputElement) => {
+      const handleUpdate = () => {
+        let currentValue = parseInt(inputElement.value, 10) || 1;
+        if (currentValue < 1) {
+          currentValue = 1;
+        }
+        if (!displayPricing && currentValue > 1) {
+          currentValue = 1;
+        }
+        inputElement.value = currentValue;
         updateTotals();
+      };
 
-        // HACK to re-run
-        setTimeout(function(){
-            updateTotals();
-        }, 3000);
+      inputElement.addEventListener('keyup', handleUpdate);
+      inputElement.addEventListener('change', handleUpdate);
+      inputElement.addEventListener('blur', handleUpdate);
+    });
 
-        function updateTotals() {
-            if (allItemQuantityElements.length) {
-                const sum = [...allItemQuantityElements]
-                    .map(e => Number(e.value))
-                    .reduce(function (a, b) { return a + b });
+    // --- Event Listeners for Remove Item Buttons ---
+    document.getElementsByName("removeItem").forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const itemId = this.getAttribute('data-id');
+        
+        if (!confirm('Are you sure you want to remove this item from your cart?')) {
+            return;
+        }
 
-                if (
-                    (!(sum > 0)) ||
-                    !document.querySelectorAll('#totalQuantity').length || 
-                    !document.querySelectorAll('#totalQuantity-input').length
-                ){
-                    window.alert('An error may have occurred updating total quantity. Please use Google Chrome, log in and out again, or refresh your session. If issues continue, please email george.deeks@tsl.ac.uk for further assistance.')
-                }
+        if (typeof socket !== 'undefined') {
+          socket.emit('removeFromCart', { id: itemId });
+        } else {
+          console.warn('Socket.IO not available for removeFromCart. Attempting full page reload as fallback.');
+          location.reload();
+        }
+      });
+    });
 
-                document.querySelectorAll('#totalQuantity')[0].innerHTML = sum;
-                document.querySelectorAll('#totalQuantity-input')[0].value = sum;
-
-                if (document.querySelectorAll('#totalCost').length) {
-                    const totalCost = sum * pricePerUnit;
-                    document.querySelectorAll('#totalCost')[0].innerHTML = totalCost;
-                    document.querySelectorAll('#totalCost-input')[0].value = totalCost;
-                }
+    // --- Socket.IO Integration ---
+    if (typeof socket !== 'undefined') {
+      // Listener for 'removedFromCart' event from the server.
+      socket.on('removedFromCart', function (data) {
+        const row = document.querySelector(`tr[data-id="${data.id}"]`);
+        if (row) {
+          $(row).fadeOut(500, function () {
+            this.remove();
+            // Update cart count in navigation bar.
+            const currentNavCartCount = parseInt(navCartCountElement.textContent, 10) || 0;
+            navCartCountElement.textContent = Math.max(0, currentNavCartCount - 1);
+            
+            // AFTER removal and DOM update, check if cart is empty.
+            const remainingItems = document.querySelectorAll('.item-quantity');
+            if (remainingItems.length === 0) {
+              location.reload(); // Now it's safe to reload: only if it just became empty.
+            } else {
+              updateTotals(); // Only update totals if items still exist.
             }
+          });
         }
+      });
 
-        document.getElementsByName("removeItem").forEach(element => {
-            element.addEventListener('click', updateTotals)
-        })
+      // Listener for server-side quantity updates (for editable inputs).
+      $('input.item-quantity').on('change keyup paste', function (e) {
+          let val = parseInt($(this).val(), 10) || 1;
+          val = Math.min(Math.max(val, 1), 25);
+          $(this).val(val);
+          socket.emit('changeQuantity', {
+              id: $(this).data('id'),
+              quantity: val
+          });
+      });
 
-        function initCartSocket() {
-            var cart = $('.nav-cart');
+      // Handler for 'quantityUpdated' event from server.
+      socket.on('quantityUpdated', function (data) {
+          const inputElement = document.querySelector(`input.item-quantity[data-id="${data.id}"]`);
+          if (inputElement) {
+              inputElement.value = data.quantity;
+              inputElement.dispatchEvent(new Event('change'));
+          } else {
+              // If it's a SPAN (displayPricing is true), update its text and totals manually.
+              const spanElement = document.querySelector(`span.item-quantity[id^="quantity_"][data-id="${data.id}"]`); // Note: you may need to add data-id to the SPAN in EJS.
+              if (spanElement) {
+                  spanElement.textContent = data.quantity;
+                  updateTotals();
+              }
+          }
+      });
 
-            // on cart page
-            $('input[type="number"][data-quantity="true"]').on('change keyup paste', function (e) {
-                let val = $(this).val() <= 25 ? $(this).val() : 25
-                socket.emit('changeQuantity', {
-                    id: $(this).data('id'),
-                    quantity: val
-                });
-            });
-            socket.on('quantityUpdated', function (data) {
-                $('input[type="number"][data-quantity="true"][data-id="' + data.id + '"]').val(data.quantity)
-            });
-
-            $('a.remove-from-cart').on('click', function (e) {
-                e.preventDefault();
-                socket.emit('removeFromCart', {
-                    id: $(this).data('id')
-                })
-            });
-
-            socket.on('removedFromCart', function (data) {
-
-                $('tr[data-id="' + data.id + '"]')
-                    .fadeOut(500, function () {
-                        $(this).remove();
-                        var count = cart.find('.count');
-
-                        var newCount = parseInt(count.text()) - 1;
-
-                        count.text(newCount);
-
-                        if (newCount < 1) {
-                            location.reload();
-                        } else {
-                            updateTotals();
-                        }
-                    });
-            });
-        }
-        initCartSocket();
+    } else {
+      console.warn('Socket.IO is not available. Real-time cart updates will not function.');
     }
-    
-    function validateForm() {
-        const signatory = document.getElementById('signatory');
-        if (signatory.value === "") {
+
+    // --- Form Validation (Before Submission) ---
+    const orderForm = document.getElementById('orderForm');
+    if (orderForm) {
+      orderForm.addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent default submission initially.
+
+        // Validate Signatory (if pricing is displayed)
+        if (displayPricing) {
+          const signatorySelect = document.getElementById('signatory');
+          if (!signatorySelect || signatorySelect.value === '') {
             alert('Selection required: Please select a budget holder.');
-            return false;
+            return;
+          }
         }
-        return true;
+
+        // Validate Consent Checkboxes
+        const costConsentCheckbox = document.getElementById('cost-consent');
+        if (costConsentCheckbox && !costConsentCheckbox.checked) {
+            alert('You must confirm you have authority to spend.');
+            return;
+        }
+        const nonCommercialConsentCheckbox = document.getElementById('non-commerical-consent');
+        if (nonCommercialConsentCheckbox && !nonCommercialConsentCheckbox.checked) {
+            alert('You must confirm the materials will be used for non-commercial purposes only.');
+            return;
+        }
+
+        // Validate Item Quantities (ensure they are valid numbers and cart not empty)
+        const allItemQuantities = document.querySelectorAll('.item-quantity');
+        if (allItemQuantities.length === 0) { // Cart must not be empty at submission.
+          alert('System Error: Your cart is empty. Please add items before placing an order.');
+          return;
+        }
+        for (let i = 0; i < allItemQuantities.length; i++) {
+          const element = allItemQuantities[i];
+          const quantity = parseInt(element.value || element.textContent, 10) || 0;
+          if (isNaN(quantity) || quantity < 1) {
+            alert(`System Error: Item at row ${i + 1} has an invalid quantity (${element.value || element.textContent}). Please ensure quantities are whole numbers of 1 or more.`);
+            if (element.tagName === 'INPUT') element.focus();
+            return;
+          }
+        }
+
+        // If all validations pass, submit the form.
+        orderForm.submit();
+      });
     }
+
+    // --- Initial Load ---
+    updateTotals(); // Calculate totals on page load.
+  });
 </script>
 
 <div class="container">
     <h1 class="center">Shopping Basket</h1>
-    <% if(typeof cart != 'undefined'){ %>
-        <% if(cart.items.length > 0){ %>
 
-            <% if (isAdmin) { %>
-                <div style="margin-bottom: 2rem;">
-                    <a 
-                        href="<%= (adminForceShowPricing === 'true') ? '/cart' : '/cart?adminForceShowPricing=true' %>" 
-                        class="btn btn-link">
-                        Toggle display pricing status (Admin-only feature)
-                    </a>
-                </div>
+    <% /* Flash Messages Display: Ensure these styles are defined in ../head.ejs or your CSS */ %>
+    <% if (typeof messages !== 'undefined') { %>
+        <% if (messages.success && messages.success.length > 0) { %>
+            <div class="flash-messages flash-success"><%= messages.success %></div>
+        <% } %>
+        <% if (messages.error && messages.error.length > 0) { %>
+            <div class="flash-messages flash-error"><%= messages.error %></div>
+        <% } %>
+        <% if (messages.warning && messages.warning.length > 0) { %>
+            <div class="flash-messages flash-warning"><%= messages.warning %></div>
+        <% } %>
+        <% if (messages.info && messages.info.length > 0) { %>
+            <div class="flash-messages flash-info"><%= messages.info %></div>
+        <% } %>
+    <% } %>
+
+    <% if(typeof cart !== 'undefined' && cart.items && cart.items.length > 0){ %>
+
+        <% if (isAdmin) { %>
+            <div style="margin-bottom: 2rem;">
+                <a
+                  href="<%- adminForceShowPricing ? '/cart' : '/cart?adminForceShowPricing=true' %>"
+                  class="btn btn-link"
+                >
+                  <%- adminForceShowPricing ? 'Switch to Default View (Hide Pricing)' : 'Force Show Pricing' %>
+                  (Admin-only feature)
+                </a>
+            </div>
+        <% } %>
+
+        <div class="form-group">
+            <i>
+                Order your items. A standard order item is 5μL.
+            </i>
+        </div>
+        <% if(displayPricing){ %>
+            <div class="form-group"><i>For non-TSL staff, pricing is currently set at £<%= Number(pricePerUnit).toFixed(2) %> per item. Bespoke orders available through email request.</i></div>
+        <% } %>
+
+        <form id="orderForm" method="post" action="/cart/order">
+            <input type="hidden" name="pricePerUnit" value="<%= pricePerUnit %>" />
+            <table class="cart">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th class="center">Quantity</th>
+                        <% if (displayPricing){ %>
+                            <th class="center">Price</th>
+                        <% } %>
+                        <th class="center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% cart.items.forEach(function(item, index){ %>
+                    <tr data-id="<%- item.id %>">
+                        <td data-th="Item"><a href="/premade/item/<%- item.type.id %>"><%- item.type.name %></a></td>
+                        <td data-th="Quantity" class="center">
+                            <% const itemQuantity = item.quantity || 1; %>
+                            <!-- Use SPAN for display, HIDDEN INPUT for form submission -->
+                            <span class="item-quantity" id="<%= 'quantity_' + index %>"><%= itemQuantity %></span>
+                            <input type="hidden" name="itemQuantity" value="<%= itemQuantity %>" />
+                        </td>
+                        <% if (displayPricing){ %>
+                            <td data-th="Price" class="center">
+                                £<span id="<%= 'price_' + index %>"><%= (itemQuantity * pricePerUnit).toFixed(2) %></span>
+                            </td>
+                        <% } %>
+                        <td data-th="Actions" class="center">
+                            <a href="#" name="removeItem"
+                                class="button danger outline icon remove-from-cart" data-id="<%- item.id %>">
+                                <span data-icon="&#xe019;"></span>
+                            </a>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td><b>TOTAL</b></td>
+                        <td class="center">
+                            <b>
+                                <input type="hidden" id="totalQuantity-input" name="totalQuantity" />
+                                <span id="totalQuantity"></span>
+                            </b>
+                        </td>
+                        <% if (displayPricing){ %>
+                            <td class="center">
+                                <b>
+                                    £
+                                    <input type="hidden" id="totalCost-input" name="totalCost" />
+                                    <span id="totalCost"></span>
+                                </b>
+                            </td>
+                        <% } %>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <% if (displayPricing){ %>
+            <div class="form-group">
+                <label for="costCode" class="form-label">Cost centre for charging:</label>
+                <input
+                  id="costCode"
+                  name="costCode"
+                  type="text"
+                  minlength="11"
+                  maxlength="11"
+                  data-inputmask="'mask': '*****-***-*'"
+                  class="uppercase"
+                  required
+                />
+            </div>
+
+            <div class="form-group">
+                <label for="signatory" class="form-label">Select Budget Holder:</label>
+                <select id="signatory" name="signatory" required>
+                    <option value="" disabled selected>Select budget holder</option>
+                    <option value='adriaens'>ADRIAENSSENS Evelien Adriaenssens [Food, Microbiome and Health (QIB)]</option>
+                    <option value='ahnjarj'>AHN-JARVIS Jennifer Ahn-Jarvis [Food, Microbiome and Health (QIB)]</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <input class="muted-text" id="cost-consent" type="checkbox" required>
+                <label for="cost-consent" class="form-label muted-text">
+                    By ticking this box I am confirming that I have authority to spend on the above cost centre. I accept that my 'New Order' email generated from this submission will also be sent to the selected budget holder.
+                </label>
+            </div>
             <% } %>
 
             <div class="form-group">
-                <i>
-                    Order your items. A standard order item is 5μL.
-                </i>
+                <p><i>
+                    TSL SynBio material supplied to TSL and JIC scientists is subject to a Material Transfer Agreement and must not be distributed or shared with any parties beyond TSL and JIC. Any third parties who request use of such material should be directed to TSL SynBio (please email <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a>).
+                </i></p>
+                <p><i>
+                    Material supplied by TSL SynBio is for non-commercial research purposes only. If you wish to use supplied material for commercial purposes, please contact <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a> in order that an appropriate MTA can be drawn up.
+                </i></p>
+                <input class="muted-text" id="non-commerical-consent" type="checkbox" required>
+                <label for="non-commerical-consent" class="form-label muted-text">
+                    I have read the above and confirm that the materials on this order will be used for non-commercial research purposes only and will not be distributed to third parties.
+                </label>
             </div>
-            <% if(displayPricing){ %>
-                <div class="form-group"><i>For non-TSL staff, pricing is currently set at £5 <!--for 5ul,-->per item. Bespoke orders available through email request.</i></div>
-            <% } %>
 
-            <form onsubmit="return validateForm()" method="post" action="/cart/order">
-                <input type="hidden" name="pricePerUnit" value="<%=pricePerUnit%>" />
-                <table class="cart">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th class="center">Quantity</th>
-                            <% if (displayPricing){ %>
-                                <th class="center">Price</th>
-                            <% } %>
-                            <th class="center">Actions</th>
-                        </tr>
-
-                    </thead>
-                    <tbody>
-                        <% cart.items.map(function(item, index){ %>
-                        <input type="hidden" value="<%- item.id %>">
-                        <tr data-id="<%- item.id %>">
-                            <td data-th="Item"><a href="/premade/item/<%- item.type.id %>"><%- item.type.name %></a></td>
-                            <td data-th="Quantity" class="center">
-                                <div>1</div>
-                                <% if (displayPricing) { %>
-                                    <input hidden type="number" value="<%- 1 %>" data-quantity="true"
-                                        data-id="<%- item.id %>" name="itemQuantity"
-                                        id="<%= 'quantity_' + index %>">                            
-                                    <% } else { %>
-                                        <input hidden type="number" placeholder="1" value="<%- 1 %>" data-quantity="true"
-                                            data-id="<%- item.id %>" min="1" max="1" name="itemQuantity"
-                                            id="<%= 'quantity_' + index %>">
-                                    <% } %>
-                            </td>
-                            <% if (displayPricing){ %>
-                                <td data-th="Price" class="center">
-                                    <span>£</span>
-                                    <span id="<%= 'price_' + index %>"><%= item.quantity * pricePerUnit %></span>
-            
-                                </td>
-                            <% } %>
-                            
-                            <td data-th="Actions" class="center"><a href="#" name="removeItem"
-                                    class="button danger outline icon remove-from-cart areyousure" data-id="<%- item.id %>"><span
-                                        data-icon="&#xe019;"></span></a>
-                            </td>
-                        </tr>
-                        <% }); %>
-                        <% if(cart){ %>
-                        <tr>
-                            <td><b>TOTAL</b></td>
-                            <td class="center">
-                                <b>
-                                    <input type="hidden" id="totalQuantity-input" name="totalQuantity" />
-                                    <span class="center" id="totalQuantity"></span>
-                                </b>
-                            </td>
-                            <% if (displayPricing){ %>
-                                <td class="center">
-                                    <b>
-                                        £
-                                        <input type="hidden" id="totalCost-input" name="totalCost" />
-                                        <span class="center" id="totalCost"></span>
-                                    </b>
-                                </td>
-                            <% } %>
-                        </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-
-                <% if (displayPricing){ %>
-                <div class="row form-group">
-                    <div class="col6"
-                        <span>Cost centre for charging:</span>
-                        <input required id="costCode" name="costCode" type="text" minLength="11" maxLength="11" 
-                        data-inputmask="'mask': '*****-***-*'" class="uppercase"
-                        >
-                </div>
-                </div>
-                <div class="row form-group">
-
-                    <div class="col12" style="margin-bottom: 2rem;">
-
-                        <span>Select Budget Holder:</span>
-                        <select id="signatory" name="signatory" required>
-                            <option value="" disabled selected>Select budget holder</option>
-                            <option VALUE='adriaens'>ADRIAENSSENS Evelien Adriaenssens [Food, Microbiome and Health (QIB)]</option>
-                            <option VALUE='ahnjarj'>AHN-JARVIS Jennifer Ahn-Jarvis [Food, Microbiome and Health (QIB)]</option>
-                            <option VALUE='yel23dof'>ALDRIDGE Alan Aldridge [Facilities (NBIP)]</option>
-                            <option VALUE='angiolie'>ANGIOLINI Emily Angiolini [Advanced Training (EI)]</option>
-                            <option VALUE='aroras'>ARORA Sanu Arora [Biochemistry and Metabolism (JIC)]</option>
-                            <option VALUE='dbaker'>BAKER David Baker [Science Operations (QIB)]</option>
-                            <option VALUE='bakht'>BAKHT Saleha Bakht [Crop Genetics (JIC)]</option>
-                            <option VALUE='balkj'>BALK Janneke Balk [Biochemistry and Metabolism (JIC)]</option>
-                            <option VALUE='banfielm'>BANFIELD Mark Banfield [Biochemistry and Metabolism (JIC)]</option>
-                            <option VALUE='bealesj'>BEALES Jessica Beales [Finance & Accounts (NBIP)]</option>
-                            <option VALUE='bella'>BELL Andrew Bell [Science Operations (QIB)]</option>
-                            <option VALUE='timmonss'>BENNION Sarah Bennion [Finance & Accounts (NBIP)]</option>
-                            <option VALUE='berazan'>BERAZA Naiara Beraza [Food, Microbiome and Health (QIB)]</option>
-                            <option VALUE='bestj'>BEST Julia Best [Directorate (QIB)]</option>
-                            <option VALUE='bexson'>BEXSON Grant Bexson [Operations (EI)]</option>
-                            <option VALUE='bibb'>BIBB Mervyn Bibb [Molecular Microbiology (JIC)]</option>
-                            <option VALUE='symonl'>BOLTON Lisa Bolton [Finance & Accounts (NBIP)]</option>
-                            <option VALUE='bornemas'>BORNEMANN Stephen Bornemann [Sainsbury Laboratory (TSL)]</option>
-                            <option VALUE='borrillp'>BORRILL Philippa Borrill [Crop Genetics (JIC)]</option>
-                            <option VALUE='gjones'>BOWKER Greg Bowker [Communications (EI)]</option>
-                            <option VALUE='brailsfo'>BRAILSFORD Alan Brailsford [QIB Extra (QIBX)]</option>
-                            <option VALUE='briona'>BRION Arlaine Brion [Core Science Resources (QIB)]</option>
-                            <option VALUE='browng'>BROWN Graeme Brown [Directorate (QIB)]</option>
-                            <option VALUE='jbrown'>BROWN James Brown [Crop Genetics (JIC)]</option>
-                            <option VALUE='byers'>BYERS Kelsey Byers [Cell & Developmental Biology (JIC)]</option>
-                            <option VALUE='cardings'>CARDING Simon Carding [Food, Microbiome and Health (QIB)]</option>
-                            <option VALUE='carellap'>CARELLA Phil Carella [Cell & Developmental Biology (JIC)]</option>
-                            <option VALUE='clissold'>CATCHPOLE Leah Catchpole [Genomics Pipelines (EI)]</option>
-                            <option VALUE='chalmerl'>CHALMERS Lee Chalmers [Finance & Accounts (NBIP)]</option>
-                            <option VALUE='charlesi'>CHARLES Ian Charles [Directorate (QIB)]</option>
-                            <option VALUE='charpenm'>CHARPENTIER Myriam Charpentier [Cell & Developmental Biology (JIC)]</option>
-                            <option VALUE='chayutn'>CHAYUT Noam Chayut [Crop Genetics (JIC)]</option>
-                            <option VALUE='jclarke'>CLARKE Jonathan Clarke [Business Development (JIC)]</option>
-                            <option VALUE='coenen'>COEN Enrico COEN [Cell & Developmental Biology (JIC)]</option>
-                            <option VALUE='cosseys'>COSSEY Sarah Cossey [Directors Office (EI)]</option>
-                            <option VALUE='creissen'>CREISSEN Gary Creissen [Laboratory Support (JIC)]</option>
-                            <option VALUE='cdarby'>DARBY Chris Darby [Crop Genetics (JIC)]</option>
-                            <option VALUE='deolivl'>DE OLIVEIRA MARTINS Leonardo de Oliveira Martins [Science Operations (QIB)]</option>
-                            <option VALUE='devegaj'>DE VEGA Jose De Vega [Research Faculty (EI)]</option>
-                            <option VALUE='deanc'>DEAN Caroline Dean [Cell & Developmental Biology (JIC)]</option>
-                            <option VALUE='devine'>DEVINE Rebecca Devine [Molecular Microbiology (JIC)]</option>
-                            <option VALUE='yding'>DING Yiliang Ding [Cell & Developmental Biology (JIC)]</option>
-                            <option VALUE='dixonr'>DIXON Ray Dixon [Molecular Microbiology (JIC)]</option>
-                            <option VALUE='dodd'>DODD Antony Dodd [Cell & Developmental Biology (JIC)]</option>
-                            <option VALUE='domoney'>DOMONEY Claire Domoney [Biochemistry and Metabolism (JIC)]</option>
-                            <option VALUE='cip23wis'>DORAI-RAJ Siobhan Dorai-Raj [Operations (EI)]</option>
-                            <option VALUE='downie'>DOWNIE Allan Downie [Molecular Microbiology (JIC)]</option>
-                            <option VALUE='dunford'>DUNFORD Roy Dunford [Laboratory Support (JIC)]</option>
-                            <option VALUE='eastman'>EASTMAN Michelle Eastman [Graduate School Office (GSO)]</option>
-                            <option VALUE='edwardsc'>EDWARDS Cathrina Edwards [Food, Microbiome and Health (QIB)]</option>
-                            <option VALUE='ellispa'>ELLIS Paul Ellis [Finance & Accounts (NBIP)]</option>
-                            <option VALUE='elumogo'>ELUMOGO Ngozi Elumogo [Food, Microbiome and Health (QIB)]</option>
-                            <option VALUE='faulknec'>FAULKNER Christine Faulkner [Cell & Developmental Biology (JIC)]</option>
-                            <option VALUE='feather'>FEATHER Debbie Feather [Sainsbury Laboratory (TSL)]</option>
-                            <option VALUE='wifey'>FINDLAY Kim Findlay [Cell & Developmental Biology (JIC)]</option>
-                            <option VALUE='finglas'>FINGLAS Paul Finglas [Food and Nutrition � NBRI (QIB)]</option>
-                            <option VALUE='dforeman'>FOREMAN Dave Foreman [Directors Office (JIC)]</option>
-                            <option VALUE='birdc'>FOSKER Christine Fosker [Research Faculty Office (EI)]</option>
-                            <option VALUE='fosters'>FOSTER Simon Foster [Sainsbury Laboratory (TSL)]</option>
-                            <option VALUE='funnells'>FUNNELL Simon Funnell [Food, Microbiome and Health (QIB)]</option>
-                            <option VALUE='garrido'>GARRIDO-OTER Ruben Garrido-Oter [Research Faculty (EI)]</option>
-                            <option VALUE='gharbik'>GHARBI Karim Gharbi [Genomics Pipelines (EI)]</option>
-                            <option VALUE='ghilarov'>GHILAROV Dmitry Ghilarov [Molecular Microbiology (JIC)]</option>
-                            <option VALUE='gilmour'>GILMOUR Matthew Gilmour [Microbes and Food Safety (QIB)]</option>
-                            <option VALUE='goramr'>GORAM Richard Goram [Crop Genetics (JIC)]</option>
-                            <option VALUE='sharpe'>GORDON-SHARPE Eva Gordon-Sharpe [Directors Office (JIC)]</option>
-                            <option VALUE='gottsk'>GOTTS Kathryn Gotts [Core Science Resources (QIB)]</option>
-                            <option VALUE='fos24jas'>GRAHAM Anne Graham [Directors Office (JIC)]</option>
-                            <option VALUE='grandell'>GRANDELLIS Carolina Grandellis [Research Faculty (EI)]</option>
-                            <option VALUE='griff'>GRIFFITHS Simon Griffiths [Crop Genetics (JIC)]</option>
-                            <option VALUE='reg23vok'>GUIZIOU Sarah Guiziou [Research Faculty (EI)]</option>
-                            <option VALUE='guys'>GUY Steven Guy [Facilities (NBIP)]</option>
-                            <option VALUE='haertyw'>HAERTY Wilfried Haerty [Research Faculty (EI)]</option>
-                            <option VALUE='halla'>HALL Anthony Hall [Research Faculty (EI)]</option>
-                            <option VALUE='hallli'>HALL Lindsay Hall [Food, Microbiome and Health (QIB)]</option>
-                            <option VALUE='halln'>HALL Neil Hall [Directors Office (EI)]</option>
-                            <option VALUE='hartp'>HART Patricia Hart [Directorate (QIB)]</option>
-                            <option VALUE='harwood'>HARWOOD Wendy Harwood [Crop Genetics (JIC)]</option>
-                            <option VALUE='melchina'>HAYHOE Antonietta Hayhoe [Science Operations (QIB)]</option>
-                            <option VALUE='haytas'>HAYTA Sadiye Hayta [Crop Genetics (JIC)]</option>
-                            <option VALUE='hazardb'>HAZARD Brittany Hazard [Food, Microbiome and Health (QIB)]</option>
-                            <option VALUE='hildebra'>HILDEBRAND Falk Hildebrand [Food, Microbiome and Health (QIB)]</option>
-                            <option VALUE='hilll'>HILL Lionel Hill [Biochemistry and Metabolism (JIC)]</option>
-                            <option VALUE='hindmars'>HINDMARSH Steve Hindmarsh [Research Computing (NBIP)]</option>
-                            <option VALUE='hinkova'>HINKOVA Andrea Hinkova [Science Operations (QIB)]</option>
-                            <option VALUE='hogenhos'>HOGENHOUT Saskia Hogenhout [Crop Genetics (JIC)]</option>
-                            <option VALUE='hopwood'>HOPWOOD David Hopwood [Molecular Microbiology (JIC)]</option>
-                            <option VALUE='horlerr'>HORLER Richard Horler [Research Computing (NBIP)]</option>
-                            <option VALUE='howardm'>HOWARD Martin Howard [Computational and Systems Biology (JIC)]</option>
-                            <option VALUE='sparrow'>HUNDLEBY Penny Hundleby [Directors Office (JIC)]</option>
-                            <option VALUE='hutchinm'>HUTCHINGS Matt Hutchings [Molecular Microbiology (JIC)]</option>
-                            <option VALUE='yar24wap'>JABBUR Luisa Jabbur [Cell & Developmental Biology (JIC)]</option>
-                            <option VALUE='jachec'>JACHEC Chris Jachec [Finance & Accounts (NBIP)]</option>
-                            <option VALUE='janeckon'>JANECKO Nicol Janecko [Microbes and Food Safety (QIB)]</option>
-                            <option VALUE='blakesle'>JONES Emily Jones [Food, Microbiome and Health (QIB)]</option>
-                            <option VALUE='jonesj'>JONES Jonathan Jones [Sainsbury Laboratory (JJ) (TSL)]</option>
-                            <option VALUE='jugen'>JUGE Nathalie Juge [Food, Microbiome and Health (QIB)]</option>
-                            <option VALUE='juodeiki'>JUODEIKIS Rokas Juodeikis [Science Operations (QIB)]</option>
-                            <option VALUE='kamouns'>KAMOUN Sophien Kamoun [Sainsbury Laboratory (SK) (TSL)]</option>
-                            <option VALUE='katsikia'>KATSIKIDES Andrew Katsikides [Finance & Accounts (NBIP)]</option>
-                            <option VALUE='kingsler'>KINGSLEY Rob Kingsley [Microbes and Food Safety (QIB)]</option>
-                            <option VALUE='kroon'>KROON Paul Kroon [Food, Microbiome and Health (QIB)]</option>
-                            <option VALUE='lamprindi'>LAMPRINAKI Dimitra Lamprinaki [Science Operations (QIB)]</option>
-                            <option VALUE='langridg'>LANGRIDGE Gemma Langridge [Microbes and Food Safety (QIB)]</option>
-                            <option VALUE='lawrenso'>LAWRENSON Tom Lawrenson [Crop Genetics (JIC)]</option>
-                            <option VALUE='lawsond'>LAWSON David Lawson [Biochemistry and Metabolism (JIC)]</option>
-                            <option VALUE='lazenby'>LAZENBY James Lazenby [Microbes and Food Safety (QIB)]</option>
-                            <option VALUE='letu'>LE Tung Le [Molecular Microbiology (JIC)]</option>
-                            <option VALUE='leggettr'>LEGGETT Richard Leggett [Research Faculty (EI)]</option>
-                            <option VALUE='lomonoss'>LOMONOSSOFF George Lomonossoff [Biochemistry and Metabolism (JIC)]</option>
-                            <option VALUE='lordj'>LORD John Lord [Horticultural Services (JIC)]</option>
-                            <option VALUE='maw'>MA Wenbo Ma [Sainsbury Laboratory (WM) (TSL)]</option>
-                            <option VALUE='macaulai'>MACAULAY Iain Macaulay [Research Faculty (EI)]</option>
-                            <option VALUE='macleand'>MACLEAN Dan MacLean [Sainsbury Laboratory (TSL)]</option>
-                            <option VALUE='malonej'>MALONE Jacob Malone [Molecular Microbiology (JIC)]</option>
-                            <option VALUE='maqbool'>MAQBOOL Abbas Maqbool [Biochemistry and Metabolism (JIC)]</option>
-                            <option VALUE='marchiol'>MARCHIORETTO Lisa Marchioretto [Microbes and Food Safety (QIB)]</option>
-                            <option VALUE='martin'>MARTIN Cathie Martin [Biochemistry and Metabolism (JIC)]</option>
-                            <option VALUE='mathera'>MATHER Alison Mather [Microbes and Food Safety (QIB)]</option>
-                            <option VALUE='maxwellt'>MAXWELL Tony Maxwell [Molecular Microbiology (JIC)]</option>
-                            <option VALUE='mcmullam'>MCMULLAN Mark McMullan [Research Faculty (EI)]</option>
-                            <option VALUE='mctaggar'>MCTAGGART Seanna McTaggart [Research Faculty Office (EI)]</option>
-                            <option VALUE='meadows'>MEADOWS Lizzie Meadows [Directorate (QIB)]</option>
-                            <option VALUE='menkef'>MENKE Frank Menke [Sainsbury Laboratory (TSL)]</option>
-                            <option VALUE='amiller'>MILLER Tony Miller [Biochemistry and Metabolism (JIC)]</option>
-                            <option VALUE='mooreg'>MOORE Graham Moore [Directors Office (JIC)]</option>
-                            <option VALUE='morganch'>MORGAN Chris Morgan [Cell & Developmental Biology (JIC)]</option>
-                            <option VALUE='morrisr'>MORRIS Richard Morris [Computational and Systems Biology (JIC)]</option>
-                            <option VALUE='morrison'>MORRISON Ben Morrison [Research Grants and Contracts (NBIP)]</option><option VALUE='moscoum'>MOSCOU Matthew Moscou [Sainsbury Laboratory (TSL)]</option><option VALUE='moubayil'>MOUBAYIDIN Laila Moubayidin [Cell & Developmental Biology (JIC)]</option><option VALUE='narbad'>NARBAD Arjan Narbad [Food, Microbiome and Health (QIB)]</option><option VALUE='neequaye'>NEEQUAYE Mikhaela Neequaye [Cell & Developmental Biology (JIC)]</option><option VALUE='nicholsn'>NICHOLSON Paul Nicholson [Crop Genetics (JIC)]</option><option VALUE='nieduszc'>NIEDUSZYNSKI Conrad Nieduszynski [Research Faculty (EI)]</option><option VALUE='jep23kod'>NOBORI Tatsuya Nobori [Sainsbury Laboratory (TN) (TSL)]</option><option VALUE='nolan'>NOLAN Laura Nolan [Microbes and Food Safety (QIB)]</option><option VALUE='palop'>NUENO PALOP Carmen Nueno Palop [QIB Extra (QIBX)]</option><option VALUE='ohallera'>O'HALLERON Anne O'Halleron [Human Resources (NBIP)]</option><option VALUE='osbourna'>OSBOURN Anne Osbourn [Biochemistry and Metabolism (JIC)]</option><option VALUE='pallenm'>PALLEN Mark Pallen [Microbes and Food Safety (QIB)]</option><option VALUE='taz23zir'>PAPATHEODOROU Irene Papatheodorou [Research Faculty (EI)]</option><option VALUE='patronn'>PATRON Nicola Patron [Research Faculty (EI)]</option><option VALUE='paynes'>PAYNE Sally Payne [Purchasing (NBIP)]</option><option VALUE='penfiels'>PENFIELD Steve Penfield [Crop Genetics (JIC)]</option><option VALUE='perryf'>PERRY Felicity Perry [Communications & Engagement (JIC)]</option><option VALUE='philom'>PHILO Mark Philo [Core Science Resources (QIB)]</option><option VALUE='playford'>PLAYFORD Darryl Playford [Crop Genetics (JIC)]</option><option VALUE='quince'>QUINCE Christopher Quince [Research Faculty (EI)]</option><option VALUE='ridout'>RIDOUT Chris Ridout [Crop Genetics (JIC)]</option><option VALUE='robinsop'>ROBINSON Phil Robinson [Cell & Developmental Biology (JIC)]</option><option VALUE='robinsst'>ROBINSON Stephen Robinson [Food, Microbiome and Health (QIB)]</option><option VALUE='sablow'>SABLOWSKI Robert Sablowski [Cell & Developmental Biology (JIC)]</option><option VALUE='saha'>SAHA Shikha Saha [Food, Microbiome and Health (QIB)]</option><option VALUE='saunderd'>SAUNDERS Diane Saunders [Crop Genetics (JIC)]</option><option VALUE='sayavedl'>SAYAVEDRA Lizbeth Sayavedra [Food, Microbiome and Health (QIB)]</option><option VALUE='schlimps'>SCHLIMPERT Susan Schlimpert [Molecular Microbiology (JIC)]</option><option VALUE='jaf24yik'>SELF Andy Self [Human Resources (NBIP)]</option><option VALUE='serazetd'>SERAZETDINOVA Liliya Serazetdinova [Business Development and Impact (EI)]</option><option VALUE='seungd'>SEUNG David Seung [Biochemistry and Metabolism (JIC)]</option><option VALUE='fshaw'>SHAW Felix Shaw [Research Faculty (EI)]</option><option VALUE='singh'>SINGH Dipali Singh [Science Operations (QIB)]</option><option VALUE='smitha'>SMITH Alison Smith [Biochemistry and Metabolism (JIC)]</option><option VALUE='smithe'>SMITH Emily Smith [Food, Microbiome and Health (QIB)]</option><option VALUE='smithh'>SMITH Phil Smith [Teacher Scientist Network (TSN)]</option><option VALUE='rismith'>SMITH Richard Smith [Computational and Systems Biology (JIC)]</option><option VALUE='soranzon'>SORANZO Nicola Soranzo [Research Faculty (EI)]</option><option VALUE='soriaca'>SORIA-CARRASCO Victor Soria-Carrasco [Crop Genetics (JIC)]</option><option VALUE='southwol'>SOUTHWOOD Louise Southwood [Finance & Accounts (NBIP)]</option><option VALUE='steuernb'>STEUERNAGEL Burkhard Steuernagel [Computational and Systems Biology (JIC)]</option><option VALUE='cwilliam'>STEVENSON Clare Stevenson [Directors Office (JIC)]</option><option VALUE='stringer'>STRINGER Sandra Stringer [Science Operations (QIB)]</option><option VALUE='stronaca'>STRONACH Andrew Stronach [Communications (QIB)]</option><option VALUE='suligojt'>SULIGOJ Tanja Suligoj [Food, Microbiome and Health (QIB)]</option><option VALUE='swarbred'>SWARBRECK David Swarbreck [Research Faculty (EI)]</option><option VALUE='talbotn'>TALBOT Nick Talbot [Sainsbury Laboratory (NT) (TSL)]</option><option VALUE='telatina'>TELATIN Andrea Telatin [Food, Microbiome and Health (QIB)]</option><option VALUE='tomlinsl'>TOMLINSON Laurence Tomlinson [Health, Safety, Environment and Quality Assurance (NBIP)]</option><option VALUE='traka'>TRAKA Maria Traka [Food and Nutrition � NBRI (QIB)]</option><option VALUE='trumana'>TRUMAN Andrew Truman [Molecular Microbiology (JIC)]</option><option VALUE='uauyc'>UAUY Cristobal Uauy [Crop Genetics (JIC)]</option><option VALUE='wainj'>WAIN John Wain [Microbes and Food Safety (QIB)]</option><option VALUE='warrenf'>WARREN Fred Warren [Food, Microbiome and Health (QIB)]</option><option VALUE='warrenm'>WARREN Martin Warren [Food, Microbiome and Health (QIB)]</option><option VALUE='watkinsc'>WATKINS Chris Watkins [Genomics Pipelines (EI)]</option><option VALUE='webberm'>WEBBER Mark Webber [Microbes and Food Safety (QIB)]</option><option VALUE='websterm'>WEBSTER Michael Webster [Biochemistry and Metabolism (JIC)]</option><option VALUE='wellsr'>WELLS Rachel Wells [Crop Genetics (JIC)]</option><option VALUE='dudleyk'>WEST Kate West [Library (NBIP)]</option><option VALUE='whitchur'>WHITCHURCH Cynthia Whitchurch [Microbes and Food Safety (QIB)]</option><option VALUE='wilde'>WILDE Pete Wilde [Food, Microbiome and Health (QIB)]</option><option VALUE='wilemant'>WILEMAN Tom Wileman [Food, Microbiome and Health (QIB)]</option><option VALUE='wilkinsb'>WILKINSON Barrie Wilkinson [Molecular Microbiology (JIC)]</option><option VALUE='witekk'>WITEK Kamil Witek [Sainsbury Laboratory (2Blades) (TSL)]</option><option VALUE='wojtowic'>WOJTOWICZ Edyta Wojtowicz [Research Faculty (EI)]</option><option VALUE='jon23ran'>WOODHOUSE Shannon Woodhouse [Communications & Engagement (JIC)]</option><option VALUE='woodsh'>WOODS Hannah Woods [Facilities (NBIP)]</option><option VALUE='wortleyg'>WORTLEY Gary Wortley [Laboratory Support (JIC)]</option><option VALUE='zanchir'>ZANCHI Roberto Zanchi [Business Development (QIB)]</option><option VALUE='zipfelc'>ZIPFEL Cyril Zipfel [Sainsbury Laboratory (CZ) (TSL)]</option>
-                        </select>
+            <div class="row">
+                <div class="col12">
+                    <div class="pull-right">
+                        <button class="button success areyousure" id="placeOrderButton">Place Order</button>
                     </div>
                 </div>
-                <div class="form-group">
-                    <input class="muted-text" required id="cost-consent" type="checkbox" data-quantity="true">
-                    <span class="muted-text">By ticking this box I am confirming that I have authority to spend on the above cost centre. I accept that my 'New Order' email generated from this submission will also be sent to the selected budget holder.</span>
-                </div>
-                <% } %>
+            </div>
+        </form>
 
-                <div>
-                <p><i>
-                    TSL SynBio material supplied to TSL and JIC scientists is subject to a Material Transfer Agreement and must not be distributed or shared with any parties beyond TSL and JIC. Any third parties who request use of such material should be directed to TSL SynBio (please email </i><a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a><i>).
-                </i></p>
-                <p><i>
-                    Material supplied by TSL SynBio is for non-commercial research purposes only. If you wish to use supplied material for commercial purposes, please contact </i><a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a><i> in order that an appropriate MTA can be drawn up.
-                </i></p>
-                <div class="form-group">
-                    <input class="muted-text" required id="non-commerical-consent" type="checkbox" data-quantity="true">
-                    <span class="muted-text">
-                        I have read the above and confirm that the materials on this order will be used for non-commercial research purposes only and will not be distributed to third parties.
-                    </span>
-                </div>
-                
-
-                <div class="row">
-                    <div class="col12">
-                        <div class="pull-right">
-                            <button class="button success areyousure" id="placeOrderButton">Place Order</button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        <% } else { %>
-            <h3 class="center">Your Shopping Basket is empty.</h3>
-        <% } %>
     <% } else { %>
         <h3 class="center">Your Shopping Basket is empty.</h3>
     <% } %>

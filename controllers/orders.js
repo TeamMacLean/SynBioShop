@@ -6,295 +6,350 @@ const Util = require("../lib/util");
 const thinky = require("../lib/thinky");
 const ldap = require("../lib/ldap");
 
-const orders = {};
+const ordersController = {};
 
-orders.show = (req, res) => {
-  const orderID = req.params.id;
-  Order.get(orderID)
-    .getJoin({ items: true })
-    .then((order) => {
-      order
-        .getTypes()
-        .then((orderWithTypes) => {
-          return res.render("orders/show", { order: orderWithTypes });
-        })
-        .catch((err) => renderError(err, res));
-    })
-    .catch((err) => {
-      return renderError(err, res);
-    });
+// --- Helper Functions ---
+
+/**
+ * A consistent way to handle errors in order-related operations.
+ * @param {Error} err - The error object.
+ * @param {Object} res - The Express response object.
+ */
+const handleError = (err, res) => {
+  console.error("Order processing error:", err);
+  // Consider a more specific error message or rendering an error page.
+  renderError("An error occurred while processing your request.", res);
 };
 
-orders.mine = (req, res) => {};
-
-orders.showAll = (req, res) => {
-  const username = req.user.username;
-
-  const filter = {};
-
-  if (!Util.isAdmin(username)) {
-    filter.username = username;
+/**
+ * Safely retrieves an order by ID, optionally joining items and types.
+ * @param {string} orderID - The ID of the order to retrieve.
+ * @param {boolean} withItemsAndTypes - Whether to fetch joined items and their types.
+ * @returns {Promise<Order>} A promise resolving with the order object.
+ */
+const getOrderWithDetails = async (orderID, withItemsAndTypes = false) => {
+  let query = Order.get(orderID);
+  if (withItemsAndTypes) {
+    query = query.getJoin({ items: true });
+    // getTypes() should be called after getJoin for efficiency if needed,
+    // but here we defer it to where it's used.
   }
-
-  Order.filter(filter)
-    .getJoin({ items: true })
-    .then((orders) => {
-      const sortedOrders = { open: [], closed: [] };
-
-      orders.map((order) => {
-        if (order.complete || order.cancelled) {
-          sortedOrders.closed.push(order);
-        } else {
-          sortedOrders.open.push(order);
-        }
-      });
-      return res.render("orders/all", { orders: sortedOrders });
-    })
-    .catch((err) => renderError(err, res));
+  const order = await query;
+  if (!order) {
+    throw new Error(`Order with ID ${orderID} not found.`);
+  }
+  return order;
 };
 
-orders.simonSummary = (req, res) => {
+// --- Controller Actions ---
+
+/**
+ * Renders the details of a specific order.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+ordersController.show = async (req, res) => {
+  const { id: orderID } = req.params;
+  try {
+    const order = await getOrderWithDetails(orderID, true);
+    const orderWithTypes = await order.getTypes(); // Fetch types for display
+    res.render("orders/show", { order: orderWithTypes });
+  } catch (err) {
+    handleError(err, res);
+  }
+};
+
+/**
+ * Placeholder for displaying orders belonging to the current user.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+ordersController.mine = async (req, res) => {
+  // Implementation needed: Fetch orders for req.user.username
+  // Example:
+  // const username = req.user.username;
+  // const userOrders = await Order.filter({ username }).getJoin({ items: true }).run();
+  // res.render('orders/my_orders', { orders: userOrders });
+  handleError(new Error("Not implemented"), res); // Placeholder
+};
+
+/**
+ * Renders a list of all orders, filtered by user if not an admin.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+ordersController.showAll = async (req, res) => {
+  const { username } = req.user;
+  const isAdmin = Util.isAdmin(username); // Assuming Util.isAdmin checks config or user roles
+
+  const filter = isAdmin ? {} : { username };
+
+  try {
+    const orders = await Order.filter(filter).getJoin({ items: true }).run();
+
+    const sortedOrders = { open: [], closed: [] };
+    for (const order of orders) {
+      if (order.complete || order.cancelled) {
+        sortedOrders.closed.push(order);
+      } else {
+        sortedOrders.open.push(order);
+      }
+    }
+    res.render("orders/all", { orders: sortedOrders });
+  } catch (err) {
+    handleError(err, res);
+  }
+};
+
+/**
+ * Renders a paginated summary of orders, including user full names from LDAP.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+ordersController.simonSummary = async (req, res) => {
   const perPage = 50;
-  // Default to page 1 if no page is provided, and ensure page is at least 1.
-  let page = req.query.page ? parseInt(req.query.page, 10) : 1;
-  if (page < 1) page = 1;
+  // Ensure page is a positive integer, defaulting to 1.
+  let page = parseInt(req.query.page, 10) || 1;
+  page = Math.max(1, page); // Ensure page is at least 1
 
-  // Use (page-1)*perPage for slicing so that page=1 shows the first 50 results.
-  Order.orderBy(thinky.r.desc("createdAt"))
-    .slice((page - 1) * perPage, page * perPage)
-    .getJoin({ items: true })
-    .then((orders) => {
-      return Promise.all(
-        orders.map((order) => {
-          return order.getTypes();
-        })
-      );
-    })
-    .then((ordersWithTypes) => {
-      // Get their full names from LDAP
-      return Promise.all(
-        ordersWithTypes.map((owt) => {
-          return new Promise((good, bad) => {
-            ldap
-              .getNameFromUsername(owt.username)
-              .then((users) => {
-                if (users.length >= 1) {
-                  const user = users[0];
-                  owt.fullName = user.name;
-                }
-                good(owt);
-              })
-              .catch(() => {
-                owt.fullName = owt.username; // Fallback
-                good(owt);
-              });
-          });
-        })
-      );
-    })
-    .then((ordersWithTypes) => {
-      Order.count()
-        .execute()
-        .then((count) => {
-          res.render("orders/summary", {
-            orders: ordersWithTypes,
-            count: count,
-            page: page,
-            perPage: perPage,
-          });
-        });
-    })
-    .catch((err) => renderError(err, res));
+  try {
+    // Fetch orders for the current page, joined with items
+    const paginatedOrders = await Order
+      .orderBy(thinky.r.desc("createdAt"))
+      .slice((page - 1) * perPage, page * perPage)
+      .getJoin({ items: true })
+      .run();
+
+    // Fetch item types and user full names concurrently
+    const processedOrders = await Promise.all(
+      paginatedOrders.map(async (order) => {
+        try {
+          const orderWithTypes = await order.getTypes();
+          // Fetch user name from LDAP, falling back to username if LDAP fails
+          try {
+            const users = await ldap.getNameFromUsername(order.username);
+            orderWithTypes.fullName = users.length > 0 ? users[0].name : order.username;
+          } catch (ldapErr) {
+            console.warn(`LDAP lookup failed for ${order.username}:`, ldapErr.message);
+            orderWithTypes.fullName = order.username; // Fallback
+          }
+          return orderWithTypes;
+        } catch (typeErr) {
+          console.error(`Failed to get types for order ${order.id}:`, typeErr);
+          // Decide how to handle: skip order, render with partial data, etc.
+          // For now, return order with partial data or null if critical
+          return null; // Or return order, omitting type info
+        }
+      })
+    );
+
+    // Filter out any orders that failed type fetching if necessary
+    const validOrders = processedOrders.filter(order => order !== null);
+
+    // Get total count of all orders
+    const totalCount = await Order.count().execute();
+
+    res.render("orders/summary", {
+      orders: validOrders,
+      count: totalCount,
+      page: page,
+      perPage: perPage,
+    });
+  } catch (err) {
+    handleError(err, res);
+  }
 };
 
-
-orders.exportOrders = (req, res, next) => {
-  const startParam = req.query.start;
-  const endParam = req.query.end;
+/**
+ * Exports orders within a specified date range, filtering for completed orders with cost codes.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} next - Express next middleware function.
+ */
+ordersController.exportOrders = async (req, res, next) => {
+  const { start: startParam, end: endParam } = req.query;
 
   if (!startParam || !endParam) {
     return res.status(400).json({ error: 'Please provide both start and end dates.' });
   }
 
-  // Parse dates
-  const startDate = new Date(startParam);
-  const endDate = new Date(endParam);
-  // Include the entire end date
-  endDate.setHours(23, 59, 59, 999);
+  try {
+    const startDate = new Date(startParam);
+    const endDate = new Date(endParam);
+    endDate.setHours(23, 59, 59, 999); // Include the entire end date
 
-  Order
-    .between(startDate, endDate, {
-      index: "createdAt",
-      leftBound: "closed",
-      rightBound: "closed"
-    })
-    .orderBy({ index: "createdAt" })
-    .filter(order =>
-      order("costCode").ne(null)
-        .and(order("totalCost").ne(null))
-        .and(order("totalCost").ne(""))
-    )
-    // Ensure the results are ordered in ascending order by createdAt (earliest first)
-    .getJoin({ items: true })
-    .run()
-    .then(orders => {
-      return Promise.all(orders.map(order => order.getTypes()));
-    })
-    .then(ordersWithTypes => {
-      res.json(ordersWithTypes);
-    })
-    .catch(err => {
-      console.error('Error in exportOrders middleware:', err);
-      res.status(500).json({ error: 'Internal server error' });
-    });
+    // Validate dates if needed (e.g., ensure startDate <= endDate)
 
+    const orders = await Order
+      .between(startDate, endDate, {
+        index: "createdAt",
+        leftBound: "closed",
+        rightBound: "closed"
+      })
+      .orderBy({ index: "createdAt" })
+      // Filter for orders that are not null/empty in costCode and totalCost
+      .filter(order =>
+        order("costCode").ne(null)
+          .and(order("totalCost").ne(null))
+          .and(order("totalCost").ne(""))
+      )
+      .getJoin({ items: true })
+      .run();
+
+    // Fetch types for all retrieved orders concurrently
+    const ordersWithTypes = await Promise.all(orders.map(order => order.getTypes()));
+
+    res.json(ordersWithTypes); // Assuming JSON output is desired for export
+  } catch (err) {
+    console.error('Error in exportOrders:', err);
+    res.status(500).json({ error: 'Internal server error during order export.' });
+  }
 };
 
-orders.simonRepeatOrders = (req, res) => {
-  const itemsByUser = {}; //username:pagem, items:[]
+/**
+ * Analyzes orders to find users who have ordered the same item type multiple times.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+ordersController.simonRepeatOrders = async (req, res) => {
+  const itemsByUser = {}; // Structure: { username: { itemName: count, ... }, ... }
 
-  function addItem(username, id) {
+  // Helper to safely add item counts
+  const addItemCount = (username, itemName) => {
     if (!itemsByUser[username]) {
       itemsByUser[username] = {};
     }
+    itemsByUser[username][itemName] = (itemsByUser[username][itemName] || 0) + 1;
+  };
 
-    if (!itemsByUser[username][id]) {
-      itemsByUser[username][id] = 1;
-    } else {
-      itemsByUser[username][id] += 1;
-    }
-  }
+  try {
+    const orders = await Order.getJoin({ items: true }).run();
+    const typeFetchPromises = [];
 
-  const promises = [];
-
-  Order.getJoin({ items: true })
-    .then((orders) => {
-      orders.map((o) => {
-        o.items.map((item) => {
-          promises.push(
-            new Promise((good, bad) => {
-              item
-                .getType()
-                .then((type) => {
-                  // console.log('type', type.name);
-                  addItem(o.username, type.name);
-                  good();
-                })
-                .catch((err) => {
-                  good();
-                  //TODO if not found it probably doesn't exist any more
-                });
+    for (const order of orders) {
+      for (const item of order.items) {
+        // Fetch type for each item to get its name
+        typeFetchPromises.push(
+          item.getType()
+            .then(type => ({ username: order.username, itemName: type.name }))
+            .catch(err => {
+              console.warn(`Could not get type for item ${item.id} in order ${order.id}:`, err.message);
+              return null; // Return null if type fetching fails
             })
-          );
-        });
-      });
+        );
+      }
+    }
 
-      // console.log(promises.length, 'promises');
+    const resolvedTypeData = await Promise.all(typeFetchPromises);
 
-      Promise.all(promises)
-        .then(() => {
-          // console.log('FINISHED PROMISES');
-          for (const key in itemsByUser) {
-            if (itemsByUser.hasOwnProperty(key)) {
-              const obj = itemsByUser[key];
-              for (const prop in obj) {
-                if (obj.hasOwnProperty(prop)) {
-                  if (obj[prop] < 2) {
-                    delete itemsByUser[key][prop];
-                  }
-                }
-              }
-            }
-            //TODO now check if its empty
-            if (
-              Object.keys(itemsByUser[key]).length === 0 &&
-              itemsByUser[key].constructor === Object
-            ) {
-              delete itemsByUser[key];
+    // Process the fetched type data to populate itemsByUser
+    for (const data of resolvedTypeData) {
+      if (data && data.username && data.itemName) {
+        addItemCount(data.username, data.itemName);
+      }
+    }
+
+    // Filter out items ordered less than twice per user
+    for (const username in itemsByUser) {
+      if (Object.hasOwnProperty.call(itemsByUser, username)) {
+        const userItems = itemsByUser[username];
+        for (const itemName in userItems) {
+          if (Object.hasOwnProperty.call(userItems, itemName)) {
+            if (userItems[itemName] < 2) {
+              delete userItems[itemName]; // Remove item if count is less than 2
             }
           }
+        }
+        // If a user has no items left after filtering, remove the user entry
+        if (Object.keys(userItems).length === 0) {
+          delete itemsByUser[username];
+        }
+      }
+    }
 
-          res.json(itemsByUser);
-        })
-        .catch((err) => renderError(err, res));
-    })
-    .catch((err) => renderError(err, res));
+    res.json(itemsByUser);
+  } catch (err) {
+    handleError(err, res);
+  }
 };
 
-orders.markAsComplete = (req, res) => {
-  const orderID = req.params.id;
-  Order.get(orderID)
-    .getJoin({ items: true })
-    .then((order) => {
-      order
-        .getTypes()
-        .then((orderWithTypes) => {
-          orderWithTypes.complete = true;
-          orderWithTypes.completedAt = Date.now();
-          orderWithTypes
-            .save()
-            .then(() => {
-              Email.orderReady(orderWithTypes)
-                .then(() => {
-                  Flash.success(req, "Completion email sent to user");
-                  return res.redirect(`/order/${orderID}`);
-                })
-                .catch((err) => renderError(err, res));
-            })
-            .catch((err) => renderError(err, res));
-        })
-        .catch((err) => renderError(err, res));
-    })
-    .catch((err) => renderError(err, res));
+/**
+ * Marks an order as complete and sends a notification email.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+ordersController.markAsComplete = async (req, res) => {
+  const { id: orderID } = req.params;
+  try {
+    const order = await getOrderWithDetails(orderID, true); // Fetch with items
+    const orderWithTypes = await order.getTypes(); // Fetch types for email
+
+    orderWithTypes.complete = true;
+    orderWithTypes.completedAt = Date.now();
+
+    await orderWithTypes.save();
+    await Email.orderReady(orderWithTypes); // Send notification email
+
+    Flash.success(req, `Completion email sent to ${orderWithTypes.username}.`);
+    res.redirect(`/order/${orderID}`);
+  } catch (err) {
+    handleError(err, res);
+  }
 };
 
-orders.markAsIncomplete = (req, res) => {
-  const orderID = req.params.id;
-
-  Order.get(orderID)
-    .then((order) => {
-      order.complete = false;
-      order
-        .save()
-        .then(() => {
-          return res.redirect(`/order/${orderID}`);
-        })
-        .catch((err) => renderError(err, res));
-    })
-    .catch((err) => renderError(err, res));
+/**
+ * Marks an order as incomplete (removes completion status).
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+ordersController.markAsIncomplete = async (req, res) => {
+  const { id: orderID } = req.params;
+  try {
+    const order = await Order.get(orderID); // No need for join here
+    order.complete = false;
+    await order.save();
+    Flash.info(req, `Order ${orderID} marked as incomplete.`);
+    res.redirect(`/order/${orderID}`);
+  } catch (err) {
+    handleError(err, res);
+  }
 };
 
-orders.markAsCancelled = (req, res) => {
-  const orderID = req.params.id;
-
-  Order.get(orderID)
-    .then((order) => {
-      order.cancelled = true;
-      order.complete = false; // Marking as cancelled also marks it as incomplete (no user email though)
-      order
-        .save()
-        .then(() => {
-          return res.redirect(`/order/${orderID}`);
-        })
-        .catch((err) => renderError(err, res));
-    })
-    .catch((err) => renderError(err, res));
+/**
+ * Marks an order as cancelled.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+ordersController.markAsCancelled = async (req, res) => {
+  const { id: orderID } = req.params;
+  try {
+    const order = await Order.get(orderID);
+    order.cancelled = true;
+    order.complete = false; // Ensure 'complete' is false if cancelled
+    await order.save();
+    Flash.info(req, `Order ${orderID} marked as cancelled.`);
+    res.redirect(`/order/${orderID}`);
+  } catch (err) {
+    handleError(err, res);
+  }
 };
 
-orders.markAsUnCancelled = (req, res) => {
-  const orderID = req.params.id;
-
-  Order.get(orderID)
-    .then((order) => {
-      order.cancelled = false;
-      order
-        .save()
-        .then(() => {
-          return res.redirect(`/order/${orderID}`);
-        })
-        .catch((err) => renderError(err, res));
-    })
-    .catch((err) => renderError(err, res));
+/**
+ * Marks an order as un-cancelled (restores it).
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+ordersController.markAsUnCancelled = async (req, res) => {
+  const { id: orderID } = req.params;
+  try {
+    const order = await Order.get(orderID);
+    order.cancelled = false;
+    await order.save();
+    Flash.info(req, `Order ${orderID} marked as not cancelled.`);
+    res.redirect(`/order/${orderID}`);
+  } catch (err) {
+    handleError(err, res);
+  }
 };
 
-module.exports = orders;
+module.exports = ordersController;

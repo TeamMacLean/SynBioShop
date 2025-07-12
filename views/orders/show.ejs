@@ -1,91 +1,101 @@
 <% include ../head.ejs %>
 
 <div class="container">
-  <div style="margin-top: 20px; font-size: 18px">
-    <a href="/orders" style="color: blue; text-decoration: underline"
-      >← Go Back to Orders</a
-    >
+  <div class="back-link">
+    <a href="/orders">← Go Back to Orders</a>
   </div>
 
-  <h1 class="center">Order</h1>
+  <h1 class="center">Order Details</h1>
 
-  <p>ID: <%- order.janCode %></p>
-  <p>Ordered: <%- order.createdHumanDate() %></p>
-  <p>
-    Status: <%- order.cancelled ? 'Cancelled' : (order.complete ? 'Complete' :
-    'Pending') %>
-  </p>
-  <p>Customer: <%- order.username %></p>
-  <p>Cost code: <%= order.costCode || "n/a" %></p>
-  <p>Signatory: <%= order.signatory || "n/a" %></p>
+  <div class="order-summary">
+    <p><strong>ID:</strong> <%- order.janCode || 'N/A' %></p>
+    <p><strong>Ordered:</strong> <%- order.createdHumanDate() %></p>
+    <p><strong>Status:</strong> <%- order.cancelled ? 'Cancelled' : (order.complete ? 'Complete' : 'Pending') %></p>
+    <p><strong>Customer:</strong> <%- order.username %></p>
+    <p><strong>Cost code:</strong> <%- order.costCode || 'n/a' %></p>
+    <p><strong>Signatory:</strong> <%- order.signatory || 'n/a' %></p>
+    <% if(order.completedAt){ %>
+      <p><strong>Completed:</strong> <%- order.completedHumanDate() %></p>
+    <% } %>
+  </div>
 
-  <% if(order.completedAt){ %>
-  <p>Completed: <%- order.completedHumanDate() %></p>
-  <% } %>
-
-  <h2 class="center">Order Details</h2>
-  <table class="cart">
-    <thead>
-      <tr>
-        <th>Item</th>
-        <th class="center">Quantity</th>
-        <% if (order.totalCost) { %>
-        <th class="center">Price</th>
+  <h2 class="center">Order Items</h2>
+  <div class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th class="center">Quantity</th>
+          <% if (order.totalCost) { %>
+            <th class="center">Price (£)</th>
+          <% } %>
+          <th class="center">Concentration</th>
+          <th class="center">SynBio ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (order.items && order.items.length === 0) { %>
+          <tr>
+            <td colspan="5" class="center muted-text">No items in this order.</td>
+          </tr>
+        <% } else if (order.items) { %>
+          <% order.items.forEach(item => { %>
+            <tr>
+              <td>
+                <a href="/premade/item/<%- item.type?.id %>" target="_blank" rel="noopener noreferrer">
+                  <%- item.type?.name || 'N/A' %>
+                </a>
+              </td>
+              <% if (item.quantity !== undefined && item.quantity !== null) { %>
+                <td class="center">
+                  <%- item.quantity %>
+                  <% /* Keep commented out logic if not currently used */ %>
+                  <% /* + ((parseInt(item.janCode) < 2283) ? 'uL' : '' ) */ %>
+                </td>
+                <% if (order.totalCost) { %>
+                  <td class="center">£<%- (item.quantity * order.pricePerUnit).toFixed(2) %></td>
+                <% } %>
+              <% } else if (item.largeScale) { %>
+                <td class="center">Large Scale</td>
+                <% if (order.totalCost) { %>
+                    <td class="center">n/a</td> <% /* Price not applicable for large scale? */ %>
+                <% } %>
+              <% } else { %>
+                <td class="center">Normal</td>
+                <% if (order.totalCost) { %>
+                    <td class="center">n/a</td> <% /* Price not applicable for normal? */ %>
+                <% } %>
+              <% } %>
+              <td class="center"><%- item.type?.concentration || 'N/A' %></td>
+              <td class="center"><%- item.type?.synBioID || 'N/A' %></td>
+            </tr>
+          <% }); %>
         <% } %>
-        <th class="center">Concentration</th>
-        <th class="center">SynBio ID</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% order.items.map(function(item){ %>
-      <tr>
-        <td>
-          <a href="/premade/item/<%- item.type.id %>" target="_blank"
-            ><%- item.type.name %></a
-          >
-        </td>
-        <% if(item.quantity){ %>
-        <td class="center">
-          <%- item.quantity /** + ((parseInt(item.janCode) < 2283) ? 'uL' : '' )
-          */ %>
-        </td>
-        <% if (order.totalCost) { %>
-        <td class="center">£<%- item.quantity * order.pricePerUnit %></td>
-        <% } %> <% } else { %> <% if(item.largeScale){ %>
-        <td class="center">large scale</td>
-        <% } else { %>
-        <td class="center">normal</td>
-        <% } %> <% } %>
-        <td class="center"><%- item.type.concentration %></td>
-        <td class="center"><%- item.type.synBioID %></td>
-      </tr>
-      <% }); %>
-      <tr>
-        <td><b>Total</b></td>
-        <td class="center"><b><%- order.totalQuantity %></b></td>
-        <% if (order.totalCost) { %>
-        <td class="center"><b>£<%- order.totalCost %></b></td>
-        <% } %>
-      </tr>
-    </tbody>
-  </table>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td><b>Total</b></td>
+          <td class="center"><b><%- order.totalQuantity || 0 %></b></td>
+          <% if (order.totalCost !== null && order.totalCost !== undefined) { %>
+            <td class="center"><b>£<%- (order.totalCost).toFixed(2) %></b></td>
+          <% } %>
+          <td></td> <% /* Spacer for concentration column */ %>
+          <td></td> <% /* Spacer for SynBio ID column */ %>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
 
-  <% if(order.cancelled){ %>
-  <a href="/order/<%- order.id %>/uncancel" class="button primary"
-    >Undo cancellation</a
-  >
-  <% } else if (!order.complete) { %>
-  <a href="/order/<%- order.id %>/complete" class="button primary areyousure"
-    >Mark as complete</a
-  >
-  <a href="/order/<%- order.id %>/cancel" class="button danger areyousure"
-    >Mark as cancelled</a
-  >
-  <% } else { %>
-  <a href="/order/<%- order.id %>/incomplete" class="button primary areyousure"
-    >Mark as incomplete</a
-  >
-  <% } %>
+  <div class="order-actions">
+    <% if (order.cancelled) { %>
+      <a href="/order/<%- order.id %>/uncancel" class="button primary areyousure">Undo Cancellation</a>
+    <% } else if (!order.complete) { %>
+      <a href="/order/<%- order.id %>/complete" class="button primary areyousure">Mark as Complete</a>
+      <a href="/order/<%- order.id %>/cancel" class="button danger areyousure">Mark as Cancelled</a>
+    <% } else { %>
+      <a href="/order/<%- order.id %>/incomplete" class="button primary areyousure">Mark as Incomplete</a>
+    <% } %>
+  </div>
 </div>
 
 <% include ../foot.ejs %>

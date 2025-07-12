@@ -1,149 +1,215 @@
 <% include ../head.ejs %>
 
-<!-- Export Widget -->
-<div class="export-widget">
-  <h2>Download all Orders with a Total Cost and Cost Code</h2>
-  <label for="start-date">Start date:</label>
-  <input type="date" id="start-date">
-  <label for="end-date">End date:</label>
-  <input type="date" id="end-date">
-  <button id="export-csv" disabled>Export CSV</button>
-  <div id="export-status"></div>
-</div>
-
 <style>
+  /* General Container and Spacing */
+  .container {
+    max-width: 1200px; /* Wider container for tables */
+    margin: 0 auto;
+    padding: 0 15px;
+  }
+  .spacer {
+    margin: 30px 0;
+    border: 0;
+    height: 1px;
+    background: #eee;
+  }
+
+  /* Export Widget */
   .export-widget {
     background-color: #f2f2f2;
-    border: 1px solid #666;
-    padding: 10px 15px;
+    border: 1px solid #ccc;
+    padding: 15px 20px;
     margin: 20px auto;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px; /* Consistent spacing */
     flex-wrap: wrap;
     justify-content: center;
+    border-radius: 8px;
   }
   .export-widget h2 {
     flex-basis: 100%;
     text-align: center;
-    margin-bottom: 10px;
-    font-size: 1.2rem;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+    color: #333;
   }
   .export-widget label {
+    font-weight: bold;
     font-size: 1rem;
+    color: #555;
   }
-  .export-widget input {
+  .export-widget input[type="date"] {
     font-size: 1rem;
-    padding: 5px 10px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
   }
   .export-widget button {
     font-size: 1rem;
-    padding: 5px 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    padding: 8px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .export-widget button:hover:not(:disabled) {
+    background-color: #0056b3;
+  }
+  .export-widget button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
   }
   #export-status {
     font-size: 0.9rem;
-    color: red;
+    color: #dc3545; /* Error color */
     margin-left: 10px;
+    font-style: italic;
   }
+
+  /* Table Styles */
   .table-wrapper {
-    max-width: 100vw;
-    overflow: hidden;
-    padding: 0 15px;
+    max-width: 100%; /* Allow table to take available width */
+    overflow-x: auto; /* Enable horizontal scrolling on small screens */
+    margin: 20px 0;
+    padding: 0 15px; /* Match container padding */
     display: flex;
     justify-content: center;
   }
   table {
-    width: 95%;
+    width: 95%; /* Slightly less than max-width for padding */
     border-collapse: collapse;
-    margin: 20px 0;
-    font-size: 1rem;
+    font-size: 0.95rem; /* Slightly smaller font for tables */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
   }
   th, td {
-    padding: 10px 15px;
+    padding: 12px 15px; /* More padding */
     text-align: left;
     vertical-align: top;
-    border: 1px solid #ddd;
-    white-space: nowrap;
+    border: 1px solid #e0e0e0; /* Lighter border */
+    white-space: nowrap; /* Prevent wrapping within cells */
     overflow: hidden;
     text-overflow: ellipsis;
   }
   th {
-    background-color: #f9f9f9;
-    font-size: 1.125rem;
+    background-color: #f8f8f8; /* Lighter header background */
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
   }
-  ul {
+  /* Add some row striping for readability */
+  tbody tr:nth-child(even) {
+    background-color: #fdfdfd;
+  }
+  /* Highlight active row/cells if needed */
+  .active {
+    font-weight: bold;
+    background-color: #e0e0e0 !important; /* Override for active pagination button */
+  }
+
+  /* List within table */
+  td ul {
     margin: 0;
-    padding-left: 20px;
+    padding-left: 20px; /* Indent list */
+    list-style-type: disc; /* Standard list style */
   }
+  td ul li {
+    margin-bottom: 5px;
+  }
+
+  /* Pagination */
   .pagination {
     margin: 20px auto;
     padding: 10px;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 5px;
+    gap: 8px; /* Increased gap */
+    align-items: center;
   }
-  .pagination button {
-    padding: 5px 10px;
-    border: 1px solid #ddd;
+  .pagination button, .pagination span {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
     background-color: #fff;
     cursor: pointer;
     font-size: 1rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+  .pagination button:hover:not(:disabled) {
+    background-color: #e0e0e0;
+    border-color: #bbb;
   }
   .pagination button:disabled {
-    background-color: #eee;
+    background-color: #f4f4f4;
+    color: #999;
     cursor: default;
+    border-color: #eee;
   }
   .pagination button.active {
     font-weight: bold;
-    background-color: #ddd;
+    background-color: #007bff; /* Primary color */
+    color: white;
+    border-color: #007bff;
+  }
+  .pagination span { /* For ellipsis */
+    font-size: 1.2rem;
+    color: #555;
+    padding: 8px 0; /* Adjust padding for span */
+  }
+  .pagination .previous, .pagination .next {
+      font-size: 1.2rem; /* Make arrow buttons larger */
+      padding: 8px 12px;
   }
 </style>
 
 <script>
-  // Client-side formatting functions
+  // Helper Functions for formatting
   function formatDate(dateStr) {
+    if (!dateStr) return 'N/A';
     var d = new Date(dateStr);
     var day = d.getDate();
     var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     var month = monthNames[d.getMonth()];
     var year = d.getFullYear();
-    return day + ' ' + month + ' ' + year;
+    return `${day} ${month} ${year}`;
   }
 
   function formatTotalCost(cost) {
+    // Ensure cost is a number, default to 0, and format to 2 decimal places
     return Number(cost || 0).toFixed(2);
   }
 
   function countConstructs(items) {
-    return items.reduce(function(sum, item) {
-      return sum + Number(item.quantity || 0);
-    }, 0);
+    // Safely count constructs from items array
+    return items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+  }
+
+  function formatForFilename(dateStr) {
+    if (!dateStr) return 'unknown_date';
+    var d = new Date(dateStr);
+    var day = ('0' + d.getDate()).slice(-2);
+    var month = ('0' + (d.getMonth() + 1)).slice(-2);
+    var year = d.getFullYear();
+    return `${day}-${month}-${year}`;
   }
 
   function formatFilename(startDateInput, endDateInput) {
-    function formatForFilename(dateStr) {
-      var d = new Date(dateStr);
-      var day = ('0' + d.getDate()).slice(-2);
-      var month = ('0' + (d.getMonth() + 1)).slice(-2);
-      var year = d.getFullYear();
-      return day + '-' + month + '-' + year;
-    }
-    return 'costed_orders_from_' + formatForFilename(startDateInput) + '_to_' + formatForFilename(endDateInput) + '.csv';
+    if (!startDateInput || !endDateInput) return 'orders_export.csv';
+    return `costed_orders_from_${formatForFilename(startDateInput)}_to_${formatForFilename(endDateInput)}.csv`;
   }
 
-  // Update export button state and status messages
-  function updateExportStatus() {
-    var startDateInput = document.getElementById('start-date').value;
-    var endDateInput = document.getElementById('end-date').value;
-    var exportButton = document.getElementById('export-csv');
-    var statusDiv = document.getElementById('export-status');
+  // Update Export Button State and Status Message
+  function updateExportButtonState() {
+    const startDateInput = document.getElementById('start-date').value;
+    const endDateInput = document.getElementById('end-date').value;
+    const exportButton = document.getElementById('export-csv');
+    const statusDiv = document.getElementById('export-status');
 
-    statusDiv.textContent = '';
+    statusDiv.textContent = ''; // Clear previous status
 
     if (!startDateInput || !endDateInput) {
       exportButton.disabled = true;
@@ -151,10 +217,10 @@
       return;
     }
 
-    var startDate = new Date(startDateInput);
-    var endDate = new Date(endDateInput);
-    // Adjust end date for full-day comparison
-    endDate.setHours(23,59,59,999);
+    const startDate = new Date(startDateInput);
+    // Adjust end date to include the entire day for comparison
+    const endDate = new Date(endDateInput);
+    endDate.setHours(23, 59, 59, 999);
 
     if (startDate > endDate) {
       exportButton.disabled = true;
@@ -165,202 +231,211 @@
     exportButton.disabled = false;
   }
 
-  document.getElementById('start-date').addEventListener('change', updateExportStatus);
-  document.getElementById('end-date').addEventListener('change', updateExportStatus);
-
-  // Default the start and end dates on page load:
+  // Set default dates on page load (last month to today)
   document.addEventListener("DOMContentLoaded", function() {
-    var today = new Date();
-    var endDate = today.toISOString().split("T")[0];
-    var lastMonth = new Date();
-    lastMonth.setMonth(lastMonth.getMonth() - 1);
-    var startDate = lastMonth.toISOString().split("T")[0];
+    const today = new Date();
+    const endDateInput = document.getElementById('end-date');
+    const startDateInput = document.getElementById('start-date');
 
-    document.getElementById('start-date').value = startDate;
-    document.getElementById('end-date').value = endDate;
-    updateExportStatus();
+    // Set end date to today
+    endDateInput.value = today.toISOString().split("T")[0];
+
+    // Set start date to one month ago
+    const lastMonth = new Date(today);
+    lastMonth.setMonth(today.getMonth() - 1);
+    startDateInput.value = lastMonth.toISOString().split("T")[0];
+
+    updateExportButtonState(); // Initial state update
   });
 
-  // When clicking export, fetch all matching orders from the server
-  document.getElementById('export-csv').addEventListener('click', function() {
-    var startDateInput = document.getElementById('start-date').value;
-    var endDateInput = document.getElementById('end-date').value;
-    fetch('/order/export?start=' + startDateInput + '&end=' + endDateInput)
-      .then(response => response.json())
-      .then(allOrders => {
-        var csvLines = ['Date,Total cost,x SynBio constructs,Cost code'];
-        allOrders.forEach(function(order) {
-          if (!order.costCode || order.costCode.toLowerCase() === 'n/a') return;
-          var dateFormatted = formatDate(order.createdAt);
-          var totalCostFormatted = formatTotalCost(order.totalCost);
-          var constructCount = countConstructs(order.items);
-          var constructText = constructCount + ' SynBio ' + (constructCount === 1 ? 'construct' : 'constructs');
-          var costCodeClean = order.costCode.replace(/-/g, '');
-          csvLines.push([dateFormatted, totalCostFormatted, constructText, costCodeClean].join(', '));
-        });
-        var csvContent = csvLines.join('\n');
-        var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = formatFilename(startDateInput, endDateInput);
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      })
-      .catch(err => {
-        document.getElementById('export-status').textContent = 'Error fetching export data';
+  // Event listeners for date inputs
+  document.getElementById('start-date').addEventListener('change', updateExportButtonState);
+  document.getElementById('end-date').addEventListener('change', updateExportButtonState);
+
+  // Handle CSV Export Click
+  document.getElementById('export-csv').addEventListener('click', async function() {
+    const startDateInput = document.getElementById('start-date').value;
+    const endDateInput = document.getElementById('end-date').value;
+    const statusDiv = document.getElementById('export-status');
+
+    this.disabled = true; // Disable button while fetching
+    statusDiv.textContent = 'Fetching data...';
+
+    try {
+      const response = await fetch(`/order/export?start=${startDateInput}&end=${endDateInput}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const allOrders = await response.json();
+
+      // Prepare CSV content
+      const csvLines = ['Date,Total Cost,SynBio Constructs,Cost Code']; // Header row
+      allOrders.forEach(function(order) {
+        // Skip orders without a valid cost code for this export
+        if (!order.costCode || order.costCode.toLowerCase() === 'n/a') return;
+
+        const dateFormatted = formatDate(order.createdAt);
+        const totalCostFormatted = formatTotalCost(order.totalCost);
+        const constructCount = countConstructs(order.items);
+        const constructText = `${constructCount} SynBio ${constructCount === 1 ? 'construct' : 'constructs'}`;
+        // Sanitize cost code if necessary, though replace might be sufficient
+        const costCodeClean = order.costCode.replace(/-/g, '');
+
+        csvLines.push([dateFormatted, totalCostFormatted, constructText, costCodeClean].join(','));
       });
+
+      const csvContent = csvLines.join('\n');
+
+      // Create and trigger download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = formatFilename(startDateInput, endDateInput);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url); // Clean up the blob URL
+
+      statusDiv.textContent = 'Export successful!';
+      statusDiv.style.color = 'green';
+
+    } catch (err) {
+      console.error('CSV Export Error:', err);
+      statusDiv.textContent = `Error during export: ${err.message}`;
+      statusDiv.style.color = 'red';
+    } finally {
+      this.disabled = false; // Re-enable button
+    }
   });
 </script>
 
 <%
-  var pages = Math.ceil(count / perPage);
-  page = page || 1;
-  var start, end;
-  if (page === 1) {
-    start = 2;
-    end = 3;
-  } else if (page === pages) {
-    start = pages - 2;
-    end = pages - 1;
+  // Pagination Logic - Revised for clarity and edge cases
+  const totalOrders = count || 0; // Total number of orders fetched
+  const itemsPerPage = perPage || 50; // Default items per page
+  const totalPages = Math.ceil(totalOrders / itemsPerPage);
+
+  // Ensure page is a valid number, default to 1
+  let currentPage = parseInt(page, 10) || 1;
+  currentPage = Math.max(1, Math.min(currentPage, totalPages)); // Clamp page number
+
+  // Calculate pagination links display logic
+  const maxVisiblePages = 5; // Number of page buttons to show around the current page
+  let pageButtons = [];
+
+  if (totalPages <= maxVisiblePages) {
+    // If total pages are few, show all
+    for (let i = 1; i <= totalPages; i++) {
+      pageButtons.push(i);
+    }
   } else {
-    start = Math.max(2, page - 1);
-    end = Math.min(pages - 1, page + 1);
+    // Show ellipsis logic
+    if (currentPage <= Math.floor(maxVisiblePages / 2) + 1) {
+      // Near the beginning
+      for (let i = 1; i <= maxVisiblePages - 1; i++) pageButtons.push(i);
+      pageButtons.push('...');
+      pageButtons.push(totalPages);
+    } else if (currentPage >= totalPages - Math.floor(maxVisiblePages / 2)) {
+      // Near the end
+      pageButtons.push(1);
+      pageButtons.push('...');
+      for (let i = totalPages - maxVisiblePages + 2; i <= totalPages; i++) pageButtons.push(i);
+    } else {
+      // In the middle
+      pageButtons.push(1);
+      pageButtons.push('...');
+      for (let i = currentPage - Math.floor(maxVisiblePages / 2) + 1; i <= currentPage + Math.floor(maxVisiblePages / 2) - 1; i++) {
+        pageButtons.push(i);
+      }
+      pageButtons.push('...');
+      pageButtons.push(totalPages);
+    }
   }
 %>
 
-<!-- Pagination above table -->
+<% /* Pagination above table */ %>
 <div class="pagination">
-  <!-- Previous button -->
-  <button <% if (page <= 1) { %>disabled<% } else { %>onclick="window.location='/order/summary?page=<%- page - 1 %>'"<% } %>>
-    &lsaquo;
-  </button>
+  <button onclick="window.location='/order/summary?page=1'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;&lsaquo;</button> <%/* Go to first */%>
+  <button onclick="window.location='/order/summary?page=<%- Math.max(1, currentPage - 1) %>'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;</button> <%/* Previous */%>
   
-  <!-- Always show first page -->
-  <% if (page === 1) { %>
-    <button class="active" disabled>1</button>
-  <% } else { %>
-    <button onclick="window.location='/order/summary?page=1'">1</button>
-  <% } %>
-  
-  <!-- Ellipsis if gap between first and middle -->
-  <% if (start > 2) { %>
-    <span>...</span>
-  <% } %>
-  
-  <!-- Middle page buttons -->
-  <% for (var i = start; i <= end; i++) { %>
-    <% if (i === page) { %>
-      <button class="active" disabled><%- i %></button>
+  <% pageButtons.forEach(pageNumber => { %>
+    <% if (pageNumber === '...') { %>
+      <span>...</span>
+    <% } else if (pageNumber === currentPage) { %>
+      <button class="active" disabled><%- pageNumber %></button>
     <% } else { %>
-      <button onclick="window.location='/order/summary?page=<%- i %>'"><%- i %></button>
+      <button onclick="window.location='/order/summary?page=<%- pageNumber %>'" class="page-number"><%- pageNumber %></button>
     <% } %>
-  <% } %>
+  <% }); %>
   
-  <!-- Ellipsis if gap between middle and last -->
-  <% if (end < pages - 1) { %>
-    <span>...</span>
-  <% } %>
-  
-  <!-- Always show last page if more than one page -->
-  <% if (pages > 1) { %>
-    <% if (page === pages) { %>
-      <button class="active" disabled><%- pages %></button>
-    <% } else { %>
-      <button onclick="window.location='/order/summary?page=<%- pages %>'"><%- pages %></button>
-    <% } %>
-  <% } %>
-  
-  <!-- Next button -->
-  <button <% if (page >= pages) { %>disabled<% } else { %>onclick="window.location='/order/summary?page=<%- page + 1 %>'"<% } %>>
-    &rsaquo;
-  </button>
+  <button onclick="window.location='/order/summary?page=<%- Math.min(totalPages, currentPage + 1) %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;</button> <%/* Next */%>
+  <button onclick="window.location='/order/summary?page=<%- totalPages %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;&rsaquo;</button> <%/* Go to last */%>
 </div>
+
 
 <div class="table-wrapper">
   <table>
     <thead>
       <tr>
-        <th style="width: 20%;">Created At</th>
-        <th style="width: 20%;">Name</th>
-        <th style="width: 25%;">Items</th>
+        <th style="width: 15%;">Created At</th> <%/* Adjusted width */%>
+        <th style="width: 15%;">Customer Name</th> <%/* Adjusted width */%>
+        <th style="width: 30%;">Items</th> <%/* Increased width for item list */%>
         <th style="width: 15%;">Total Cost</th>
-        <th style="width: 20%;">Cost Code</th>
+        <th style="width: 20%;">Cost Code</th> <%/* Increased width */%>
       </tr>
     </thead>
     <tbody>
-      <% orders.forEach(order => { %>
+      <% if (orders.length === 0) { %>
         <tr>
-          <td>
-            <%- new Date(order.createdAt).toString().split(' GMT')[0] %>
-          </td>
-          <td><%- order.fullName %></td>
-          <td>
-            <ul>
-              <% order.items.forEach(item => { %>
-                <% if (item.type.name) { %>
-                  <li><%- item.type.name %> X<%- item.quantity %></li>
-                <% } else { %>
-                  <li>type not found, possibly deleted</li>
-                <% } %>
-              <% }) %>
-            </ul>
-          </td>
-          <td><%= order.totalCost ? ("£" + order.totalCost) : "n/a" %></td>
-          <td><%- order.costCode || "n/a" %></td>
+          <td colspan="5" class="center muted-text">No orders found matching your criteria.</td>
         </tr>
-      <% }) %>
+      <% } else { %>
+        <% orders.forEach(order => { %>
+          <tr>
+            <td><%- order.createdHumanDate ? order.createdHumanDate() : formatDate(order.createdAt) %></td> <%/* Use helper for consistency */%>
+            <td><%- order.fullName || order.username || 'N/A' %></td> <%/* Prefer fullName, fallback to username */%>
+            <td>
+              <ul>
+                <% if (order.items && order.items.length > 0) { %>
+                  <% order.items.forEach(item => { %>
+                    <% if (item.type?.name) { %>
+                      <li><%- item.type.name %> X<%- item.quantity || 0 %></li>
+                    <% } else { %>
+                      <li>Item type not found or deleted</li>
+                    <% } %>
+                  <% }) %>
+                <% } else { %>
+                    <li>No item details available</li>
+                <% } %>
+              </ul>
+            </td>
+            <td><%= order.totalCost !== null && order.totalCost !== undefined ? '£' + formatTotalCost(order.totalCost) : 'n/a' %></td>
+            <td><%- order.costCode || 'n/a' %></td>
+          </tr>
+        <% }) %>
+      <% } %>
     </tbody>
   </table>
 </div>
 
-<!-- Pagination below table (duplicate of above) -->
+<% /* Pagination below table (duplicate of above) */ %>
 <div class="pagination">
-  <!-- Previous button -->
-  <button <% if (page <= 1) { %>disabled<% } else { %>onclick="window.location='/order/summary?page=<%- page - 1 %>'"<% } %>>
-    &lsaquo;
-  </button>
+  <button onclick="window.location='/order/summary?page=1'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;&lsaquo;</button> <%/* Go to first */%>
+  <button onclick="window.location='/order/summary?page=<%- Math.max(1, currentPage - 1) %>'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;</button> <%/* Previous */%>
   
-  <!-- Always show first page -->
-  <% if (page === 1) { %>
-    <button class="active" disabled>1</button>
-  <% } else { %>
-    <button onclick="window.location='/order/summary?page=1'">1</button>
-  <% } %>
-  
-  <!-- Ellipsis if gap between first and middle -->
-  <% if (start > 2) { %>
-    <span>...</span>
-  <% } %>
-  
-  <!-- Middle page buttons -->
-  <% for (var i = start; i <= end; i++) { %>
-    <% if (i === page) { %>
-      <button class="active" disabled><%- i %></button>
+  <% pageButtons.forEach(pageNumber => { %>
+    <% if (pageNumber === '...') { %>
+      <span>...</span>
+    <% } else if (pageNumber === currentPage) { %>
+      <button class="active" disabled><%- pageNumber %></button>
     <% } else { %>
-      <button onclick="window.location='/order/summary?page=<%- i %>'"><%- i %></button>
+      <button onclick="window.location='/order/summary?page=<%- pageNumber %>'" class="page-number"><%- pageNumber %></button>
     <% } %>
-  <% } %>
+  <% }); %>
   
-  <!-- Ellipsis if gap between middle and last -->
-  <% if (end < pages - 1) { %>
-    <span>...</span>
-  <% } %>
-  
-  <!-- Always show last page if more than one page -->
-  <% if (pages > 1) { %>
-    <% if (page === pages) { %>
-      <button class="active" disabled><%- pages %></button>
-    <% } else { %>
-      <button onclick="window.location='/order/summary?page=<%- pages %>'"><%- pages %></button>
-    <% } %>
-  <% } %>
-  
-  <!-- Next button -->
-  <button <% if (page >= pages) { %>disabled<% } else { %>onclick="window.location='/order/summary?page=<%- page + 1 %>'"<% } %>>
-    &rsaquo;
-  </button>
+  <button onclick="window.location='/order/summary?page=<%- Math.min(totalPages, currentPage + 1) %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;</button> <%/* Next */%>
+  <button onclick="window.location='/order/summary?page=<%- totalPages %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;&rsaquo;</button> <%/* Go to last */%>
 </div>
 
 <% include ../foot.ejs %>

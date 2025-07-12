@@ -18,7 +18,7 @@ module.exports = socket => {
                                 console.log('already in cart');
                                 return socket.emit('alreadyInCart', type);
                             } else {
-                                ShoppingCarts.ensureAdd(username, type.id).then(() => {
+                                ShoppingCarts.ensureAddItem(username, type.id).then(() => {
                                     socket.emit('addedToCart', type);
                                 }).catch((err) => {
                                     socket.emit('error', err);

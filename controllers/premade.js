@@ -6,781 +6,766 @@ const File = require('../models/file');
 const SequenceFile = require('../models/sequenceFile');
 const config = require('../config.json');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs').promises; // Use promises API for fs
 const Flash = require('../lib/flash');
 const Log = require('../lib/log');
-const mkdirp = require('mkdirp');
+const mkdirp = require('mkdirp'); // Assuming mkdirp is still the preferred async mkdir function
+const Util = require('../lib/util'); // Assuming Util is used for isAdmin
 
-const premade = {};
-premade.db = {};
-premade.category = {};
-premade.item = {};
+const premadeController = {};
 
-function getDbs() {
-    return new Promise((resolve, reject) => {
-        DB.run().then(dbs => {
-            dbs = dbs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            resolve(dbs);
-        })
-            .error(err => {
-                reject(err);
-            });
-    });
+// --- Helper Functions ---
+
+/**
+ * Fetches all DBs and sorts them by creation date.
+ * @returns {Promise<Array<DB>>} A promise resolving with sorted DB objects.
+ */
+async function getSortedDBs() {
+    try {
+        const dbs = await DB.run();
+        return dbs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    } catch (err) {
+        console.error('Error fetching sorted DBs:', err);
+        throw err; // Re-throw to be caught by calling function
+    }
 }
 
-premade.index = (req, res) => {
-    DB.getJoin({ categories: true }).then((dbs) => {
-        return res.render('premade/index', { dbs });
-    }).catch(err => renderError(err, res));
+/**
+ * A consistent way to handle errors in premade-related operations.
+ * @param {Error} err - The error object.
+ * @param {Object} res - The Express response object.
+ */
+const handleError = (err, res) => {
+    console.error('Premade controller error:', err);
+    renderError('An error occurred in the Premade section.', res);
 };
 
-premade.export = async (req, res) => {
+/**
+ * Safely stringifies JSON, escaping script tags and comments.
+ * @param {any} obj - The object to stringify.
+ * @returns {string} The safely stringified JSON.
+ */
+function safeJSONStringify(obj) {
+    return JSON.stringify(obj)
+        .replace(/<\/script/g, '<\\/script')
+        .replace(/<!--/g, '<\\!--');
+}
+
+/**
+ * Processes file uploads for Type models.
+ * @param {Type} savedType - The saved Type object.
+ * @param {Object} req - Express request object containing files.
+ * @returns {Promise<void>} A promise resolving when the file is processed.
+ */
+async function processMapFile(savedType, req) {
+    if (!req.files || !req.files.mapFile) {
+        return Promise.resolve(); // No file to process
+    }
+
+    const file = req.files.mapFile;
+    const newPath = path.join(config.uploadRoot, file.name);
+
+    try {
+        // Ensure upload directory exists
+        await mkdirp(config.uploadRoot);
+
+        // Move the uploaded file to its final destination
+        await fs.rename(file.path, newPath);
+
+        // Save file metadata to the database
+        await new File({
+            path: newPath,
+            name: file.name,
+            originalName: file.originalname,
+            typeID: savedType.id
+        }).save();
+    } catch (err) {
+        console.error(`Error processing map file for type ${savedType.id}:`, err);
+        throw err; // Re-throw to be caught by caller
+    }
+}
+
+/**
+ * Gets the appropriate item level string based on predefined levels.
+ * @param {string} level - The raw level value from the data.
+ * @returns {string} The formatted level string.
+ */
+const possibleLevels = ['0', '1', '2', 'M', 'P', '-1 (pUAP)'];
+const getItemLevelStr = (level) => {
+    return possibleLevels.includes(level) ? level : 'Unknown';
+};
+
+// --- Controller Actions ---
+
+/**
+ * Renders the main premade index page, showing all databases.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+premadeController.index = async (req, res) => {
+    try {
+        const dbs = await DB.getJoin({ categories: true });
+        res.render('premade/index', { dbs });
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+/**
+ * Exports premade items as a CSV file.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+premadeController.export = async (req, res) => {
     try {
         const categories = await Category.getJoin({ db: true });
-        const out = await Promise.all(categories.map(async category => {
+        const outputData = await Promise.all(categories.map(async (category) => {
             const types = await Type.getByCategory(category.id);
-            const type = Type.getByTypeNumber(category.db.type);
+            // Ensure Type.getByTypeNumber is safe if category.db or category.db.type is null/undefined
+            const typeDefinition = category.db && category.db.type ? Type.getByTypeNumber(category.db.type) : null;
 
             const items = types.map(t => {
-                // Determine the value for whoMadeIt or source
-                const whoMadeIt = t.whoMadeIt || t.source || 'Unknown'; // Use whoMadeIt, then source, or empty string if neither is present
+                // Safely get 'whoMadeIt' or 'source'
+                const whoMadeIt = t.whoMadeIt || t.source || ''; // Default to empty string
 
-                const itemData = [
-                    whoMadeIt,      // First column (whoMadeIt or source)
-                    t.description,  // Second column
+                // Construct data row using definition fields
+                const rowData = [
+                    whoMadeIt,
+                    t.description || '',
                 ];
-
-                // if (!whoMadeIt) {
-                //     console.log(`Missing 'whoMadeIt' or 'source' for type ID: ${t.id}, category ID: ${category.id}`);
-                // }
-
-                // Add the rest of the fields
-                type.fields.forEach(tt => {
-                    if (tt.name !== 'whoMadeIt' && tt.name !== 'description' && tt.name !== 'source') {
-                        itemData.push(t[tt.name] || ''); // Add field value or empty string if undefined
-                    }
-                });
+                if (typeDefinition) {
+                    typeDefinition.fields.forEach(fieldDef => {
+                        // Add fields from definition, excluding those already added, or use empty string if value missing
+                        if (!['whoMadeIt', 'description', 'source'].includes(fieldDef.name)) {
+                            rowData.push(t[fieldDef.name] || '');
+                        }
+                    });
+                }
 
                 return {
-                    name: t.name,
-                    data: itemData, // Array of item data
-                    position: t.position
+                    name: t.name || 'Unnamed Item',
+                    data: rowData, // Array of item data
+                    position: t.position || 0
                 };
             });
 
             return {
-                category: category.name,
-                position: (category.db.position * 100) + category.position,
+                category: category.name || 'Unnamed Category',
+                position: (category.db?.position || 0) * 100 + (category.position || 0), // Safely access nested properties
                 items: items
             };
         }));
 
-        let csv = '';
-        out.sort((a, b) => a.position - b.position)
-            .forEach(o => {
-                csv += o.category + '\n';
-                o.items.sort((a, b) => a.position - b.position)
-                    .forEach(i => {
-                        csv += `${i.name}, ${i.data.join(', ')}\n`; // Join data array with commas
-                    });
-                csv += '\n';
+        // Sort categories and then items within categories
+        outputData.sort((a, b) => a.position - b.position);
+        outputData.forEach(cat => cat.items.sort((a, b) => a.position - b.position));
+
+        let csvContent = '';
+        outputData.forEach(catData => {
+            csvContent += `${catData.category}\n`;
+            catData.items.forEach(item => {
+                // Ensure all data points are strings for proper CSV joining
+                const rowString = [item.name, ...item.data.map(String)].join(', ');
+                csvContent += `${rowString}\n`;
             });
+            csvContent += '\n';
+        });
 
         res.contentType('text/csv');
         res.set("Content-Disposition", "attachment;filename=premade_items.csv");
-        res.send(csv);
+        res.send(csvContent);
+
     } catch (err) {
-        renderError(err, res);
+        handleError(err, res);
     }
 };
 
-function safeJSONStringify(obj) {
-  return JSON.stringify(obj).replace(/<\/script/g, '<\\/script').replace(/<!--/g, '<\\!--');
-}
+/**
+ * Renders the form for rearranging DBs and Categories/Items.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+premadeController.rearrange = async (req, res) => {
+    try {
+        const dbs = await DB.getJoin({ categories: true });
 
-premade.rearrange = (req, res) => {
-    DB.getJoin({ categories: true }).then(dbs => {
-        // Combine all category type fetches into a single promise array
-        let getTypesPromises = dbs.flatMap(db => 
-            db.categories.map(cat => 
-                Type.getByCategory(cat.id).then(types => 
-                    ({ ...cat, items: types.map(t => ({ id: t.id, position: t.position, name: t.name })) })
-                )
+        // Fetch types for all categories across all DBs efficiently
+        const categoriesWithTypes = [];
+        for (const db of dbs) {
+            for (const category of db.categories) {
+                try {
+                    const types = await Type.getByCategory(category.id);
+                    // Add type info (id, position, name) to category object
+                    const enrichedCategory = {
+                        ...category,
+                        items: types.map(t => ({ id: t.id, position: t.position || 0, name: t.name || 'Unnamed' }))
+                    };
+                    categoriesWithTypes.push(enrichedCategory);
+                } catch (err) {
+                    console.error(`Failed to fetch types for category ${category.id}:`, err);
+                    // Optionally push category with empty items or handle error differently
+                    categoriesWithTypes.push({ ...category, items: [] });
+                }
+            }
+        }
+
+        // Reconstruct dbs with enriched categories, ensuring correct association
+        const fullDbs = dbs.map(db => ({
+            ...db,
+            categories: db.categories.map(dbCat =>
+                categoriesWithTypes.find(cat => cat.id === dbCat.id) || dbCat // Use enriched data if found, else original
             )
-        );
+        }));
 
-        Promise.all(getTypesPromises)
-            .then(fullCats => {
-                // Merge the full categories back into their respective dbs
-                let fullDbs = dbs.map(db => ({
-                    ...db,
-                    categories: fullCats.filter(cat => db.categories.some(dbCat => dbCat.id === cat.id))
-                }));
-                
-                // Stringify the fullDbs safely for the client-side
-                let safeDbsStr = safeJSONStringify(fullDbs);
+        const safeDbsStr = safeJSONStringify(fullDbs);
+        // Validate JSON parsing
+        const safeDbs = JSON.parse(safeDbsStr);
 
-                // checked that safeDbsStr is a valid JSON string
-                let safeDbs = JSON.parse(safeDbsStr);
-
-                // safeDbs is verified as an array of objects
-
-                console.log('JREME', safeDbs)
-
-                return res.render('premade/rearrange', { dbs: safeDbs });
-            })
-            .catch(err => renderError(err, res));
-    }).catch(err => renderError(err, res));
+        res.render('premade/rearrange', { dbs: safeDbs });
+    } catch (err) {
+        handleError(err, res);
+    }
 };
 
+/**
+ * Saves the rearranged order of DBs, Categories, and Types.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+premadeController.rearrangeSave = async (req, res) => {
+    try {
+        const newOrderData = JSON.parse(req.body.newOrder);
+        const savePromises = [];
 
-//TODO
-premade.rearrangeSave = (req, res) => {
-
-    const newOrder = JSON.parse(req.body.newOrder);
-
-    const toDo = [];
-
-
-    newOrder.map(db => {
-
-        toDo.push(
-            new Promise((good, bad) => {
-                DB.get(db.id)
-                    .then(doc => {
-                        doc.position = db.position;
-                        return doc.save()
-                    })
-                    .then(savedDoc => {
-                        good();
-                    })
-                    .catch(bad)
-            })
-        );
-
-        db.categories.map(c => {
-
-            c.items.map(i => {
-                toDo.push(
-                    new Promise((good, bad) => {
-                        Type.getByID(i.id)
-                            .then(item => {
-                                item.position = i.position;
-                                return item.save()
-                            })
-                            .then(savedDoc => {
-                                good();
-                            })
-                            .catch(bad)
-                    })
-                );
-            })
-
-
-            toDo.push(
-                new Promise((good, bad) => {
-                    Category.get(c.id)
-                        .then(doc => {
-                            doc.position = c.position;
-                            return doc.save()
-                        })
-                        .then(savedDoc => {
-                            good();
-                        })
-                        .catch(bad)
+        for (const dbData of newOrderData) {
+            // Save DB position
+            savePromises.push(
+                DB.get(dbData.id).then(doc => {
+                    doc.position = dbData.position;
+                    return doc.save();
                 })
             );
-        });
-    });
 
-
-    Promise.all(toDo)
-        .then(() => {
-            Flash.success(req, 'Rearrange saved');
-            Log.error('Rearrange saved');
-            return res.sendStatus(200);
-        })
-        .catch(err => {
-            Flash.error(req, err);
-            Log.error(err);
-            return res.sendStatus(400).json({ error: err });
-        });
-
-};
-
-
-premade.db.new = (req, res) => {
-    getDbs().then((dbs) => {
-        return res.render('premade/db/edit', { types: Type.TYPES, dbs });
-    }).catch(err => renderError(err, res));
-};
-
-premade.db.save = (req, res) => {
-    const name = req.body.name;
-    const type = req.body.type;
-    const description = req.body.description;
-    const id = req.body.id;
-
-    if (id) {
-        DB.get(id)
-            .then((db) => {
-                db.name = name;
-                //db.type=type; //should not be allowed to change this!!!!
-                db.description = description;
-                db.save().then(() => {
-                    res.redirect('/premade');
-                }).catch((err) => {
-                    return renderError(err, res);
-                })
-            })
-            .catch((err) => {
-                return renderError(err, res);
-            })
-
-    } else {
-        const db = new DB({
-            name,
-            type,
-            description
-        });
-        db.save().then(() => {
-            res.redirect('/premade');
-        }).catch((err) => {
-            return renderError(err, res);
-        })
-    }
-
-
-};
-
-premade.db.show = (req, res) => {
-
-    DB.get(req.params.id).getJoin({ categories: true }).then(db => {
-        getDbs().then((dbs) => {
-            return res.render('premade/db/show', { db, dbs });
-        }).catch((err) => renderError(err, res));
-    }).catch((err) => renderError(err, res));
-};
-
-premade.db.disable = (req, res) => {
-    const id = req.params.id;
-    DB.get(id).then((db) => {
-        db.disabled = true;
-        db.save().then(() => {
-            return res.redirect(`/premade/${id}`);
-        }).catch((err) => renderError(err, res));
-    }).catch((err) => renderError(err, res));
-};
-
-premade.db.delete = (req, res) => {
-    const id = req.params.id;
-    DB.get(id).then((db) => {
-        db.delete().then(() => {
-            return res.redirect('/premade/');
-        }).catch((err) => renderError(err, res));
-    }).catch((err) => renderError(err, res));
-};
-
-premade.db.enable = (req, res) => {
-    const id = req.params.id;
-    DB.get(id).then((db) => {
-        db.disabled = false;
-        db.save().then(() => {
-            return res.redirect(`/premade/${id}`);
-        }).catch((err) => renderError(err, res));
-    }).catch((err) => renderError(err, res));
-};
-
-premade.db.edit = (req, res) => {
-    const id = req.params.id;
-    DB.get(id)
-        .then((db) => {
-            getDbs().then((dbs) => {
-                // type 1 is at index 0, etc.
-                const types = Type.TYPES;
-                const selectedType = types[db.type - 1];
-                // console.log('hardcoded types', Type.TYPES);
-                // console.log('db.type', db.type)
-                // console.log('selectedType', selectedType.type);
-
-                // currently we don't want the user to be able to change the type
-                // therefore we're only passing the selected type to the view
-                // see: premade.category.save (this file, line ~324)
-                const data = { db, dbs, types: [selectedType], selectedType }
-                return res.render('premade/db/edit', data);
-            }).catch(err => renderError(err, res));
-        })
-        .catch((err) => {
-            return renderError(err, res);
-        });
-};
-
-premade.category.new = (req, res) => {
-    const id = req.params.id;
-    DB.get(id).then(db => {
-        getDbs().then((dbs) => {            
-            return res.render('premade/category/edit', { dbs, db });
-        }).catch(err => renderError(err, res));
-    }).catch(err => renderError(err, res));
-};
-
-premade.category.save = (req, res) => {
-    const name = req.body.name;
-    const description = req.body.description;
-    const id = req.body.id;
-    const dbID = req.params.id;
-
-    if (id) {
-        Category.get(id)
-            .then((category) => {
-                category.name = name;
-                // db.type=type; //should not be allowed to change this!!!!
-                category.description = description;
-                category.save().then(() => {
-                    res.redirect(`/premade/category/${id}`);
-                }).catch((err) => {
-                    return renderError(err, res);
-                })
-            })
-            .catch((err) => {
-                return renderError(err, res);
-            })
-
-    } else {
-        const category = new Category({
-            name,
-            description,
-            dbID
-        });
-        category.save().then((newCategory) => {
-            res.redirect(`/premade/category/${newCategory.id}`);
-        }).catch((err) => {
-            return renderError(err, res);
-        })
-    }
-};
-
-premade.category.edit = (req, res) => {
-    const id = req.params.categoryID;
-    Category.get(id).getJoin({ db: true })
-        .then((category) => {
-            getDbs().then((dbs) => {
-                return res.render('premade/category/edit', { category, dbs, db: category.db });
-            }).catch(err => renderError(err, res));
-        })
-        .catch((err) => {
-            return renderError(err, res);
-        });
-
-};
-
-premade.category.show = (req, res) => {
-
-    const categoryID = req.params.categoryID;
-
-    Category.get(categoryID).getJoin({ db: true }).then((category) => {
-
-        Type.getByCategory(categoryID).then(types => {
-            const type = Type.getByTypeNumber(category.db.type);
-            const headings = ['Description', 'Comments'];
-            const items = [];
-
-            type.fields.map(t => {
-                headings.push(t.text);
-            });
-
-            types.map(t => {
-                const x = {
-                    items: [t.description, t.comments],
-                    id: t.id,
-                    name: t.name,
-                    disabled: t.disabled,
-                    file: t.file,
-                    position: t.position
-                };
-                type.fields.map(tt => {
-                    if (t[tt.name]) {
-                        x.items.push(t[tt.name])
-                    }
-                });
-                if (x.items.length > 0) {
-                    items.push(x);
-                }
-            });
-
-            getDbs().then((dbs) => {
-                return res.render('premade/category/show', { db: category.db, dbs, headings, items, category });
-            }).catch((err) => renderError(err, res));
-        }).catch(err => renderError(err, res));
-    }).catch(err => renderError(err, res));
-};
-
-premade.category.enable = (req, res) => {
-    const id = req.params.categoryID;
-    Category.get(id).then((category) => {
-        category.disabled = false;
-        category.save().then(() => {
-            return res.redirect(`/premade/category/${id}`);
-        }).catch((err) => renderError(err, res));
-    }).catch((err) => renderError(err, res));
-};
-premade.category.disable = (req, res) => {
-    const id = req.params.categoryID;
-    Category.get(id).then((category) => {
-        category.disabled = true;
-        category.save().then((saved) => {
-            return res.redirect(`/premade/category/${id}`);
-        }).catch((err) => renderError(err, res));
-    }).catch((err) => renderError(err, res));
-};
-premade.category.delete = (req, res) => {
-    const id = req.params.categoryID;
-    Category.get(id).then((category) => {
-        category.delete().then(() => {
-            return res.redirect(`/premade/${category.dbID}`);
-        }).catch((err) => renderError(err, res));
-    }).catch((err) => renderError(err, res));
-};
-
-premade.item.new = (req, res) => {
-    // const dbID = req.params.id;
-    const categoryID = req.params.categoryID;
-    Category.get(categoryID).getJoin({ db: true }).then((category) => {
-        // DB.get(dbID).run().then(db => {
-        const type = Type.getByTypeNumber(category.db.type);
-
-
-        getDbs().then((dbs) => {
-            return res.render('premade/item/edit', { dbs, db: category.db, category, type });
-        }).catch((err) => renderError(err, res));
-        // }).catch(err => renderError(err, res));
-    }).catch(err => renderError(err, res));
-};
-
-function processMapFile(savedType, req) {
-    return new Promise((good, bad) => {
-        if (req.files && req.files.mapFile) {
-            const file = req.files.mapFile;
-            // take temporary file path and give it new path
-            // i.e. from tmp directory to uploadRoot
-            // e.g. from /tmp/file.ex to public/uploads/file.ex
-            const newPath = path.join(config.uploadRoot, file.name);
-            // ensure newPath is there:
-            // Use it to run function that requires the directory. 
-            // Callback is called after path is created or if path did already exists. 
-            // Error err is set if mkdirp failed to create directory path.
-            mkdirp(config.uploadRoot).then(made => {
-                //Carry on, all good, directory exists / created.
-
-                fs.rename(file.path, newPath, (err) => {
-                    if (err) {
-                        console.error('ERROR', err);
-                    }
-                    new File({
-                        path: newPath,
-                        name: file.name,
-                        originalName: file.originalname,
-                        typeID: savedType.id
+            // Save Category positions and their items' positions
+            for (const categoryData of dbData.categories) {
+                savePromises.push(
+                    Category.get(categoryData.id).then(doc => {
+                        doc.position = categoryData.position;
+                        return doc.save();
                     })
-                        .save()
-                        .then(() => {
-                            return good();
+                );
+                for (const itemData of categoryData.items) {
+                    savePromises.push(
+                        Type.getByID(itemData.id).then(doc => {
+                            doc.position = itemData.position;
+                            return doc.save();
                         })
-                        .catch((err) => {
-                            return bad(err);
-                        });
-                });
-            });
-        } else {
-            return good();
-        }
-    });
-}
-
-premade.item.save = (req, res) => {
-    const dbID = req.body.dbID;
-    const categoryID = req.params.categoryID;
-
-    const id = req.body.id;
-
-    // hidden field of id, if it's in edit mode
-    if (id) {
-
-        // console.log('edit item mode')
-
-        Type.getByID(id)
-            .then((type) => {
-                var TYPE = Type.getByTypeNumber(type.db.type);
-
-                type.name = req.body.name;
-
-
-                TYPE.fields.map((f) => {
-                    type[f.name] = req.body[f.name];
-                });
-
-                type.comments = req.body.comments;
-                type.description = req.body.description;
-                type.concentration = req.body.concentration;
-                type.synBioID = req.body.synBioID;
-
-                type.documentation = req.body.documentation;
-
-                type.note = req.body.note;
-
-                type.includeOnRecentlyAdded = 
-                    (req.body.includeonrecentlyadded && req.body.includeonrecentlyadded === 'on') ? 
-                        true : false;
-
-                type.includeOnRecentlyAddedTimestamp = Date.now();
-    
-                if (req.body.linkurl && req.body.linkurl.length){
-                    let citationsArray = [];
-                    req.body.linkurl.forEach(function(url, index){
-                        // include entry if either field has been edited
-
-                        var bothFieldsEmpty = (url === '' && req.body.linkdesc[index] === '');
-                        var bothFieldsStillDefaultValue = (url === 'Enter URL here' && req.body.linkdesc[index] === 'Enter description here');
-                        var canPush = !bothFieldsEmpty && !bothFieldsStillDefaultValue;
-                        if (canPush){
-                            citationsArray.push({
-                                url,
-                                description: req.body.linkdesc[index],
-                            });
-                        }
-                    });
-                    type.citations = citationsArray;
+                    );
                 }
-
-                type.level = req.body.level;
-
-                type.save()
-                    .then((savedType) => {
-
-                        processMapFile(savedType, req)
-                            .then(() => {
-                                return res.redirect(`/premade/item/${id}`);
-                            })
-                            .catch((err) => {
-                                return renderError(err, res);
-                            });
-
-                    })
-                    .catch((err) => {
-                        return renderError(err, res);
-                    });
-
-
-            }).catch((err) => {
-                return renderError(err, res);
-            })
-
-    } else {
-
-        console.log('new item mode')
-
-        DB.get(dbID).then((db) => {
-            const type = Type.getByTypeNumber(db.type);
-            const obj = {};
-            obj.dbID = dbID;
-            obj.categoryID = categoryID;
-
-            Object.keys(req.body).forEach(key => {
-                obj[key] = req.body[key];
-            });
-
-            obj.includeOnRecentlyAdded = (obj.includeonrecentlyadded && obj.includeonrecentlyadded === 'on') ? true : false;
-            delete obj.includeonrecentlyadded;
-
-            if (obj.linkurl && obj.linkurl.length){
-                let citationsArray = [];
-                obj.linkurl.forEach(function(url, index){
-                    citationsArray.push({
-                        url,
-                        description: obj.linkdesc[index],
-                    });
-                });
-                obj.citations = citationsArray;
             }
-            delete obj.linkurl;
-            delete obj.linkdesc;
+        }
 
-            obj.level = req.body.level;
-            const newType = type.model(obj);
-            newType.name = req.body.name;
-
-            // newType.file = 'TODO';
-            newType.save().then((savedType) => {
-
-                processMapFile(savedType, req)
-                    .then(() => {
-                        return res.redirect(`/premade/item/${savedType.id}`);
-                    })
-                    .catch((err) => {
-                        return renderError(err, res);
-                    });
-
-            }).catch(err => renderError(err, res))
-        }).catch(err => renderError(err, res));
+        await Promise.all(savePromises);
+        Flash.success(req, 'Rearrangement saved successfully.');
+        Log.info(`Rearrangement saved by user ${req.user.username}.`); // Log success with user
+        res.sendStatus(200);
+    } catch (err) {
+        Flash.error(req, `Failed to save rearrangement: ${err.message}`);
+        Log.error(`Error saving rearrangement: ${err.message}`, err); // Log the error
+        res.status(400).json({ error: err.message });
     }
 };
 
-premade.item.uploadSequenceFile = (req, res) => {
-    const seqFile = req.files.file;
-    const { itemID} = req.params;
+// --- DB Management ---
+
+premadeController.db = {};
+
+premadeController.db.new = async (req, res) => {
+    try {
+        const dbs = await getSortedDBs();
+        res.render('premade/db/edit', { types: Type.TYPES, dbs }); // Assuming Type.TYPES is available and correct
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+premadeController.db.save = async (req, res) => {
+    const { id, name, type, description } = req.body;
+    try {
+        if (id) {
+            const db = await DB.get(id);
+            db.name = name;
+            // db.type = type; // Discouraged to change type after creation
+            db.description = description;
+            await db.save();
+            Flash.success(req, `DB "${name}" updated.`);
+        } else {
+            const newDb = new DB({ name, type, description });
+            await newDb.save();
+            Flash.success(req, `DB "${name}" created.`);
+        }
+        res.redirect('/premade');
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+premadeController.db.show = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const db = await DB.get(id).getJoin({ categories: true });
+        const dbs = await getSortedDBs();
+        res.render('premade/db/show', { db, dbs });
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+premadeController.db.disable = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const db = await DB.get(id);
+        db.disabled = true;
+        await db.save();
+        Flash.info(req, `DB "${db.name}" disabled.`);
+        res.redirect(`/premade/${id}`);
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+premadeController.db.enable = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const db = await DB.get(id);
+        db.disabled = false;
+        await db.save();
+        Flash.info(req, `DB "${db.name}" enabled.`);
+        res.redirect(`/premade/${id}`);
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+premadeController.db.delete = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const db = await DB.get(id);
+        const dbName = db.name; // Store name before deletion
+        await db.delete();
+        Flash.success(req, `DB "${dbName}" deleted.`);
+        res.redirect('/premade/');
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+premadeController.db.edit = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const db = await DB.get(id);
+        const dbs = await getSortedDBs();
+        const types = Type.TYPES; // Assuming this is a static list of available types
+        // Find the selected type based on db.type (adjust index if needed)
+        const selectedType = types.find(t => t.type === db.type);
+
+        // We don't want user to change type, so only pass the selected type to view
+        const data = { db, dbs, types: selectedType ? [selectedType] : [], selectedType };
+        res.render('premade/db/edit', data);
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+// --- Category Management ---
+
+premadeController.category = {};
+
+premadeController.category.new = async (req, res) => {
+    const { id: dbID } = req.params; // Category new is usually nested under a DB
+    try {
+        const db = await DB.get(dbID);
+        const dbs = await getSortedDBs();
+        res.render('premade/category/edit', { dbs, db });
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+premadeController.category.save = async (req, res) => {
+    const { id, name, description } = req.body;
+    const { id: dbID } = req.params; // dbID is from the route, e.g., /premade/db/:id/category/save
+    try {
+        let savedCategory;
+        if (id) {
+            const category = await Category.get(id);
+            category.name = name;
+            category.description = description;
+            savedCategory = await category.save();
+            Flash.success(req, `Category "${name}" updated.`);
+        } else {
+            const newCategory = new Category({ name, description, dbID });
+            savedCategory = await newCategory.save();
+            Flash.success(req, `Category "${name}" created.`);
+        }
+        res.redirect(`/premade/category/${savedCategory.id}`);
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+premadeController.category.edit = async (req, res) => {
+    const { categoryID } = req.params;
+    try {
+        const category = await Category.get(categoryID).getJoin({ db: true });
+        const dbs = await getSortedDBs();
+        res.render('premade/category/edit', { category, dbs, db: category.db });
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+premadeController.category.show = async (req, res) => {
+    const { categoryID } = req.params;
+    try {
+        const category = await Category.get(categoryID).getJoin({ db: true });
+        const types = await Type.getByCategory(categoryID);
+        const typeDefinition = category.db?.type ? Type.getByTypeNumber(category.db.type) : null;
+
+        if (!typeDefinition) {
+            throw new Error(`Type definition not found for DB type: ${category.db?.type}`);
+        }
+
+        const headings = ['Description', 'Comments'];
+        typeDefinition.fields.forEach(field => headings.push(field.text));
+
+        const items = [];
+        for (const t of types) {
+            const itemData = {
+                items: [t.description || '', t.comments || ''],
+                id: t.id,
+                name: t.name,
+                disabled: t.disabled,
+                file: t.file,
+                position: t.position || 0
+            };
+            typeDefinition.fields.map(fieldDef => {
+                if (t[fieldDef.name]) {
+                    itemData.items.push(t[fieldDef.name]);
+                }
+            });
+            // Only push if there's actual data in the items array (beyond placeholders)
+            if (itemData.items.some(val => val !== '' && val !== null && val !== undefined)) {
+                items.push(itemData);
+            }
+        }
+
+        const dbs = await getSortedDBs();
+        res.render('premade/category/show', { db: category.db, dbs, headings, items, category });
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+premadeController.category.enable = async (req, res) => {
+    const { categoryID } = req.params;
+    try {
+        const category = await Category.get(categoryID);
+        category.disabled = false;
+        await category.save();
+        Flash.info(req, `Category "${category.name}" enabled.`);
+        res.redirect(`/premade/category/${categoryID}`);
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+premadeController.category.disable = async (req, res) => {
+    const { categoryID } = req.params;
+    try {
+        const category = await Category.get(categoryID);
+        category.disabled = true;
+        await category.save();
+        Flash.info(req, `Category "${category.name}" disabled.`);
+        res.redirect(`/premade/category/${categoryID}`);
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+premadeController.category.delete = async (req, res) => {
+    const { categoryID } = req.params;
+    try {
+        const category = await Category.get(categoryID);
+        const dbID = category.dbID; // Store before deletion
+        await category.delete();
+        Flash.success(req, `Category "${category.name}" deleted.`);
+        res.redirect(`/premade/${dbID}`);
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+// --- Item (Type) Management ---
+
+premadeController.item = {};
+
+premadeController.item.new = async (req, res) => {
+    const { categoryID } = req.params;
+    try {
+        const category = await Category.get(categoryID).getJoin({ db: true });
+        const typeDefinition = category.db?.type ? Type.getByTypeNumber(category.db.type) : null;
+        if (!typeDefinition) {
+            throw new Error(`Type definition not found for DB type: ${category.db?.type}`);
+        }
+        const dbs = await getSortedDBs();
+        res.render('premade/item/edit', { dbs, db: category.db, category, type: typeDefinition });
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+premadeController.item.save = async (req, res) => {
+    const { categoryID } = req.params;
+    const { id, dbID, name, comments, description, concentration, synBioID, documentation, note, level, includeonrecentlyadded, linkurl, linkdesc } = req.body;
+
+    try {
+        const db = await DB.get(dbID); // Need DB to get type definition
+        const typeDefinition = Type.getByTypeNumber(db.type);
+        if (!typeDefinition) {
+            throw new Error(`Type definition not found for DB type: ${db.type}`);
+        }
+
+        let savedType;
+        if (id) { // Editing existing type
+            const typeInstance = await Type.getByID(id);
+            typeInstance.name = name;
+            typeDefinition.fields.forEach(field => {
+                typeInstance[field.name] = req.body[field.name];
+            });
+            typeInstance.comments = comments;
+            typeInstance.description = description;
+            typeInstance.concentration = concentration;
+            typeInstance.synBioID = synBioID;
+            typeInstance.documentation = documentation;
+            typeInstance.note = note;
+            typeInstance.level = level;
+            typeInstance.includeOnRecentlyAdded = (includeonrecentlyadded === 'on');
+            // Include timestamp only if checkbox state changes or if explicitly set? Or always update?
+            // If always updating: typeInstance.includeOnRecentlyAddedTimestamp = Date.now();
+            // For simplicity, if it's 'on', set timestamp. If it's 'off' or absent, don't touch.
+            if (typeInstance.includeOnRecentlyAdded) {
+                 typeInstance.includeOnRecentlyAddedTimestamp = Date.now();
+            }
+
+            // Process citations
+            if (linkurl && Array.isArray(linkurl)) {
+                typeInstance.citations = linkurl.map((url, index) => ({
+                    url: url || '',
+                    description: (linkdesc && linkdesc[index]) || ''
+                })).filter(cit => cit.url !== '' && cit.description !== ''); // Filter out empty citations
+            } else {
+                typeInstance.citations = [];
+            }
+
+            savedType = await typeInstance.save();
+            Flash.success(req, `Item "${name}" updated.`);
+
+        } else { // Creating new type
+            const newTypeData = {
+                dbID,
+                categoryID,
+                name,
+                comments,
+                description,
+                concentration,
+                synBioID,
+                documentation,
+                note,
+                level,
+                includeOnRecentlyAdded: (includeonrecentlyadded === 'on'),
+                citations: [],
+            };
+
+            if (linkurl && Array.isArray(linkurl)) {
+                newTypeData.citations = linkurl.map((url, index) => ({
+                    url: url || '',
+                    description: (linkdesc && linkdesc[index]) || ''
+                })).filter(cit => cit.url !== '' && cit.description !== '');
+            }
+
+            // Dynamically create instance based on type definition
+            const newType = typeDefinition.model(newTypeData);
+            newType.name = name; // Ensure name is set on the model instance
+
+            savedType = await newType.save();
+            Flash.success(req, `Item "${name}" created.`);
+        }
+
+        // Process any uploaded map file
+        await processMapFile(savedType, req);
+
+        res.redirect(`/premade/item/${savedType.id}`);
+
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+premadeController.item.uploadSequenceFile = async (req, res) => {
+    const { itemID } = req.params;
+    const seqFile = req.files?.file; // Use optional chaining
+
+    if (!seqFile) {
+        Flash.error(req, 'No sequence file uploaded.');
+        return res.redirect(`/premade/item/${itemID}`);
+    }
 
     const newPath = path.join(config.uploadRoot, seqFile.name);
 
-    mkdirp(config.uploadRoot).then(made => {
-        fs.rename(seqFile.path, newPath, (err) => {
-            if (err) {
-                console.error('ERROR', err);
-            }
-            new SequenceFile({
-                path: newPath,
-                name: seqFile.name,
-                originalName: seqFile.originalname,
-                typeID: itemID
-            })
-                .save()
-                .then(() => {
-                    return res.redirect(200);
-                })
-                .catch((err) => {
-                    return renderError(err, res)
-                });
+    try {
+        await mkdirp(config.uploadRoot);
+        await fs.rename(seqFile.path, newPath);
+
+        const newSequenceFile = new SequenceFile({
+            path: newPath,
+            name: seqFile.name,
+            originalName: seqFile.originalname,
+            typeID: itemID
         });
-    });
-}
-
-premade.item.deleteSequenceFile = (req, res) => {
-    const { sequenceFileID } = req.body;
-    const { itemID } = req.params;
-
-    // unpack sequenceFile ID, remove from database
-
-    SequenceFile.get(sequenceFileID)
-        .then((sequenceFile)=> {
-            sequenceFile.delete()
-                .then(()=> {
-                    Flash.success(req, `${sequenceFile.originalName} deleted successfully`);
-                    // TODO can we make this refresh not occur, i.e. nicer like other parts of website?
-                    return res.redirect(`/premade/item/${itemID}`);
-                })
-                .catch((err)=> {
-                    return renderError(err, res);
-                });
-        })
-        .catch((err)=> {
-            return renderError(err, res);
-        })
-    ;
-
-}
-
-var possibleLevels = ['0', '1', '2', 'M', 'P', '-1 (pUAP)'];
-
-var getItemLevelStr = (level) => {
-    if (possibleLevels.includes(level)){
-        return level;
-    } else {
-        return 'Unknown';
+        await newSequenceFile.save();
+        Flash.success(req, `Sequence file "${seqFile.originalname}" uploaded.`);
+        res.redirect(`/premade/item/${itemID}`);
+    } catch (err) {
+        handleError(err, res);
     }
-}
+};
 
-premade.item.show = (req, res) => {
-    const itemID = req.params.itemID;
+premadeController.item.deleteSequenceFile = async (req, res) => {
+    const { sequenceFileID, itemID } = req.params; // Assuming itemID is also in params for redirect
+    try {
+        const sequenceFile = await SequenceFile.get(sequenceFileID);
+        if (!sequenceFile) throw new Error('Sequence file not found.');
 
-    Type.getByID(itemID)
-        .then((item) => {
-            
-            const type = Type.getByTypeNumber(item.db.type);
-            const headings = ['Description', 'Level', 'Comments'];
-            const values = [item.description, item.comments];
+        await sequenceFile.delete();
+        Flash.success(req, `${sequenceFile.originalName} deleted successfully.`);
+        res.redirect(`/premade/item/${itemID}`);
+    } catch (err) {
+        handleError(err, res);
+    }
+};
 
-            type.fields.map(t => {
-                headings.push(t.text);
-            });
+premadeController.item.show = async (req, res) => {
+    const { itemID } = req.params;
+    try {
+        const item = await Type.getByID(itemID);
+        if (!item) throw new Error(`Item with ID ${itemID} not found.`);
 
-            type.fields.map(tt => {
-                if (item[tt.name]) {
-                    values.push(item[tt.name])
-                }
-            });
+        const typeDefinition = item.db?.type ? Type.getByTypeNumber(item.db.type) : null;
+        if (!typeDefinition) {
+            throw new Error(`Type definition not found for item's DB type: ${item.db?.type}`);
+        }
 
-            //get map files, select most recent
-            if (item.mapFile && item.mapFile.length) {
-                item.mapFile = item.mapFile.sort(function (a, b) {
-                    return new Date(b.createdAt) - new Date(a.createdAt);
-                })[0];
-            } else {
-                item.mapFile = null;
+        const headings = ['Description', 'Level', 'Comments'];
+        typeDefinition.fields.forEach(field => headings.push(field.text));
+
+        const values = [
+            item.description || '',
+            getItemLevelStr(item.level), // Use helper for level formatting
+            item.comments || ''
+        ];
+
+        typeDefinition.fields.forEach(fieldDef => {
+            if (item[fieldDef.name]) {
+                values.push(item[fieldDef.name]);
             }
+        });
 
-            var itemLevelStr = getItemLevelStr(item.level)
-            
-            values.splice(1, 0, itemLevelStr);
+        // Get map files, select most recent
+        if (item.mapFile && Array.isArray(item.mapFile) && item.mapFile.length > 0) {
+            item.mapFile = item.mapFile.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+        } else {
+            item.mapFile = null;
+        }
 
-            getDbs().then((dbs) => {
-                return res.render('premade/item/show', { headings, values, dbs, item });
-            }).catch(err => renderError(err, res));
-        }).catch((err) => renderError(err, res));
+        const dbs = await getSortedDBs();
+        res.render('premade/item/show', { headings, values, dbs, item });
+    } catch (err) {
+        handleError(err, res);
+    }
 };
 
-premade.item.enable = (req, res) => {
-    const id = req.params.itemID;
-    Type.getByID(id).then((type) => {
+premadeController.item.enable = async (req, res) => {
+    const { itemID } = req.params;
+    try {
+        const type = await Type.getByID(itemID);
         type.disabled = false;
-        type.save().then(() => {
-            return res.redirect(`/premade/item/${id}`);
-        }).catch((err) => renderError(err, res));
-    }).catch((err) => renderError(err, res));
+        await type.save();
+        Flash.info(req, `Item "${type.name}" enabled.`);
+        res.redirect(`/premade/item/${itemID}`);
+    } catch (err) {
+        handleError(err, res);
+    }
 };
-premade.item.disable = (req, res) => {
-    const id = req.params.itemID;
-    Type.getByID(id).then((type) => {
+
+premadeController.item.disable = async (req, res) => {
+    const { itemID } = req.params;
+    try {
+        const type = await Type.getByID(itemID);
         type.disabled = true;
-        type.save().then(() => {
-            return res.redirect(`/premade/item/${id}`);
-        }).catch((err) => renderError(err, res));
-    }).catch((err) => renderError(err, res));
+        await type.save();
+        Flash.info(req, `Item "${type.name}" disabled.`);
+        res.redirect(`/premade/item/${itemID}`);
+    } catch (err) {
+        handleError(err, res);
+    }
 };
 
-premade.item.edit = (req, res) => {
-    const id = req.params.itemID;
-    Type.getByID(id).then((type) => {
+premadeController.item.edit = async (req, res) => {
+    const { itemID } = req.params;
+    try {
+        const type = await Type.getByID(itemID);
+        if (!type) throw new Error(`Item with ID ${itemID} not found.`);
 
-        type.fields = Type.getByTypeNumber(type.db.type).fields;
+        // Add type definition fields to the type object for easy access in the view
+        const typeDefinition = Type.getByTypeNumber(type.db.type); // This might need adjustment based on how type definitions are stored/retrieved
+        if (!typeDefinition) {
+            throw new Error(`Type definition not found for item's DB type: ${type.db?.type}`);
+        }
+        type.fields = typeDefinition.fields;
 
-        Category.get(type.categoryID)
-            .then((category) => {
+        // Get map files, select most recent
+        if (type.mapFile && Array.isArray(type.mapFile) && type.mapFile.length > 0) {
+            type.mapFile = type.mapFile.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+        } else {
+            type.mapFile = null;
+        }
 
-                //get files, select most recent
-                if (type.mapFile && type.mapFile.length) {
-                    type.mapFile = type.mapFile.sort(function (a, b) {
-                        return new Date(b.createdAt) - new Date(a.createdAt);
-                    })[0];
-                } else {
-                    type.mapFile = null;
-                }
+        // Format level for display in edit form
+        type.level = getItemLevelStr(type.level);
 
-                var typeLevelStr = getItemLevelStr(type.level)
+        const category = await Category.get(type.categoryID);
+        const dbs = await getSortedDBs();
 
-                type.level = typeLevelStr;
-
-                getDbs().then((dbs) => {
-                    return res.render('premade/item/edit.ejs', { type, dbs, category, db: type.db });
-                }).catch(err => renderError(err, res));
-            })
-    }).catch((err) => renderError(err, res));
-};
-premade.item.delete = (req, res) => {
-    const id = req.params.itemID;
-    Type.getByID(id).then((type) => {
-        type.delete().then(() => {
-            return res.redirect(`/premade/category/${type.categoryID}`);
-        }).catch((err) => renderError(err, res));
-    }).catch((err) => renderError(err, res));
+        res.render('premade/item/edit.ejs', { type, dbs, category, db: type.db });
+    } catch (err) {
+        handleError(err, res);
+    }
 };
 
-module.exports = premade;
+premadeController.item.delete = async (req, res) => {
+    const { itemID } = req.params;
+    try {
+        const type = await Type.getByID(itemID);
+        if (!type) throw new Error(`Item with ID ${itemID} not found.`);
+
+        const categoryID = type.categoryID; // Store before deletion
+        await type.delete();
+        Flash.success(req, `Item "${type.name}" deleted.`);
+        res.redirect(`/premade/category/${categoryID}`);
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+module.exports = premadeController;

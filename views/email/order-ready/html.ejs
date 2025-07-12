@@ -1,73 +1,126 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <meta name="viewport" content="width=device-width"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <title>SynBio Order Ready</title>
+    <title>SynBio Order Ready for Collection</title>
+    <style type="text/css">
+        body { margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif; line-height: 1.6; }
+        .email-container { width: 100%; max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #dddddd; border-collapse: collapse; }
+        .header { background-color: #f8f8f8; padding: 20px; text-align: center; border-bottom: 1px solid #dddddd; }
+        .header img { max-width: 80px; height: 80px; display: block; margin: 0 auto 10px auto; }
+        .header h1 { margin: 0; font-size: 24px; color: #333333; }
+        .order-info { padding: 20px; text-align: center; }
+        .order-info p { margin: 0 0 10px 0; }
+        .order-info a { color: #007bff; text-decoration: none; }
+        .order-info a:hover { text-decoration: underline; }
+        .instructions { padding: 0 20px 20px 20px; font-size: 13px; color: #555555; }
+        .instructions p { margin: 0 0 10px 0; }
+        .instructions strong { color: #333333; }
+        .instructions .important-note { text-decoration: underline; margin-bottom: 1em; display: block; }
+        .instructions a { color: #007bff; text-decoration: underline; }
+        .section-title { background-color: #eeeeee; padding: 10px 20px; font-size: 18px; color: #333333; border-bottom: 1px solid #dddddd; }
+        .content-table { width: 100%; border-collapse: collapse; padding: 0 20px; } /* Padding on cells, not table */
+        .content-table th, .content-table td { padding: 12px; text-align: left; border-bottom: 1px solid #dddddd; }
+        .content-table th.center, .content-table td.center { text-align: center; }
+        .content-table th { background-color: #f8f8f8; font-weight: bold; color: #333333; }
+        .content-table tbody tr:nth-child(even) { background-color: #f9f9f9; }
+        .content-table tfoot td { font-weight: bold; background-color: #eeeeee; }
+        .footer { padding: 20px; text-align: center; font-size: 12px; color: #777777; border-top: 1px solid #dddddd; }
+        .footer a { color: #777777; text-decoration: underline; }
+        .agreement-text { padding: 0 20px 20px 20px; font-size: 13px; color: #555555; }
+        .agreement-text p { margin: 0 0 10px 0; }
+        .agreement-text a { color: #007bff; text-decoration: underline; }
+    </style>
 </head>
-
-<!-- <body style="padding-left: 20px; padding-right: 20px;"> -->
 <body>
-
-<img class="center" src="<%- baseURL %>/img/logo.png" style="max-width: 80px; margin-bottom:20px; width: 80px; height: 80px; min-width: 80px;">
-
-<h1 class="center">SynBio Order Ready</h1>
-<p class="center">Your order <%- locals.order.janCode %> is ready to collect from SynBio.</p>
-<p class="center">Plasmids should be collected from the Synbio collection box, located immediately to the left of the TSL agar plates in the TSL first floor cold room (Room #131).</p>
-<p class="center">All orders will be contained in small, clear plastic bags and will be clearly labelled with their respective Synbio order number (as shown on this email above).  Orders will be strictly arranged with the most recent order at the front.  Please do NOT alter this order when searching/collecting your own order(s).</p>
-<p class="center">When collecting your plasmids please check the contents of each bag carefully against your own records and if you encounter any problems please see Mark or Liam (Office: TSL Ground Floor, room G70a or Synbio lab bench: TSL floor 1, room 140).</p>
-
-<div>
-    <div style="text-decoration: underline; margin-bottom: 1em;"><b>Important note:</b></div>
-    <p>
-        TSL SynBio material supplied to TSL and JIC scientists is subject to a Material Transfer Agreement and must not be distributed or shared with any parties beyond TSL and JIC. Any third parties who request use of such material should be directed to TSL SynBio (please email <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a>).
-    </p>
-    <p>
-        Material supplied by TSL SynBio is for non-commercial research purposes only. If you wish to use supplied material for commercial purposes, please contact <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a> in order that an appropriate MTA can be drawn up.
-    </p>
-</div>
-
-<h2 class="center">Order Details</h2>
-<table class="cart">
-    <thead>
-    <tr>
-        <th>Item</th>
-        <th class="center">Quantity</th>
-        <% if (locals.order.totalCost) { %>
-            <th class="center">Price</th>
-        <% } %>
-        <th class="center">Concentration</th>
-        <th class="center">SynBio ID</th>
-    </tr>
-
-    </thead>
-    <tbody>
-    <% locals.order.items.map(function(item){ %>
+    <table class="email-container" border="0" cellpadding="0" cellspacing="0">
+        <!-- Header -->
         <tr>
-            <td><%- item.type.name %></td>
-            <td class="center"><%- item.quantity %></td>
-            <% if (locals.order.totalCost) { %>
-                <td class="center">£<%- item.quantity * locals.order.pricePerUnit %></td>
-            <% } %>
-            <td class="center"><%- item.type.concentration %></td>
-            <td class="center"><%- item.type.synBioID %></td>
+            <td class="header">
+                <img src="<%- baseURL %>/img/logo.png" alt="TSL SynBio Logo">
+                <h1>SynBio Order Ready</h1>
+            </td>
         </tr>
-    <% }); %>
-    <tr>
-        <td><b>Total</b></td>
-        <td class="center"><b><%- locals.order.totalQuantity %></b></td>
-        <% if (locals.order.totalCost) { %>
-            <td class="center"><b>£<%- locals.order.totalCost %></b></td>
-        <% } %>
-    </tr>
-    </tbody>
-</table>
-<% if (locals.order.costCode) { %>
-    <div>
-        Cost code: <%= locals.order.costCode %>
-    </div>
-<% } %>
+        
+        <!-- Order Info -->
+        <tr>
+            <td class="order-info">
+                <p><%- locals.order.janCode || 'N/A' %> is ready to collect from SynBio.</p>
+            </td>
+        </tr>
 
+        <!-- Collection Instructions -->
+        <tr>
+            <td class="section-title">Collection Instructions</td>
+        </tr>
+        <tr>
+            <td class="instructions">
+                <p>Plasmids should be collected from the SynBio collection box, located immediately to the left of the TSL agar plates in the TSL first floor cold room (Room #131).</p>
+                <p>All orders will be contained in small, clear plastic bags and will be clearly labelled with their respective SynBio order number (as shown above). Orders will be strictly arranged with the most recent order at the front. Please do NOT alter this order when searching/collecting your own order(s).</p>
+                <p>When collecting your plasmids please check the contents of each bag carefully against your own records. If you encounter any problems, please see Mark or Liam (Office: TSL Ground Floor, room G70a or SynBio lab bench: TSL floor 1, room 140).</p>
+                <div class="important-note"><strong>Important note:</strong></div>
+                <p>
+                    TSL SynBio material supplied to TSL and JIC scientists is subject to a Material Transfer Agreement and must not be distributed or shared with any parties beyond TSL and JIC. Any third parties who request use of such material should be directed to TSL SynBio (please email <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a>).
+                </p>
+                <p>
+                    Material supplied by TSL SynBio is for non-commercial research purposes only. If you wish to use supplied material for commercial purposes, please contact <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a> in order that an appropriate MTA can be drawn up.
+                </p>
+            </td>
+        </tr>
+        
+        <!-- Order Details Table -->
+        <tr>
+            <td class="section-title">Order Details</td>
+        </tr>
+        <tr>
+            <td>
+                <table class="content-table" border="0" cellpadding="0" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th class="center">Item</th>
+                            <th class="center">Quantity</th>
+                            <% if (locals.order.totalCost) { %>
+                                <th class="center">Price (£)</th>
+                            <% } %>
+                            <th class="center">Concentration</th>
+                            <th class="center">SynBio ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% locals.order.items.forEach(function(item){ %>
+                            <tr>
+                                <td><%- item.type?.name || 'N/A' %></td>
+                                <td class="center"><%- item.quantity || 0 %></td>
+                                <% if (locals.order.totalCost) { %>
+                                    <td class="center">£<%- (item.quantity * locals.order.pricePerUnit).toFixed(2) %></td>
+                                <% } %>
+                                <td class="center"><%- item.type?.concentration || 'N/A' %></td>
+                                <td class="center"><%- item.type?.synBioID || 'N/A' %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td><b>Total</b></td>
+                            <td class="center"><b><%- locals.order.totalQuantity || 0 %></b></td>
+                            <% if (locals.order.totalCost) { %>
+                                <td class="center"><b>£<%- (locals.order.totalCost).toFixed(2) %></b></td>
+                            <% } %>
+                            <td></td> <%-- Spacer for concentration column --%>
+                            <td></td> <%-- Spacer for SynBio ID column --%>
+                        </tr>
+                    </tfoot>
+                </table>
+            </td>
+        </tr>
+        
+        <!-- Footer Link -->
+        <tr>
+            <td class="footer">
+                <a href="<%- baseURL %>/order/<%- locals.order.id %>">View order on site</a>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
