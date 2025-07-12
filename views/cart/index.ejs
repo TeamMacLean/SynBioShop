@@ -16,19 +16,17 @@
     /**
      * Calculates and updates the total quantity and total cost for the cart.
      * Also updates individual item prices if displayPricing is true.
+     * CRITICAL: THIS FUNCTION DOES NOT TRIGGER RELOAD.
      */
     function updateTotals() {
-      // Re-query elements to account for items being added/removed from DOM dynamically.
       const currentQuantityElements = document.querySelectorAll('.item-quantity');
       let calculatedSumQuantity = 0;
       let calculatedSumCost = 0;
 
       currentQuantityElements.forEach((element) => {
-        // Read quantity from input's value or span's textContent.
         const quantity = parseInt(element.value || element.textContent, 10) || 0;
         calculatedSumQuantity += quantity;
 
-        // If pricing is displayed, update individual row prices and sum for total cost.
         if (displayPricing) {
           const parentRow = element.closest('tr');
           if (parentRow) {
@@ -59,27 +57,22 @@
         }
       }
 
-      // If cart becomes empty after removal, trigger a full page reload.
-      if (currentQuantityElements.length === 0) {
-        location.reload();
-      }
+      // !!! IMPORTANT: REMOVED `location.reload()` FROM HERE !!!
+      // `location.reload()` should ONLY be in `removedFromCart` handler.
     }
 
     // --- Event Listeners for Quantity Inputs (only editable ones) ---
-    // This targets only <input> elements with class 'item-quantity'.
     document.querySelectorAll('input.item-quantity').forEach((inputElement) => {
       const handleUpdate = () => {
         let currentValue = parseInt(inputElement.value, 10) || 1;
-        // Basic validation: ensure quantity is at least 1.
         if (currentValue < 1) {
           currentValue = 1;
         }
-        // This input only exists when !displayPricing, so enforce max=1 here.
-        if (currentValue > 1) {
+        if (!displayPricing && currentValue > 1) {
           currentValue = 1;
         }
-        inputElement.value = currentValue; // Update input field if value was clamped.
-        updateTotals(); // Recalculate totals after any change.
+        inputElement.value = currentValue;
+        updateTotals();
       };
 
       inputElement.addEventListener('keyup', handleUpdate);
@@ -88,23 +81,21 @@
     });
 
     // --- Event Listeners for Remove Item Buttons (Delegated for dynamic elements) ---
-    // Using jQuery's .on() for event delegation on the document body.
-    // This correctly handles elements added/removed dynamically and ensures 'areyousure' confirmation.
     $('body').on('click', 'a[name="removeItem"].areyousure', function(e) {
-      e.preventDefault(); // Prevent default link behavior.
-      const itemId = $(this).data('id'); // Get data-id from the button.
-
-      // Custom confirmation logic using native confirm()
+      e.preventDefault();
+      const itemId = $(this).data('id');
+      
       if (!confirm('Are you sure you want to remove this item from your cart?')) {
-          return; // Stop if user cancels.
+          return;
       }
 
-      // Call the server to remove the item via Socket.IO.
       if (typeof socket !== 'undefined') {
         socket.emit('removeFromCart', { id: itemId });
       } else {
         console.warn('Socket.IO not available for removeFromCart. Cannot send removal request.');
-        location.reload(); // Fallback for basic visual reset (though server state won't update).
+        // Fallback for basic visual reset (though server state won't update).
+        // If Socket.IO is the only path for server-side removal, this reload might be insufficient.
+        location.reload(); 
       }
     });
 
@@ -112,16 +103,17 @@
     if (typeof socket !== 'undefined') {
       // Listener for 'removedFromCart' event from the server.
       socket.on('removedFromCart', function (data) {
-        const row = document.querySelector(`tr[data-id="${data.id}"]`);
+        const row = document.querySelector('tr[data-id="' + data.id + '"]'); // Node v12 string concat
         if (row) {
           $(row).fadeOut(500, function () {
             this.remove(); // Remove the row from the DOM.
             const currentNavCartCount = parseInt(navCartCountElement.textContent, 10) || 0;
             navCartCountElement.textContent = Math.max(0, currentNavCartCount - 1);
             
+            // AFTER removal and DOM update, check if cart is empty.
             const remainingItems = document.querySelectorAll('.item-quantity');
             if (remainingItems.length === 0) {
-              location.reload(); // Reload only if cart just became empty.
+              location.reload(); // THIS IS THE ONLY PLACE reload() should occur for cart emptying.
             } else {
               updateTotals(); // Only update totals if items still exist.
             }
@@ -130,31 +122,27 @@
       });
 
       // Listener for client-side quantity changes on INPUTs, sends to server.
-      // Targets INPUT elements by class and name.
       $('input.item-quantity[name="itemQuantity"]').on('change keyup paste', function (e) {
           let val = parseInt($(this).val(), 10) || 1;
           val = Math.min(Math.max(val, 1), 25);
           $(this).val(val);
           socket.emit('changeQuantity', {
-              id: $(this).data('id'), // Ensure data-id is on the INPUT.
+              id: $(this).data('id'),
               quantity: val
           });
       });
 
       // Handler for 'quantityUpdated' event from server.
       socket.on('quantityUpdated', function (data) {
-          // Find the relevant quantity element (either INPUT or SPAN) by its ID.
-          // Note: HTML now assigns id="quantity_<%- index %>" to both.
-          // If you need data-id on the SPAN, add it in the EJS.
-          const quantityElement = document.getElementById(`quantity_${data.id}`); // This assumes data.id corresponds to index
+          const quantityElement = document.getElementById('quantity_' + data.id); // Node v12 string concat
           
           if (quantityElement) {
               if (quantityElement.tagName === 'INPUT') {
                   quantityElement.value = data.quantity;
-                  quantityElement.dispatchEvent(new Event('change')); // Trigger event on input.
+                  quantityElement.dispatchEvent(new Event('change'));
               } else if (quantityElement.tagName === 'SPAN') {
                   quantityElement.textContent = data.quantity;
-                  updateTotals(); // Manual update for SPAN changes.
+                  updateTotals();
               }
           }
       });
@@ -167,7 +155,7 @@
     const orderForm = document.getElementById('orderForm');
     if (orderForm) {
       orderForm.addEventListener('submit', function (event) {
-        event.preventDefault(); // Prevent default submission initially.
+        event.preventDefault();
 
         // Validate Signatory (if pricing is displayed)
         if (displayPricing) {
@@ -192,7 +180,7 @@
 
         // Validate Item Quantities (ensure they are valid numbers and cart not empty)
         const allItemQuantities = document.querySelectorAll('.item-quantity');
-        if (allItemQuantities.length === 0) { // Cart must not be empty at submission.
+        if (allItemQuantities.length === 0) {
           alert('System Error: Your cart is empty. Please add items before placing an order.');
           return;
         }
@@ -200,26 +188,26 @@
           const element = allItemQuantities[i];
           const quantity = parseInt(element.value || element.textContent, 10) || 0;
           if (isNaN(quantity) || quantity < 1) {
-            alert(`System Error: Item at row ${i + 1} has an invalid quantity (${element.value || element.textContent}). Please ensure quantities are whole numbers of 1 or more.`);
+            alert('System Error: Item at row ' + (i + 1) + ' has an invalid quantity (' + (element.value || element.textContent) + '). Please ensure quantities are whole numbers of 1 or more.');
             if (element.tagName === 'INPUT') element.focus();
             return;
           }
         }
 
-        // If all validations pass, submit the form.
         orderForm.submit();
       });
     }
 
     // --- Initial Load ---
-    updateTotals(); // Calculate totals on page load.
+    // This will calculate totals on page load, but NOT reload if cart is empty.
+    updateTotals(); 
   });
 </script>
 
 <div class="container">
     <h1 class="center">Shopping Basket</h1>
 
-    <% /* Flash Messages Display: Ensure these styles are defined in ../head.ejs or your CSS */ %>
+    <% /* Flash Messages Display */ %>
     <% if (typeof messages !== 'undefined') { %>
         <% if (messages.success && messages.success.length > 0) { %>
             <div class="flash-messages flash-success"><%= messages.success %></div>
@@ -291,7 +279,7 @@
                                     id="<%= 'quantity_' + index %>"
                                     min="1"
                                     max="1"
-                                    data-id="<%- item.id %>" <% /* ADDED: data-id for consistency with span */ %>
+                                    data-id="<%- item.id %>"
                                     />
                             <% } %>
                         </td>

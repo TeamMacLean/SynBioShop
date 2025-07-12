@@ -1,34 +1,30 @@
 <% include ../head.ejs %>
 
-<%
 <style>
     .wrapper-for-recently-added-items {
         font-size: 0.875rem;
     }
 </style>
-%>
 
 <div class="container">
 
     <h2 class="center">Recently Added Items</h2>
 
     <div>
-        <% if (items.length > 0) { %> <% /* Check for items.length > 0 */ %>
-
+        <% if (items.length > 0) { %>
             <table class='table wrapper-for-recently-added-items'>
-                <thead> <% /* Added thead for semantic table structure */ %>
+                <thead>
                     <tr>
                         <th style='marginRight:100px'>Item</th>
                         <!-- <th>Date Added</th> -->
                         <th>Description</th>
                     </tr>
                 </thead>
-                <tbody> <% /* Added tbody for semantic table structure */ %>
-                    <% items.forEach(function(item){ %> <% /* Changed map to forEach */ %>
+                <tbody>
+                    <% items.forEach(function(item){ %>
                         <tr>
                             <td width='25%'>
                                 <a href="/premade/item/<%- item.id %>">
-                                    <% /* Simplified and safer truncation logic */ %>
                                     <%- item.name && item.name.length > 48 ? item.name.substring(0, 45) + '...' : item.name %>
                                 </a>
                             </td>
@@ -36,7 +32,6 @@
                                 < % - item.humanFormattedDate %>
                             </td> -->
                             <td> 
-                                <% /* Simplified and safer truncation logic */ %>
                                 <%- item.description && item.description.length > 240 ? item.description.substring(0, 237) + '...' : item.description %>
                             </td>
                         </tr>
@@ -45,7 +40,7 @@
             </table>
             
         <% } else { %>
-            <p class="center muted-text"> <% /* Added muted-text for consistency */ %>
+            <p class="center muted-text">
                 No items found. Please contact system administrator if you think this is in error.
             </p>
         <% } %>

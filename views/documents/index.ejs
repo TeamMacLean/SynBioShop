@@ -6,10 +6,10 @@
 
         <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
         <div class="tile pad inverted">
-            <h4>Admin Actions</h4> <% /* Changed to Admin Actions for consistency */ %>
-            <div class="form-group button-group"> <% /* Added button-group class for styling */ %>
-                <a href="/docs/new" class="button primary">New Subject</a> <% /* Clarified 'New' */ %>
-                <a href="/docs/rearrange" class="button primary">Rearrange Documents</a> <% /* Clarified 'Rearrange' */ %>
+            <h4>Admin Actions</h4>
+            <div class="form-group button-group">
+                <a href="/docs/new" class="button primary">New Subject</a>
+                <a href="/docs/rearrange" class="button primary">Rearrange Documents</a>
             </div>
         </div>
         <% } %>
@@ -17,63 +17,58 @@
         <h1 class="center">Documents</h1>
 
         <div class="simon-list">
+            <%
+                // Filter out disabled subjects (top-level)
+                const filteredSubjects = subjects.filter(function(subject) {
+                    // Admin check should be here if you want admins to see disabled top-level subjects
+                    // Otherwise, if you truly removed it as 'useless', then it's just !subject.disabled
+                    // I will re-add the admin check here, assuming it was removed prematurely from previous test
+                    return !subject.disabled || (locals.signedInUser && locals.signedInUser.isAdmin);
+                });
+            %>
+            <% filteredSubjects.sort((a, b) => a.position - b.position).forEach(function(subject){ %>
+                <h2 class="<%= subject.disabled ? 'disabled' : '' %>"><%- subject.name %></h2> 
 
-            <% /* Iterate through top-level subjects */ %>
-            <% subjects.sort((a, b) => a.position - b.position).forEach(function(subject){ %>
-                <% if (!subject.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Show if not disabled OR if admin */ %>
+                <%
+                    // Filter and sort documents within this subject (direct documents)
+                    const filteredDocuments = (subject.documents || []).filter(function(document) {
+                        return !document.disabled || (locals.signedInUser && locals.signedInUser.isAdmin);
+                    });
+                %>
+                <ul>
+                    <% filteredDocuments.sort((a, b) => a.position - b.position).forEach(function(document){ %>
+                        <li><a href="/docs/item/<%- document.id %>" class="<%= document.disabled ? 'disabled' : '' %>"><span data-icon="&#x68;"></span> <%- document.title %></a></li>
+                    <% }); %>
+                </ul>
 
-                <h2 class="<% if(subject.disabled){ %>disabled<% } %>">
-                    <%- subject.name %>
-                </h2>
+                <%
+                    // NEW: Filter and sort sub-subjects within this subject
+                    const filteredSubSubjects = (subject.subjects || []).filter(function(subSubject) {
+                        return !subSubject.disabled || (locals.signedInUser && locals.signedInUser.isAdmin);
+                    });
+                %>
+                <% filteredSubSubjects.sort((a, b) => a.position - b.position).forEach(function(subSubject){ %>
+                    <div class="indent">
+                        <h3 class="<%= subSubject.disabled ? 'disabled' : '' %>">
+                            <%- subSubject.name %>
+                        </h3>
 
-                <% /* Iterate through documents directly under this subject */ %>
-                <% subject.documents.sort((a, b) => a.position - b.position).forEach(function(document){ %>
-                    <% if (!document.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Show if not disabled OR if admin */ %>
-                        <div class="indent">
-                            <li>
-                                <a 
-                                    class="<% if(document.disabled){ %>disabled<% } %>"
-                                    href="/docs/item/<%- document.id %>"
-                                >
-                                    <span data-icon="&#x68;"></span> <%- document.title %>
-                                </a>
-                            </li>
-                        </div>
-                    <% } %>
-                <% }); %>
-
-                <% /* Iterate through sub-subjects under this subject */ %>
-                <% subject.subjects.sort((a, b) => a.position - b.position).forEach(function(subSubject){ %>
-                    <% if (!subSubject.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Show if not disabled OR if admin */ %>
-                        <div class="indent">
-                            <h3 class="<% if(subSubject.disabled){ %>disabled<% } %>">
-                                <a 
-                                    class="<% if(subSubject.disabled){ %>disabled<% } %>"
-                                    href="/docs/<%- subSubject.id %>"
-                                >
-                                    <%- subSubject.name %>
-                                </a>
-                            </h3>
-
-                            <% /* Iterate through documents under this sub-subject */ %>
-                            <% subSubject.documents.sort((a, b) => a.position - b.position).forEach(function(document){ %>
-                                <% if (!document.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Show if not disabled OR if admin */ %>
-                                    <div class="indent">
-                                        <li>
-                                            <a 
-                                                class="<% if(document.disabled){ %>disabled<% } %>"
-                                                href="/docs/item/<%- document.id %>"
-                                            >
-                                                <span data-icon="&#x68;"></span> <%- document.title %>
-                                            </a>
-                                        </li>
-                                    </div>
-                                <% } %>
+                        <%
+                            // NEW: Filter and sort sub-documents within this sub-subject
+                            const filteredSubDocuments = (subSubject.documents || []).filter(function(subDocument) {
+                                return !subDocument.disabled || (locals.signedInUser && locals.signedInUser.isAdmin);
+                            });
+                        %>
+                        <ul>
+                            <% filteredSubDocuments.sort((a, b) => a.position - b.position).forEach(function(subDocument){ %>
+                                <div class="indent"> <% // Indent this level of document list %>
+                                    <li><a href="/docs/item/<%- subDocument.id %>" class="<%= subDocument.disabled ? 'disabled' : '' %>"><span data-icon="&#x68;"></span> <%- subDocument.title %></a></li>
+                                </div>
                             <% }); %>
-                        </div>
-                    <% } %>
+                        </ul>
+                    </div>
                 <% }); %>
-            <% } %>
+
             <% }); %>
         </div>
     </div>

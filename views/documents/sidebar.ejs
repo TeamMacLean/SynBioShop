@@ -1,12 +1,7 @@
-<% /* No inline <style> tags here. Move styling to /public/style/style.less or ../../head.ejs */ %>
-<%
-<style>  
-.billboard {
-    padding-left:180px !important;
-}
-</style>
-%>
-
+<!--
+    IMPORTANT: Any styling from this <style> block should be placed in your /public/style/style.less file.
+    Do NOT include <style> tags directly in EJS views unless it's critical for email templates.
+-->
 <div class="nav-left">
 
     <a href="/docs"><h2>Documentation</h2></a>
@@ -17,12 +12,11 @@
             <a href="/docs" class="name">Show All</a>
         </li>
         <% subjects.sort((a, b) => a.position - b.position).forEach(function(subject){ %>
-            <% /* Show subject if it's not disabled, OR if it's disabled but the user is an admin */ %>
             <% if (!subject.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %>
                 <li>
                     <span class="icon arrow_carrot-right"></span>
                     <a href="/docs/<%- subject.id %>">
-                        <span class="name <% if(subject.disabled){ %>disabled<% } %>"><%- subject.name %></span>
+                        <span class="name <%= (subject.disabled) ? 'disabled' : '' %>"><%- subject.name %></span>
                     </a>
                 </li>
             <% } %>
