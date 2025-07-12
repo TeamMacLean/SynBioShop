@@ -167,7 +167,7 @@
 </style>
 
 <script>
-  // Helper Functions for formatting
+  // Helper Functions for formatting (These are ONLY for client-side JS use, e.g., if you have client-side export or dynamic updates)
   function formatDate(dateStr) {
     if (!dateStr) return 'N/A';
     var d = new Date(dateStr);
@@ -179,12 +179,10 @@
   }
 
   function formatTotalCost(cost) {
-    // Ensure cost is a number, default to 0, and format to 2 decimal places
     return Number(cost || 0).toFixed(2);
   }
 
   function countConstructs(items) {
-    // Safely count constructs from items array
     return items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
   }
 
@@ -202,24 +200,23 @@
     return `costed_orders_from_${formatForFilename(startDateInput)}_to_${formatForFilename(endDateInput)}.csv`;
   }
 
-  // Update Export Button State and Status Message
   function updateExportButtonState() {
-    const startDateInput = document.getElementById('start-date').value;
-    const endDateInput = document.getElementById('end-date').value;
+    const startDateInput = document.getElementById('start-date'); // Get element directly
+    const endDateInput = document.getElementById('end-date');     // Get element directly
     const exportButton = document.getElementById('export-csv');
     const statusDiv = document.getElementById('export-status');
 
-    statusDiv.textContent = ''; // Clear previous status
+    statusDiv.textContent = '';
 
-    if (!startDateInput || !endDateInput) {
+    // Check if elements exist before accessing .value
+    if (!startDateInput || !endDateInput || !startDateInput.value || !endDateInput.value) {
       exportButton.disabled = true;
       statusDiv.textContent = 'Please select both start and end dates.';
       return;
     }
 
-    const startDate = new Date(startDateInput);
-    // Adjust end date to include the entire day for comparison
-    const endDate = new Date(endDateInput);
+    const startDate = new Date(startDateInput.value);
+    const endDate = new Date(endDateInput.value);
     endDate.setHours(23, 59, 59, 999);
 
     if (startDate > endDate) {
@@ -231,211 +228,240 @@
     exportButton.disabled = false;
   }
 
-  // Set default dates on page load (last month to today)
+  // --- CRITICAL FIX: Wrap all DOM interaction code in DOMContentLoaded ---
   document.addEventListener("DOMContentLoaded", function() {
+    // Event listeners for date inputs
+    // Call updateExportButtonState in DOMContentLoaded so elements exist
+    document.getElementById('start-date').addEventListener('change', updateExportButtonState);
+    document.getElementById('end-date').addEventListener('change', updateExportButtonState);
+
+    // Initial default dates and state update
     const today = new Date();
     const endDateInput = document.getElementById('end-date');
     const startDateInput = document.getElementById('start-date');
 
-    // Set end date to today
-    endDateInput.value = today.toISOString().split("T")[0];
-
-    // Set start date to one month ago
+    if (endDateInput) endDateInput.value = today.toISOString().split("T")[0];
     const lastMonth = new Date(today);
     lastMonth.setMonth(today.getMonth() - 1);
-    startDateInput.value = lastMonth.toISOString().split("T")[0];
+    if (startDateInput) startDateInput.value = lastMonth.toISOString().split("T")[0];
 
-    updateExportButtonState(); // Initial state update
-  });
+    updateExportButtonState(); // Call after setting default values
 
-  // Event listeners for date inputs
-  document.getElementById('start-date').addEventListener('change', updateExportButtonState);
-  document.getElementById('end-date').addEventListener('change', updateExportButtonState);
+    // Handle CSV Export Click
+    document.getElementById('export-csv').addEventListener('click', async function() {
+        // Ensure inputs are re-queried or valid (they are now in scope)
+        const startDateValue = document.getElementById('start-date').value;
+        const endDateValue = document.getElementById('end-date').value;
+        const statusDiv = document.getElementById('export-status');
 
-  // Handle CSV Export Click
-  document.getElementById('export-csv').addEventListener('click', async function() {
-    const startDateInput = document.getElementById('start-date').value;
-    const endDateInput = document.getElementById('end-date').value;
-    const statusDiv = document.getElementById('export-status');
+        this.disabled = true;
+        statusDiv.textContent = 'Fetching data...';
 
-    this.disabled = true; // Disable button while fetching
-    statusDiv.textContent = 'Fetching data...';
+        try {
+            const response = await fetch(`/order/export?start=${startDateValue}&end=${endDateValue}`);
+            if (!response.ok) {
+                const errorBody = await response.text();
+                console.error('DEBUG: HTTP error body:', errorBody);
+                throw new Error(`HTTP error! status: ${response.status}. Body: ${errorBody.substring(0, 100)}...`);
+            }
 
-    try {
-      const response = await fetch(`/order/export?start=${startDateInput}&end=${endDateInput}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const allOrders = await response.json();
+            const allOrders = await response.json();
+            console.log('DEBUG: Fetched data (allOrders):', allOrders);
 
-      // Prepare CSV content
-      const csvLines = ['Date,Total Cost,SynBio Constructs,Cost Code']; // Header row
-      allOrders.forEach(function(order) {
-        // Skip orders without a valid cost code for this export
-        if (!order.costCode || order.costCode.toLowerCase() === 'n/a') return;
+            if (!allOrders || allOrders.length === 0) {
+                console.warn('DEBUG: No orders returned from export API.');
+                statusDiv.textContent = 'No orders found for the selected date range.';
+                statusDiv.style.color = 'orange';
+                return;
+            }
 
-        const dateFormatted = formatDate(order.createdAt);
-        const totalCostFormatted = formatTotalCost(order.totalCost);
-        const constructCount = countConstructs(order.items);
-        const constructText = `${constructCount} SynBio ${constructCount === 1 ? 'construct' : 'constructs'}`;
-        // Sanitize cost code if necessary, though replace might be sufficient
-        const costCodeClean = order.costCode.replace(/-/g, '');
+            const csvLines = ['Date,Total Cost,SynBio Constructs,Cost Code'];
+            allOrders.forEach(function(order) {
+                if (!order.costCode || order.costCode.toLowerCase() === 'n/a') return;
 
-        csvLines.push([dateFormatted, totalCostFormatted, constructText, costCodeClean].join(','));
-      });
+                const dateFormatted = formatDate(order.createdAt);
+                const totalCostFormatted = formatTotalCost(order.totalCost);
+                const constructCount = countConstructs(order.items);
+                const constructText = `${constructCount} SynBio ${constructCount === 1 ? 'construct' : 'constructs'}`;
+                const costCodeClean = order.costCode.replace(/-/g, '');
 
-      const csvContent = csvLines.join('\n');
+                csvLines.push([dateFormatted, totalCostFormatted, constructText, costCodeClean].join(','));
+            });
+            console.log('DEBUG: CSV lines generated. Count:', csvLines.length);
 
-      // Create and trigger download
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = formatFilename(startDateInput, endDateInput);
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url); // Clean up the blob URL
+            const csvContent = csvLines.join('\n');
+            console.log('DEBUG: CSV content generated. Length:', csvContent.length);
 
-      statusDiv.textContent = 'Export successful!';
-      statusDiv.style.color = 'green';
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = formatFilename(startDateValue, endDateValue);
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(url);
 
-    } catch (err) {
-      console.error('CSV Export Error:', err);
-      statusDiv.textContent = `Error during export: ${err.message}`;
-      statusDiv.style.color = 'red';
-    } finally {
-      this.disabled = false; // Re-enable button
-    }
-  });
+            statusDiv.textContent = 'Export successful!';
+            statusDiv.style.color = 'green';
+
+        } catch (err) {
+            console.error('CSV Export Error:', err);
+            console.error('DEBUG: Full error object:', err);
+            statusDiv.textContent = `Error during export: ${err.message}`;
+            statusDiv.style.color = 'red';
+        } finally {
+            this.disabled = false;
+        }
+    });
+  }); // End DOMContentLoaded
 </script>
 
 <%
-  // Pagination Logic - Revised for clarity and edge cases
-  const totalOrders = count || 0; // Total number of orders fetched
-  const itemsPerPage = perPage || 50; // Default items per page
+  const totalOrders = count || 0;
+  const itemsPerPage = perPage || 50;
   const totalPages = Math.ceil(totalOrders / itemsPerPage);
 
-  // Ensure page is a valid number, default to 1
   let currentPage = parseInt(page, 10) || 1;
-  currentPage = Math.max(1, Math.min(currentPage, totalPages)); // Clamp page number
+  currentPage = Math.max(1, Math.min(currentPage, totalPages));
 
-  // Calculate pagination links display logic
-  const maxVisiblePages = 5; // Number of page buttons to show around the current page
+  const maxVisiblePages = 5;
   let pageButtons = [];
 
   if (totalPages <= maxVisiblePages) {
-    // If total pages are few, show all
     for (let i = 1; i <= totalPages; i++) {
       pageButtons.push(i);
     }
   } else {
-    // Show ellipsis logic
-    if (currentPage <= Math.floor(maxVisiblePages / 2) + 1) {
-      // Near the beginning
-      for (let i = 1; i <= maxVisiblePages - 1; i++) pageButtons.push(i);
-      pageButtons.push('...');
-      pageButtons.push(totalPages);
-    } else if (currentPage >= totalPages - Math.floor(maxVisiblePages / 2)) {
-      // Near the end
-      pageButtons.push(1);
-      pageButtons.push('...');
-      for (let i = totalPages - maxVisiblePages + 2; i <= totalPages; i++) pageButtons.push(i);
-    } else {
-      // In the middle
-      pageButtons.push(1);
-      pageButtons.push('...');
-      for (let i = currentPage - Math.floor(maxVisiblePages / 2) + 1; i <= currentPage + Math.floor(maxVisiblePages / 2) - 1; i++) {
+    let startPage = currentPage - Math.floor((maxVisiblePages - 1) / 2);
+    let endPage = currentPage + Math.ceil((maxVisiblePages - 1) / 2);
+
+    if (startPage < 1) {
+        endPage += (1 - startPage);
+        startPage = 1;
+    }
+    if (endPage > totalPages) {
+        startPage -= (endPage - totalPages);
+        endPage = totalPages;
+    }
+    startPage = Math.max(1, startPage);
+
+    if (startPage > 1) {
+        pageButtons.push(1);
+        if (startPage > 2) {
+            pageButtons.push('...');
+        }
+    }
+    for (let i = startPage; i <= endPage; i++) {
         pageButtons.push(i);
-      }
-      pageButtons.push('...');
-      pageButtons.push(totalPages);
+    }
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            pageButtons.push('...');
+        }
+        pageButtons.push(totalPages);
     }
   }
 %>
 
-<% /* Pagination above table */ %>
-<div class="pagination">
-  <button onclick="window.location='/order/summary?page=1'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;&lsaquo;</button> <%/* Go to first */%>
-  <button onclick="window.location='/order/summary?page=<%- Math.max(1, currentPage - 1) %>'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;</button> <%/* Previous */%>
-  
-  <% pageButtons.forEach(pageNumber => { %>
-    <% if (pageNumber === '...') { %>
-      <span>...</span>
-    <% } else if (pageNumber === currentPage) { %>
-      <button class="active" disabled><%- pageNumber %></button>
-    <% } else { %>
-      <button onclick="window.location='/order/summary?page=<%- pageNumber %>'" class="page-number"><%- pageNumber %></button>
-    <% } %>
-  <% }); %>
-  
-  <button onclick="window.location='/order/summary?page=<%- Math.min(totalPages, currentPage + 1) %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;</button> <%/* Next */%>
-  <button onclick="window.location='/order/summary?page=<%- totalPages %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;&rsaquo;</button> <%/* Go to last */%>
-</div>
+<div class="container">
+  <h1 class="center">Order Summary</h1>
 
+  <div class="export-widget">
+    <h2>Download all Orders with a Total Cost and Cost Code that have not been Cancelled</h2>  
+    <label for="start-date">Start date:</label>
+    <input type="date" id="start-date">
+    <label for="end-date">End date:</label>
+    <input type="date" id="end-date">
+    <button id="export-csv">Export CSV</button>
+    <div id="export-status"></div>
+  </div>
 
-<div class="table-wrapper">
-  <table>
-    <thead>
-      <tr>
-        <th style="width: 15%;">Created At</th> <%/* Adjusted width */%>
-        <th style="width: 15%;">Customer Name</th> <%/* Adjusted width */%>
-        <th style="width: 30%;">Items</th> <%/* Increased width for item list */%>
-        <th style="width: 15%;">Total Cost</th>
-        <th style="width: 20%;">Cost Code</th> <%/* Increased width */%>
-      </tr>
-    </thead>
-    <tbody>
-      <% if (orders.length === 0) { %>
-        <tr>
-          <td colspan="5" class="center muted-text">No orders found matching your criteria.</td>
-        </tr>
+    <div class="pagination">
+    <button onclick="window.location='/order/summary?page=1'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;&lsaquo;</button>
+    <button onclick="window.location='/order/summary?page=<%- Math.max(1, currentPage - 1) %>'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;</button>
+    
+    <% pageButtons.forEach(pageNumber => { %>
+      <% if (pageNumber === '...') { %>
+        <span>...</span>
+      <% } else if (pageNumber === currentPage) { %>
+        <button class="active" disabled><%- pageNumber %></button>
       <% } else { %>
-        <% orders.forEach(order => { %>
-          <tr>
-            <td><%- order.createdHumanDate ? order.createdHumanDate() : formatDate(order.createdAt) %></td> <%/* Use helper for consistency */%>
-            <td><%- order.fullName || order.username || 'N/A' %></td> <%/* Prefer fullName, fallback to username */%>
-            <td>
-              <ul>
-                <% if (order.items && order.items.length > 0) { %>
-                  <% order.items.forEach(item => { %>
-                    <% if (item && item.type && item.type.name) { %>
-                      <li><%- item.type.name %> X<%- item.quantity || 0 %></li>
-                    <% } else { %>
-                      <li>Item type not found or deleted</li>
-                    <% } %>
-                  <% }) %>
-                <% } else { %>
-                    <li>No item details available</li>
-                <% } %>
-              </ul>
-            </td>
-            <td><%= order.totalCost !== null && order.totalCost !== undefined ? '£' + formatTotalCost(order.totalCost) : 'n/a' %></td>
-            <td><%- order.costCode || 'n/a' %></td>
-          </tr>
-        <% }) %>
+        <button onclick="window.location='/order/summary?page=<%- pageNumber %>'" class="page-number"><%- pageNumber %></button>
       <% } %>
-    </tbody>
-  </table>
-</div>
+    <% }); %>
+    
+    <button onclick="window.location='/order/summary?page=<%- Math.min(totalPages, currentPage + 1) %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;</button>
+    <button onclick="window.location='/order/summary?page=<%- totalPages %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;&rsaquo;</button>
+  </div>
 
-<% /* Pagination below table (duplicate of above) */ %>
-<div class="pagination">
-  <button onclick="window.location='/order/summary?page=1'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;&lsaquo;</button> <%/* Go to first */%>
-  <button onclick="window.location='/order/summary?page=<%- Math.max(1, currentPage - 1) %>'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;</button> <%/* Previous */%>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 15%;">Created At</th>
+          <th style="width: 15%;">Customer Name</th>
+          <th style="width: 30%;">Items</th>
+          <th style="width: 15%;">Total Cost</th>
+          <th style="width: 20%;">Cost Code</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (orders.length === 0) { %>
+          <tr>
+            <td colspan="5" class="center muted-text">No orders found matching your criteria.</td>
+          </tr>
+        <% } else { %>
+          <% orders.forEach(order => { %>
+            <tr>
+              <td><%= formatDate(order.createdAt) %></td> 
+              <td><%- order.fullName || order.username || 'N/A' %></td>
+              <td>
+                <ul>
+                  <% if (order.items && order.items.length > 0) { %>
+                    <% order.items.forEach(item => { %>
+                      <% if (item && item.type && item.type.name) { %>
+                        <li><%- item.type.name %> X<%- item.quantity || 0 %></li>
+                      <% } else { %>
+                        <li>Item type not found or deleted</li>
+                      <% } %>
+                    <% }) %>
+                  <% } else { %>
+                      <li>No item details available</li>
+                  <% } %>
+                </ul>
+              </td>
+              <td><%= formatTotalCost(order.totalCost) %></td> 
+              <td><%- order.costCode || 'n/a' %></td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
   
-  <% pageButtons.forEach(pageNumber => { %>
-    <% if (pageNumber === '...') { %>
-      <span>...</span>
-    <% } else if (pageNumber === currentPage) { %>
-      <button class="active" disabled><%- pageNumber %></button>
-    <% } else { %>
-      <button onclick="window.location='/order/summary?page=<%- pageNumber %>'" class="page-number"><%- pageNumber %></button>
-    <% } %>
-  <% }); %>
-  
-  <button onclick="window.location='/order/summary?page=<%- Math.min(totalPages, currentPage + 1) %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;</button> <%/* Next */%>
-  <button onclick="window.location='/order/summary?page=<%- totalPages %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;&rsaquo;</button> <%/* Go to last */%>
+  <div class="pagination">
+    <button onclick="window.location='/order/summary?page=1'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;&lsaquo;</button>
+    <button onclick="window.location='/order/summary?page=<%- Math.max(1, currentPage - 1) %>'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;</button>
+    
+    <% pageButtons.forEach(pageNumber => { %>
+      <% if (pageNumber === '...') { %>
+        <span>...</span>
+      <% } else if (pageNumber === currentPage) { %>
+        <button class="active" disabled><%- pageNumber %></button>
+      <% } else { %>
+        <button onclick="window.location='/order/summary?page=<%- pageNumber %>'" class="page-number"><%- pageNumber %></button>
+      <% } %>
+    <% }); %>
+    
+    <button onclick="window.location='/order/summary?page=<%- Math.min(totalPages, currentPage + 1) %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;</button>
+    <button onclick="window.location='/order/summary?page=<%- totalPages %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;&rsaquo;</button>
+  </div>
+
+
 </div>
 
 <% include ../foot.ejs %>

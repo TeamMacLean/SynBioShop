@@ -101,59 +101,66 @@ ordersController.showAll = async (req, res) => {
   }
 };
 
-/**
- * Renders a paginated summary of orders, including user full names from LDAP.
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- */
+// --- Helper Functions for EJS (Moved here from EJS for server-side access) ---
+function formatJsDateForEJS(dateStr) {
+    if (!dateStr) return 'N/A';
+    var d = new Date(dateStr);
+    var day = d.getDate();
+    var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    var month = monthNames[d.getMonth()];
+    var year = d.getFullYear();
+    return `${day} ${month} ${year}`;
+}
+
+function formatJsTotalCostForEJS(cost) {
+    // Ensure cost is a number, default to 0, and format to 2 decimal places
+    return Number(cost || 0).toFixed(2);
+}
+// --- END Helper Functions ---
+
 ordersController.simonSummary = async (req, res) => {
   const perPage = 50;
-  // Ensure page is a positive integer, defaulting to 1.
   let page = parseInt(req.query.page, 10) || 1;
-  page = Math.max(1, page); // Ensure page is at least 1
+  page = Math.max(1, page);
 
   try {
-    // Fetch orders for the current page, joined with items
     const paginatedOrders = await Order
       .orderBy(thinky.r.desc("createdAt"))
       .slice((page - 1) * perPage, page * perPage)
       .getJoin({ items: true })
       .run();
 
-    // Fetch item types and user full names concurrently
     const processedOrders = await Promise.all(
       paginatedOrders.map(async (order) => {
         try {
           const orderWithTypes = await order.getTypes();
-          // Fetch user name from LDAP, falling back to username if LDAP fails
           try {
+            // Node v12 compatible checks (replaces user?.name)
             const users = await ldap.getNameFromUsername(order.username);
-            orderWithTypes.fullName = users.length > 0 ? users[0].name : order.username;
+            orderWithTypes.fullName = (users && users.length > 0 && users[0].name) ? users[0].name : order.username;
           } catch (ldapErr) {
-            console.warn(`LDAP lookup failed for ${order.username}:`, ldapErr.message);
-            orderWithTypes.fullName = order.username; // Fallback
+            console.warn('LDAP lookup failed for ' + order.username + ':', ldapErr.message); // Node v12 concat
+            orderWithTypes.fullName = order.username;
           }
           return orderWithTypes;
         } catch (typeErr) {
-          console.error(`Failed to get types for order ${order.id}:`, typeErr);
-          // Decide how to handle: skip order, render with partial data, etc.
-          // For now, return order with partial data or null if critical
-          return null; // Or return order, omitting type info
+          console.error('Failed to get types for order ' + order.id + ':', typeErr); // Node v12 concat
+          return null;
         }
       })
     );
 
-    // Filter out any orders that failed type fetching if necessary
     const validOrders = processedOrders.filter(order => order !== null);
-
-    // Get total count of all orders
     const totalCount = await Order.count().execute();
 
-    res.render("orders/summary", {
+    res.render('orders/summary', {
       orders: validOrders,
       count: totalCount,
       page: page,
       perPage: perPage,
+      // --- NEW: Pass helper functions to EJS locals ---
+      formatDate: formatJsDateForEJS,
+      formatTotalCost: formatJsTotalCostForEJS
     });
   } catch (err) {
     handleError(err, res);
@@ -173,12 +180,10 @@ ordersController.exportOrders = async (req, res, next) => {
     return res.status(400).json({ error: 'Please provide both start and end dates.' });
   }
 
-  try {
+    try {
     const startDate = new Date(startParam);
     const endDate = new Date(endParam);
-    endDate.setHours(23, 59, 59, 999); // Include the entire end date
-
-    // Validate dates if needed (e.g., ensure startDate <= endDate)
+    endDate.setHours(23, 59, 59, 999);
 
     const orders = await Order
       .between(startDate, endDate, {
@@ -187,22 +192,21 @@ ordersController.exportOrders = async (req, res, next) => {
         rightBound: "closed"
       })
       .orderBy({ index: "createdAt" })
-      // Filter for orders that are not null/empty in costCode and totalCost
-      .filter(order =>
-        order("costCode").ne(null)
-          .and(order("totalCost").ne(null))
-          .and(order("totalCost").ne(""))
+      .filter(orderItem => // Changed 'order' to 'orderItem' to avoid conflict with Order model name.
+        orderItem("costCode").ne(null)
+          .and(orderItem("totalCost").ne(null))
+          .and(orderItem("totalCost").ne(""))
+          .and(orderItem("cancelled").eq(false)) // <<< NEW: Filter out cancelled orders >>>
       )
       .getJoin({ items: true })
       .run();
 
-    // Fetch types for all retrieved orders concurrently
     const ordersWithTypes = await Promise.all(orders.map(order => order.getTypes()));
 
-    res.json(ordersWithTypes); // Assuming JSON output is desired for export
+    res.json(ordersWithTypes);
   } catch (err) {
-    console.error('Error in exportOrders:', err);
-    res.status(500).json({ error: 'Internal server error during order export.' });
+    console.error('Error in exportOrders middleware:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -325,6 +329,8 @@ ordersController.markAsCancelled = async (req, res) => {
   try {
     const order = await Order.get(orderID);
     order.cancelled = true;
+    order.costCode = null; // Ensure 'costCode' is null if cancelled
+    order.totalCost = null; // Ensure 'totalCost' is null if cancelled
     order.complete = false; // Ensure 'complete' is false if cancelled
     await order.save();
     Flash.info(req, `Order ${orderID} marked as cancelled.`);
