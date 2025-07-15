@@ -39,7 +39,10 @@
         
         <tr>
             <td class="order-info">
-                <p><%= (locals.order && locals.order.janCode) || 'N/A' %> placed by <a href="mailto:<%= locals.user && locals.user.mail || '' %>"><%= locals.user && locals.user.name || 'N/A' %></a></p>
+                <p>
+                    <%= (locals.order && locals.order.janCode) || 'N/A' %> placed by 
+                        <%= locals.order && locals.order.username || 'N/A' %>
+                </p>
             </td>
         </tr>
 
