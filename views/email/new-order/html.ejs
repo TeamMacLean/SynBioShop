@@ -41,7 +41,7 @@
             <td class="order-info">
                 <p>
                     <%= (locals.order && locals.order.janCode) || 'N/A' %> placed by 
-                        <%= locals.order && locals.order.username || 'N/A' %>
+                        <%= locals.order && locals.order.user.name || locals.order && locals.order.username || 'N/A' %>
                 </p>
             </td>
         </tr>
