@@ -641,26 +641,27 @@ premadeController.item.show = async (req, res) => {
     const { itemID } = req.params;
     try {
         const item = await Type.getByID(itemID);
-        if (!item) throw new Error('Item with ID ' + itemID + ' not found.'); // Changed to concatenate string
+        if (!item) throw new Error('Item with ID ' + itemID + ' not found.');
 
-        // Safely access item.db.type (replaces item.db?.type)
         const typeDefinition = (item.db && item.db.type) ? Type.getByTypeNumber(item.db.type) : null;
         if (!typeDefinition) {
-            throw new Error('Type definition not found for item\'s DB type: ' + (item.db && item.db.type || '(unknown)')); // Changed to concatenate string
+            throw new Error('Type definition not found for item\'s DB type: ' + (item.db && item.db.type || '(unknown)'));
         }
 
+        // Initialize base headings and values
         const headings = ['Description', 'Level', 'Comments'];
-        typeDefinition.fields.forEach(field => headings.push(field.text));
-
         const values = [
             item.description || '',
             getItemLevelStr(item.level),
             item.comments || ''
         ];
 
+        // Dynamically add fields based on typeDefinition.fields and actual item properties
         typeDefinition.fields.forEach(fieldDef => {
-            if (item[fieldDef.name]) {
-                values.push(item[fieldDef.name]);
+            // Check if the item actually has this property and it's not null/undefined
+            if (item[fieldDef.name] !== undefined && item[fieldDef.name] !== null) {
+                headings.push(fieldDef.text);
+                values.push(item[fieldDef.name]); 
             }
         });
 
@@ -673,20 +674,16 @@ premadeController.item.show = async (req, res) => {
         const dbs = await getSortedDBs();
 
         let isInCart = false;
-        if (req.user) { // Only check if user is logged in
+        if (req.user) {
             try {
-                // Ensure the user's cart is fetched with items
                 const cart = await Cart.filter({ username: req.user.username }).getJoin({ items: true }).run();
                 if (cart && cart.length > 0 && cart[0].items) {
-                    // Check if any item in the cart has a matching typeID (the current item's ID)
                     isInCart = cart[0].items.some(cartItem => cartItem.typeID === item.id);
                 }
             } catch (cartErr) {
                 console.error('Error checking if item is in cart for premade/item/show:', cartErr);
-                // Fail gracefully: assume not in cart on error.
             }
         }
-
 
         res.render('premade/item/show', { headings, values, dbs, item, isInCart });
     } catch (err) {
