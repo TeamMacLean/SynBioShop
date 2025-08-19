@@ -167,12 +167,8 @@
             </div>
 
             <div class="form-group">
-                <label for="documentation">Documentation</label>
-                <% if(typeof type !== 'undefined'){ %>
-                    <textarea id="documentation-tinymce" class="wide" name="documentation"><%- type.documentation || '' %></textarea>
-                <% } else { %>
-                    <textarea id="documentation-tinymce" class="wide" name="documentation"></textarea>
-                <% } %>
+                <label for="documentation">documentation</label>
+                <textarea class="wide" id="documentation" name="documentation"><%- type.documentation %></textarea>
             </div>
 
             <div class="form-group">
@@ -195,7 +191,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // --- Citation Management (Modernized) ---
+    // --- Citation Management ---
     const newCitationFieldsContainer = document.getElementById('new-citation-fields');
     const addCitationLink = document.getElementById('add-new-citation-link');
     const citationTemplate = document.getElementById('citation-template');
@@ -252,7 +248,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- New: Concentration Validation Function ---
     function validateConcentration() {
         const concentrationInput = document.getElementById('concentration');
         if (!concentrationInput) return true; // If input not found, assume valid
@@ -264,11 +259,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Check if it's a valid number (integer or float)
-        // Using Number() and isNaN() is robust for numerical checks.
-        // String.match() with a regex can ensure it only contains digits and optionally one decimal point.
-        // For simplicity and common use case of "whole number or empty", let's use a regex that allows floats
-        // but it could be stricter for *only* whole numbers.
-        // Given 'finite number', let's allow floats.
         const isNumeric = /^-?\d+(\.\d+)?$/.test(value);
 
         if (!isNumeric) {
@@ -276,13 +266,6 @@ document.addEventListener('DOMContentLoaded', function() {
             concentrationInput.focus();
             return false;
         }
-
-        // You might want additional checks, e.g., if it's positive.
-        // if (parseFloat(value) < 0) {
-        //     alert('Error: Concentration cannot be negative.');
-        //     concentrationInput.focus();
-        //     return false;
-        // }
 
         return true;
     }
@@ -297,20 +280,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             // Add other pre-submission validations here if any
         });
-    }
-
-    // --- TinyMCE Initialization ---
-    if (typeof tinymce !== 'undefined') {
-        tinymce.init({
-            selector: '#documentation-tinymce',
-            plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
-            toolbar_mode: 'floating',
-            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
-            images_upload_url: '/imageupload',
-            images_upload_base_path: '/uploads',
-        });
-    } else {
-        console.warn('TinyMCE not loaded. Documentation textarea will be plain text.');
     }
 });
 </script>

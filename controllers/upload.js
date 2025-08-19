@@ -159,10 +159,10 @@ uploadController.download = async (req, res) => {
         if (exists) {
             return res.download(file.path, file.originalName);
         } else {
-            throw new Error('File not found on this server.'); // Reverted wording for clarity
+            throw new Error(); 
         }
     } catch (err) {
-        handleError(err, res, 'File not found - sorry about that but it has probably been lost.'); // Updated message
+        handleError(err, res, `File ${id} not found`); 
     }
 };
 

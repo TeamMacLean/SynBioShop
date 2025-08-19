@@ -566,7 +566,7 @@ premadeController.item.save = async (req, res) => {
             typeInstance.level = level;
             typeInstance.includeOnRecentlyAdded = (includeonrecentlyadded === 'on');
             if (typeInstance.includeOnRecentlyAdded) {
-                 typeInstance.includeOnRecentlyAddedTimestamp = Date.now();
+                typeInstance.includeOnRecentlyAddedTimestamp = Date.now();
             }
 
             if (linkurl && Array.isArray(linkurl)) {
