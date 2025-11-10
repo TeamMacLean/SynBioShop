@@ -1,9 +1,7 @@
 import tinymce from 'tinymce'
 
 import 'tinymce/plugins/image/plugin.min.js'
-import 'tinymce/plugins/imagetools/plugin.min.js'
 import 'tinymce/plugins/autolink/plugin.min.js'
-import 'tinymce/plugins/hr/plugin.min.js'
 import 'tinymce/plugins/link/plugin.min.js'
 
 import $ from 'jquery'

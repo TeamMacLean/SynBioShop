@@ -1,22 +1,12 @@
 const path = require('path');
-const webpack = require('webpack');
 
 module.exports = {
     entry: {
-        main: [
-            path.resolve(path.join(__dirname, "public", "js", "src", 'main.src.js'))
-        ],
-        rearrangePremade: [
-            path.resolve(path.join(__dirname, "public", "js", "src", 'rearrangePremade.jsx'))
-        ],
-        rearrangeDocs: [
-            path.resolve(path.join(__dirname, "public", "js", "src", 'rearrangeDocs.jsx'))
-        ],
-        // goldengate: [
-        //     path.resolve(path.join(__dirname, "public", "js", "src", 'goldengate.jsx'))
-        // ],
+        main: path.resolve(__dirname, 'public', 'js', 'src', 'main.src.js'),
+        rearrangePremade: path.resolve(__dirname, 'public', 'js', 'src', 'rearrangePremade.jsx'),
+        rearrangeDocs: path.resolve(__dirname, 'public', 'js', 'src', 'rearrangeDocs.jsx'),
+        // goldengate: path.resolve(__dirname, 'public', 'js', 'src', 'goldengate.jsx'),
     },
-    watch: false,
     module: {
         rules: [
             {
@@ -26,15 +16,25 @@ module.exports = {
             {
                 test: /\.(js|jsx)$/,
                 exclude: /node_modules/,
-                use: ['babel-loader']
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env', '@babel/preset-react']
+                    }
+                }
             }
         ],
     },
     resolve: {
-        extensions: ['*', '.js', '.jsx']
+        extensions: ['.js', '.jsx']
     },
     output: {
-        path: path.join(__dirname, "public", "js"),
-        filename: '[name].js'
+        path: path.join(__dirname, 'public', 'js'),
+        filename: '[name].js',
+        clean: false
     },
+    target: 'web',
+    performance: {
+        hints: false
+    }
 };
