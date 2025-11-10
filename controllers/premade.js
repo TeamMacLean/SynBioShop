@@ -8,7 +8,6 @@ const path = require('path');
 const fs = require('fs').promises;
 const Flash = require('../lib/flash');
 const Log = require('../lib/log');
-const mkdirp = require('mkdirp');
 const Cart = require('../models/cart');
 
 const premadeController = {};
@@ -65,7 +64,7 @@ async function processMapFile(savedType, req) {
     const newPath = path.join(config.uploadRoot, file.name);
 
     try {
-        await mkdirp(config.uploadRoot);
+        await fs.mkdir(config.uploadRoot, { recursive: true });
         await fs.rename(file.path, newPath);
 
         await new File({

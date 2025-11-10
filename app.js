@@ -1,7 +1,6 @@
 const path = require("path");
 const multer = require("multer");
 const renderError = require("./lib/renderError");
-const bodyParser = require("body-parser");
 const express = require("express");
 const app = express();
 const config = require("./config.json");
@@ -21,9 +20,24 @@ const Order = require("./models/order"); // <-- ADDED: Import Order model
 const flash = require("express-flash");
 const Billboard = require("./models/billboard");
 
-const validator = require("validator");
 const util = require("./lib/util.js");
 const routes = require("./routes");
+
+/**
+ * Escapes HTML special characters to prevent XSS attacks
+ * @param {string} str - The string to escape
+ * @returns {string} The escaped string
+ */
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+}
 
 // --- Express App Setup ---
 app.set("views", path.join(__dirname, "views"));
@@ -35,8 +49,8 @@ app.use(require("less-middleware")(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "public")));
 
 // Body Parsers and Cookie Parser
-app.use(bodyParser.json({ limit: "50mb" }));
-app.use(bodyParser.urlencoded({ extended: false, limit: "50mb" }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: false, limit: "50mb" }));
 app.use(cookieParser());
 
 // Session Middleware
@@ -78,11 +92,11 @@ app.use(async (req, res, next) => { // <<< CHANGED: Made this middleware 'async'
   // Make user data available to all EJS templates as `locals.signedInUser`
   if (req.user) {
     res.locals.signedInUser = {
-      username: validator.escape(req.user.username),
-      name: validator.escape(req.user.name),
-      mail: validator.escape(req.user.mail),
+      username: escapeHtml(req.user.username),
+      name: escapeHtml(req.user.name),
+      mail: escapeHtml(req.user.mail),
       isAdmin: util.isAdmin(req.user.username),
-      company: validator.escape(req.user.company),
+      company: escapeHtml(req.user.company),
       iconURL: req.user.iconURL ? req.user.iconURL : config.defaultUserIcon
     };
 

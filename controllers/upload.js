@@ -6,7 +6,6 @@ const SequenceFile = require('../models/sequenceFile');
 const Flash = require('../lib/flash');
 const Log = require('../lib/log');
 const renderError = require('../lib/renderError');
-const mkdirp = require('mkdirp');
 const config = require('../config.json');
 
 const uploadController = {};
@@ -54,7 +53,7 @@ async function processFileUpload(file, savePath, modelName, associatedID) {
     }
 
     const dir = path.dirname(savePath);
-    await mkdirp(dir);
+    await fsPromises.mkdir(dir, { recursive: true });
 
     await fsPromises.rename(file.path, savePath);
 
@@ -274,7 +273,7 @@ uploadController.uploadImagePost = async (req, res) => {
     const newPath = path.join(config.uploadRoot, userFile.name);
 
     try {
-        await mkdirp(path.dirname(newPath));
+        await fsPromises.mkdir(path.dirname(newPath), { recursive: true });
         await fsPromises.rename(userFile.path, newPath);
 
         const savedFile = await new File({

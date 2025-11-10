@@ -1,8 +1,11 @@
 const thinky = require('../lib/thinky');
 const type = thinky.type;
-const isImage = require('is-image');
+const path = require('path');
 const config = require('../config.json');
 const r = thinky.r;
+
+// Image file extensions
+const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp', '.ico', '.tiff', '.tif'];
 
 const SequenceFile = thinky.createModel('SequenceFile', {
     id: type.string(),
@@ -25,7 +28,8 @@ SequenceFile.define('downloadPath', function(){
 });
 
 SequenceFile.define('isImage', function () {
-    return isImage(this.path);
+    const ext = path.extname(this.path).toLowerCase();
+    return IMAGE_EXTENSIONS.includes(ext);
 });
 
 module.exports = SequenceFile;
