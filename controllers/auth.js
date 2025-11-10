@@ -1,10 +1,24 @@
 const Auth = {};
 const passport = require('passport');
-const gravatar = require('gravatar');
+const crypto = require('crypto');
 const renderError = require('../lib/renderError');
 const config = require('../config.json');
 const LOG = require('../lib/log');
 const ldap = require('ldapjs');
+
+/**
+ * Generate Gravatar URL from email address
+ * @param {string} email - The email address
+ * @returns {string} The Gravatar URL
+ */
+function getGravatarUrl(email) {
+    if (!email) return null;
+    const hash = crypto
+        .createHash('md5')
+        .update(email.toLowerCase().trim())
+        .digest('hex');
+    return 'https://www.gravatar.com/avatar/' + hash;
+}
 
 /**
  * render site index
@@ -47,7 +61,7 @@ Auth.signInPost = (req, res, next) => {
                 return next(err);
             }
 
-            req.user.iconURL = gravatar.url(req.user.mail) || config.defaultUserIcon;
+            req.user.iconURL = getGravatarUrl(req.user.mail) || config.defaultUserIcon;
 
             const formattedUser = {
               username: user.username,
