@@ -64,7 +64,7 @@
     "ejs-lint": "^1.1.0",
     "elegant-icons": "0.0.1",
     "jquery": "^3.3.1",
-    "mocha": "^8.4.0",
+    "mocha": "^11.7.5",
     "react": "^15.6.0",
     "react-dom": "^15.6.0",
     "sinon": "^11.1.0",
