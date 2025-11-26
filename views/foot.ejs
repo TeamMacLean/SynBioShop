@@ -24,7 +24,7 @@
     🔧 DEV MODE ACTIVE - Emails logged to console, LDAP auth bypassed
 </div>
 
-<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 10001;"></div>
+<div id="toast-container" style="position: fixed; top: 20px; left: 20px; z-index: 10001;"></div>
 
 <style>
     .dev-toast {
@@ -61,7 +61,7 @@
 
     @keyframes slideIn {
         from {
-            transform: translateX(100%);
+            transform: translateX(-100%);
             opacity: 0;
         }
         to {
@@ -76,7 +76,7 @@
             opacity: 1;
         }
         to {
-            transform: translateX(100%);
+            transform: translateX(-100%);
             opacity: 0;
         }
     }

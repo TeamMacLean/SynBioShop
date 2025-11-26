@@ -76,6 +76,12 @@
 </div>
 
 <style>
+  /* Fix z-index to ensure elements don't block header dropdown */
+  .container {
+    position: relative;
+    z-index: 1;
+  }
+
   table.striped tbody tr:nth-child(even) {
     background-color: #f9f9f9;
   }

@@ -36,17 +36,14 @@
 
 	    <div class="user">
 	        <% if(locals.signedInUser){ %>
-	        <div class="image">
-	            <img src="<%- locals.signedInUser.iconURL %>">
-	            <% if(locals.signedInUser.isAdmin){ %>
-	            <span class="badge"><%- locals.incompleteCount %></span>
-	            <% } %>
-	        </div>
 	        <div class="name">
 	            <span><%- locals.signedInUser.name %></span>
 	        </div>
 	        <div class="user-menu hidden">
 	            <ul>
+	                <li>
+	                    <a href="/orders">My Orders</a>
+	                </li>
 	                <% if (locals.signedInUser.isAdmin){ %>
 	                <li>
 	                    <a href="/admin/billboard">Billboard</a>
@@ -64,9 +61,6 @@
 	                    <a href="/dupes">Repeat Orders</a>
 	                </li>
 	                <% } %>
-	                <li>
-	                    <a href="/orders">My Orders</a>
-	                </li>
 	                <li>
 	                    <a href="/signout">Sign out</a>
 	                </li>
@@ -102,6 +96,69 @@
     <div class="flash-messages flash-info">ℹ <%= latestInfo %></div>
   <% } %>
 <% } %>
+
+<% /* Custom styles for user menu */ %>
+<style>
+    /* Make user div extend to right edge of viewport */
+    .user {
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        padding: 0 8px;
+        height: 38px;
+        box-sizing: border-box;
+        transition: border-color 0.2s ease, background-color 0.2s ease;
+        margin-right: 0 !important;
+        position: absolute;
+        right: 0;
+        top: 4px;
+    }
+
+    .user .name {
+        line-height: 36px !important;
+    }
+
+    .user:hover {
+        border-color: #999;
+        background-color: #f8f8f8;
+    }
+
+    /* Position shopping cart */
+    .nav-cart {
+        position: absolute !important;
+        right: 200px;
+        top: 0;
+        margin-right: 20px !important;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .nav-cart:hover {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+
+    /* Position search bar */
+    .search {
+        position: absolute !important;
+        right: 320px;
+        top: 0;
+        margin-right: 20px !important;
+    }
+
+    /* Make dropdown menu align to right edge and keep visible on hover */
+    .user-menu {
+        width: auto !important;
+        min-width: 200px !important;
+        margin-right: 0 !important;
+        right: 0 !important;
+        left: auto !important;
+        margin-top: -4px !important;
+        padding-top: 4px !important;
+    }
+
+    .user-menu a:hover {
+        background-color: #f0f0f0;
+    }
+</style>
 
 <% /* Inline styles for flash messages, to ensure they work */ %>
 
