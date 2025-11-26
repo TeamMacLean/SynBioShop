@@ -73,11 +73,25 @@ app.use(passport.session());
 app.use(flash());
 
 // Multer for file uploads (must come AFTER body-parser for req.body, but BEFORE routes that use files)
-app.use(
-  multer({
-    dest: config.tmpDir,
-  })
-);
+// Updated for multer 1.4.5+ which requires using .any() for multi-field uploads
+const upload = multer({
+  dest: config.tmpDir,
+});
+app.use(upload.any());
+
+// Backwards compatibility middleware: convert req.files array to object
+// Old multer (0.1.8) used req.files as object keyed by fieldname
+// New multer (1.4.5+) uses req.files as array with fieldname property
+app.use((req, res, next) => {
+  if (req.files && Array.isArray(req.files)) {
+    const filesObject = {};
+    req.files.forEach((file) => {
+      filesObject[file.fieldname] = file;
+    });
+    req.files = filesObject;
+  }
+  next();
+});
 
 // --- CRITICAL: Call Passport Setup Here ---
 util.setupPassport();
