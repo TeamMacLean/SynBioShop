@@ -1,62 +1,60 @@
-const Type = require('../models/type');
-const renderError = require('../lib/renderError'); // Assuming you have this for consistent error handling
-const Log = require('../lib/log'); // Assuming you have a logging utility
+const Type = require("../models/type");
+const renderError = require("../lib/renderError");
+const Log = require("../lib/log");
+const { r } = require("../lib/thinky");
 
 const recentController = {};
 
 /**
  * Fetches the most recent items that are marked as 'includeOnRecentlyAdded'.
+ * Optimized to use database-level filtering and sorting.
  * @param {number} limit - The maximum number of items to return.
  * @returns {Promise<Array<object>>} A promise resolving with an array of item objects.
  */
 async function getMostRecentIncludeRecentlyTypes(limit) {
-    try {
-        const types = await Type.getAll();
+  try {
+    // Use direct ReQL query for optimal performance
+    const typesRaw = await r
+      .table("Type")
+      .filter({ includeOnRecentlyAdded: true })
+      .orderBy(r.desc("includeOnRecentlyAddedTimestamp"))
+      .limit(limit)
+      .run();
 
-        if (!types || types.length === 0) {
-            return []; // Return empty array if no types found
-        }
-
-        // Filter for types marked for recent inclusion
-        const filteredTypes = types.filter(type => type.includeOnRecentlyAdded);
-
-        // Sort by timestamp, falling back to DB creation date if timestamp is missing
-        const sortedTypes = filteredTypes.sort((a, b) => {
-            const timestampA = a.includeOnRecentlyAddedTimestamp || new Date(a.db.createdAt);
-            const timestampB = b.includeOnRecentlyAddedTimestamp || new Date(b.db.createdAt);
-            // Ensure comparison is numeric
-            return Number(timestampB) - Number(timestampA);
-        });
-
-        // Slice to the limit
-        const slicedTypes = sortedTypes.slice(0, limit);
-
-        // Enhance items with human-readable dates and ensure necessary properties exist
-        const enhancedTypes = slicedTypes.map(item => {
-            const creationDate = item.includeOnRecentlyAddedTimestamp
-                ? new Date(item.includeOnRecentlyAddedTimestamp)
-                : ((item.db && item.db.createdAt) ? new Date(item.db.createdAt) : null);
-
-            let humanFormattedDate = 'Date unavailable';
-            if (creationDate) {
-                humanFormattedDate = `${creationDate.getDate()}/${creationDate.getMonth() + 1}/${creationDate.getFullYear()}`;
-            }
-
-            return {
-                ...item,
-                // Provide a default timestamp if none exists for sorting consistency, or ensure it's always present
-                createdAt: item.includeOnRecentlyAddedTimestamp || (item.db && item.db.createdAt) || 0,
-                humanFormattedDate: humanFormattedDate,
-            };
-        });
-
-        return enhancedTypes;
-
-    } catch (err) {
-        Log.error('Error fetching or processing recent items:', err);
-        // Re-throw or return empty array, depending on desired error handling flow
-        throw err;
+    if (!typesRaw || typesRaw.length === 0) {
+      return [];
     }
+
+    // Convert to Type model instances and enhance with formatted dates
+    const enhancedTypes = typesRaw.map((typeData) => {
+      const type = new Type(typeData);
+
+      const creationDate = type.includeOnRecentlyAddedTimestamp
+        ? new Date(type.includeOnRecentlyAddedTimestamp)
+        : type.db && type.db.createdAt
+          ? new Date(type.db.createdAt)
+          : null;
+
+      let humanFormattedDate = "Date unavailable";
+      if (creationDate) {
+        humanFormattedDate = `${creationDate.getDate()}/${creationDate.getMonth() + 1}/${creationDate.getFullYear()}`;
+      }
+
+      return {
+        ...type,
+        createdAt:
+          type.includeOnRecentlyAddedTimestamp ||
+          (type.db && type.db.createdAt) ||
+          0,
+        humanFormattedDate: humanFormattedDate,
+      };
+    });
+
+    return enhancedTypes;
+  } catch (err) {
+    Log.error("Error fetching or processing recent items:", err);
+    throw err;
+  }
 }
 
 /**
@@ -66,16 +64,19 @@ async function getMostRecentIncludeRecentlyTypes(limit) {
  * @param {Function} next - Express next middleware function.
  */
 recentController.index = async (req, res, next) => {
-    try {
-        const items = await getMostRecentIncludeRecentlyTypes(20);
-        res.render('recent/index', { items });
-    } catch (err) {
-        // Use a consistent error handler if available
-        // renderError(err, res);
-        // Or just log and proceed/render an error page
-        console.error('Issue with rendering recently-added items:', err);
-        res.status(500).send('Failed to load recently added items.');
-    }
+  try {
+    const items = await getMostRecentIncludeRecentlyTypes(20);
+    // Always render the page, even if items is empty
+    res.render("recent/index", { items: items || [] });
+  } catch (err) {
+    Log.error("Issue with rendering recently-added items:", err);
+    console.error("Error details:", err);
+    // Render with empty items instead of failing
+    res.render("recent/index", {
+      items: [],
+      error: "Unable to load recently added items. Please try again later.",
+    });
+  }
 };
 
 module.exports = recentController;

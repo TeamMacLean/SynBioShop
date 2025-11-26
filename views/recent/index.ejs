@@ -10,8 +10,15 @@
 
     <h2 class="center">Recently Added Items</h2>
 
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-error" style="margin: 2rem auto; max-width: 600px; padding: 1.5rem; border-radius: 4px; border-left: 4px solid #e74c3c; background-color: #fdeaea;">
+            <p><strong>⚠️ Error</strong></p>
+            <p><%= error %></p>
+        </div>
+    <% } %>
+
     <div>
-        <% if (items.length > 0) { %>
+        <% if (items && items.length > 0) { %>
             <table class='table wrapper-for-recently-added-items'>
                 <thead>
                     <tr>
@@ -40,9 +47,16 @@
             </table>
 
         <% } else { %>
-            <p class="center muted-text">
-                No items found. Please contact system administrator if you think this is in error.
-            </p>
+            <div style="margin: 3rem auto; max-width: 600px; text-align: center; padding: 3rem; border: 2px dashed #ddd; border-radius: 8px; background-color: #f9f9f9;">
+                <h3 style="color: #666; margin-bottom: 1rem;">No Recently Added Items</h3>
+                <p class="muted-text" style="font-size: 1rem; line-height: 1.6;">
+                    There are currently no items marked as "recently added".<br>
+                    Items will appear here when administrators mark them to be featured on this page.
+                </p>
+                <div style="margin-top: 2rem;">
+                    <a href="/premade" class="button outline">Browse All Items</a>
+                </div>
+            </div>
         <% } %>
     </div>
 

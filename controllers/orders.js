@@ -5,6 +5,7 @@ const Flash = require("../lib/flash");
 const Util = require("../lib/util");
 const thinky = require("../lib/thinky");
 const ldap = require("../lib/ldap");
+const config = require("../config.json");
 
 const ordersController = {};
 
@@ -221,28 +222,49 @@ ordersController.simonSummary = async (req, res) => {
   page = Math.max(1, page);
 
   try {
-    const paginatedOrders = await Order.orderBy(thinky.r.desc("createdAt"))
+    // Use raw ReQL query for proper pagination support
+    const paginatedOrdersRaw = await thinky.r
+      .table("Order")
+      .orderBy(thinky.r.desc("createdAt"))
       .slice((page - 1) * perPage, page * perPage)
-      .getJoin({ items: true })
       .run();
+
+    // Convert to Order instances and fetch items manually
+    const paginatedOrders = await Promise.all(
+      paginatedOrdersRaw.map(async (orderData) => {
+        const order = new Order(orderData);
+        // Fetch items
+        const items = await thinky.r
+          .table("CartItem")
+          .filter({ orderID: order.id })
+          .run();
+        order.items = items;
+        return order;
+      }),
+    );
 
     const processedOrders = await Promise.all(
       paginatedOrders.map(async (order) => {
         try {
           const orderWithTypes = await order.getTypes();
-          try {
-            // Node v12 compatible checks (replaces user?.name)
-            const users = await ldap.getNameFromUsername(order.username);
-            orderWithTypes.fullName =
-              users && users.length > 0 && users[0].name
-                ? users[0].name
-                : order.username;
-          } catch (ldapErr) {
-            console.warn(
-              "LDAP lookup failed for " + order.username + ":",
-              ldapErr.message,
-            ); // Node v12 concat
+          // Skip LDAP lookup in devMode to avoid connection errors
+          if (config.devMode) {
             orderWithTypes.fullName = order.username;
+          } else {
+            try {
+              // Node v12 compatible checks (replaces user?.name)
+              const users = await ldap.getNameFromUsername(order.username);
+              orderWithTypes.fullName =
+                users && users.length > 0 && users[0].name
+                  ? users[0].name
+                  : order.username;
+            } catch (ldapErr) {
+              console.warn(
+                "LDAP lookup failed for " + order.username + ":",
+                ldapErr.message,
+              ); // Node v12 concat
+              orderWithTypes.fullName = order.username;
+            }
           }
           return orderWithTypes;
         } catch (typeErr) {
@@ -292,27 +314,64 @@ ordersController.exportOrders = async (req, res, next) => {
     const endDate = new Date(endParam);
     endDate.setHours(23, 59, 59, 999);
 
-    const orders = await Order.between(startDate, endDate, {
-      index: "createdAt",
-      leftBound: "closed",
-      rightBound: "closed",
-    })
-      .orderBy({ index: "createdAt" })
-      .filter(
-        (
-          orderItem, // Changed 'order' to 'orderItem' to avoid conflict with Order model name.
-        ) =>
-          orderItem("costCode")
-            .ne(null)
-            .and(orderItem("totalCost").ne(null))
-            .and(orderItem("totalCost").ne(""))
-            .and(orderItem("cancelled").eq(false)), // <<< NEW: Filter out cancelled orders >>>
-      )
-      .getJoin({ items: true })
+    console.log("Export orders - Date range:", { startDate, endDate });
+
+    // First, get all orders in date range to see what we have
+    const allOrdersInRange = await thinky.r
+      .table("Order")
+      .between(startDate, endDate, { index: "createdAt" })
       .run();
 
+    console.log(`Found ${allOrdersInRange.length} orders in date range`);
+    console.log(
+      "Orders:",
+      allOrdersInRange.map((o) => ({
+        id: o.id,
+        username: o.username,
+        createdAt: o.createdAt,
+        costCode: o.costCode,
+        totalCost: o.totalCost,
+        cancelled: o.cancelled,
+      })),
+    );
+
+    // Use raw RethinkDB query with thinky.r
+    const orders = await thinky.r
+      .table("Order")
+      .between(startDate, endDate, { index: "createdAt" })
+      .filter((orderItem) =>
+        orderItem("costCode")
+          .ne(null)
+          .and(orderItem("totalCost").ne(null))
+          .and(orderItem("totalCost").ne(""))
+          .and(orderItem("cancelled").eq(false)),
+      )
+      .orderBy(thinky.r.asc("createdAt"))
+      .run();
+
+    console.log(
+      `After filtering: ${orders.length} orders with costCode and totalCost`,
+    );
+
+    // Fetch items for each order manually
+    const ordersWithItems = await Promise.all(
+      orders.map(async (order) => {
+        const items = await thinky.r
+          .table("CartItem")
+          .filter({ orderID: order.id })
+          .run();
+        order.items = items;
+        return order;
+      }),
+    );
+
+    // Get types for each order using the Order model method
     const ordersWithTypes = await Promise.all(
-      orders.map((order) => order.getTypes()),
+      ordersWithItems.map(async (orderData) => {
+        // Create an Order instance so we can use getTypes()
+        const order = new Order(orderData);
+        return await order.getTypes();
+      }),
     );
 
     res.json(ordersWithTypes);
@@ -340,35 +399,56 @@ ordersController.simonRepeatOrders = async (req, res) => {
   };
 
   try {
-    const orders = await Order.getJoin({ items: true }).run();
-    const typeFetchPromises = [];
+    console.log("Fetching orders and items from database...");
 
-    for (const order of orders) {
-      for (const item of order.items) {
-        // Fetch type for each item to get its name
-        typeFetchPromises.push(
-          item
-            .getType()
-            .then((type) => ({ username: order.username, itemName: type.name }))
-            .catch((err) => {
-              console.warn(
-                `Could not get type for item ${item.id} in order ${order.id}:`,
-                err.message,
-              );
-              return null; // Return null if type fetching fails
-            }),
-        );
+    // Use raw ReQL query to fetch orders with items in one go
+    const ordersRaw = await thinky.r.table("Order").run();
+    const itemsRaw = await thinky.r.table("CartItem").run();
+
+    // Create a map of orderID -> items for faster lookup
+    const itemsByOrderId = {};
+    itemsRaw.forEach((item) => {
+      if (!itemsByOrderId[item.orderID]) {
+        itemsByOrderId[item.orderID] = [];
       }
-    }
+      itemsByOrderId[item.orderID].push(item);
+    });
 
-    const resolvedTypeData = await Promise.all(typeFetchPromises);
+    console.log(
+      `Processing ${ordersRaw.length} orders and ${itemsRaw.length} items...`,
+    );
 
-    // Process the fetched type data to populate itemsByUser
-    for (const data of resolvedTypeData) {
-      if (data && data.username && data.itemName) {
-        addItemCount(data.username, data.itemName);
-      }
-    }
+    // Fetch all unique typeIDs to minimize database queries
+    const uniqueTypeIds = [
+      ...new Set(itemsRaw.map((item) => item.typeID).filter(Boolean)),
+    ];
+    console.log(`Fetching ${uniqueTypeIds.length} unique types...`);
+
+    const typesData = await thinky.r
+      .table("Type")
+      .getAll(...uniqueTypeIds)
+      .run();
+
+    // Create a map of typeID -> type name for O(1) lookup
+    const typeNameMap = {};
+    typesData.forEach((type) => {
+      typeNameMap[type.id] = type.name;
+    });
+
+    console.log("Processing order items...");
+
+    // Process all orders and items
+    ordersRaw.forEach((order) => {
+      const orderItems = itemsByOrderId[order.id] || [];
+      orderItems.forEach((item) => {
+        const typeName = typeNameMap[item.typeID];
+        if (typeName && order.username) {
+          addItemCount(order.username, typeName);
+        }
+      });
+    });
+
+    console.log("Filtering duplicate orders...");
 
     // Filter out items ordered less than twice per user
     for (const username in itemsByUser) {
@@ -388,7 +468,7 @@ ordersController.simonRepeatOrders = async (req, res) => {
       }
     }
 
-    res.json(itemsByUser);
+    res.render("orders/dupes", { itemsByUser });
   } catch (err) {
     handleError(err, res);
   }

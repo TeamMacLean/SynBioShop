@@ -1,0 +1,113 @@
+<%- include('../head.ejs') %>
+
+<style>
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 15px;
+  }
+
+  .table-wrapper {
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 20px 0;
+    padding: 0 15px;
+    display: flex;
+    justify-content: center;
+  }
+
+  table {
+    width: 95%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+    vertical-align: top;
+    border: 1px solid #e0e0e0;
+  }
+
+  th {
+    background-color: #f8f8f8;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #fdfdfd;
+  }
+
+  td ul {
+    margin: 0;
+    padding-left: 20px;
+    list-style-type: disc;
+  }
+
+  td ul li {
+    margin-bottom: 5px;
+  }
+
+  .no-data {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-style: italic;
+  }
+
+  .count-badge {
+    display: inline-block;
+    background-color: #007bff;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    margin-left: 8px;
+  }
+</style>
+
+<div class="container">
+  <h1 class="center">Repeat Orders</h1>
+  <p class="center">Users who have ordered the same item type more than once</p>
+
+  <% const usernames = Object.keys(itemsByUser); %>
+  <% if (usernames.length === 0) { %>
+    <div class="no-data">
+      No repeat orders found.
+    </div>
+  <% } else { %>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 30%;">Username</th>
+            <th style="width: 70%;">Repeat Items</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% usernames.forEach(username => { %>
+            <tr>
+              <td><%= username %></td>
+              <td>
+                <ul>
+                  <% const items = itemsByUser[username]; %>
+                  <% Object.keys(items).forEach(itemName => { %>
+                    <li>
+                      <%= itemName %>
+                      <span class="count-badge"><%= items[itemName] %> orders</span>
+                    </li>
+                  <% }); %>
+                </ul>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+
+<%- include('../foot.ejs') %>

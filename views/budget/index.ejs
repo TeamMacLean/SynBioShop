@@ -32,21 +32,16 @@
               <tr>
                 <td><code><%= holder.username %></code></td>
                 <td><%= holder.description %></td>
-                <td class="center">
-                  <a href="/budget/<%= holder.id %>/edit"
-                     class="button outline small"
-                     title="Edit budget holder"
-                     style="margin-right: 0.5rem;">
-                    <span data-icon="&#xe254;"></span>
+                <td class="center action-buttons">
+                  <a href="/budget/<%= holder.id %>/edit" class="button outline">
+                    Edit
                   </a>
                   <form action="/budget/<%= holder.id %>/delete"
                         method="post"
-                        style="display: inline-block;"
+                        style="display: inline;"
                         onsubmit="return confirm('Are you sure you want to delete budget holder \'<%= holder.username %>\'? This action cannot be undone.');">
-                    <button type="submit"
-                            class="button danger outline small areyousure"
-                            title="Delete budget holder">
-                      <span data-icon="&#xe019;"></span>
+                    <button type="submit" class="button danger outline areyousure">
+                      Delete
                     </button>
                   </form>
                 </td>
@@ -109,8 +104,20 @@
     background-color: #ecf8ff;
   }
 
-  .button.small {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.9rem;
+  /* Action buttons styling */
+  td.action-buttons {
+    white-space: nowrap;
+  }
+
+  td.action-buttons .button {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    min-height: 36px;
+    margin: 0 0.25rem;
+  }
+
+  td.action-buttons form {
+    display: inline;
+    margin: 0;
   }
 </style>
