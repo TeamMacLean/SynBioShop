@@ -13,26 +13,24 @@ const recentController = {};
  */
 async function getMostRecentIncludeRecentlyTypes(limit) {
   try {
-    // Use direct ReQL query for optimal performance
-    const typesRaw = await r
-      .table("Type")
-      .filter({ includeOnRecentlyAdded: true })
-      .orderBy(r.desc("includeOnRecentlyAddedTimestamp"))
-      .limit(limit)
-      .run();
+    // Query all three type tables (Type1, Type2, Type3)
+    const typePromises = ["Type1", "Type2", "Type3"].map((tableName) =>
+      r.table(tableName).filter({ includeOnRecentlyAdded: true }).run(),
+    );
+
+    const typeResults = await Promise.all(typePromises);
+    const typesRaw = [].concat(...typeResults); // Flatten results
 
     if (!typesRaw || typesRaw.length === 0) {
       return [];
     }
 
-    // Convert to Type model instances and enhance with formatted dates
+    // Convert to enhanced types with formatted dates
     const enhancedTypes = typesRaw.map((typeData) => {
-      const type = new Type(typeData);
-
-      const creationDate = type.includeOnRecentlyAddedTimestamp
-        ? new Date(type.includeOnRecentlyAddedTimestamp)
-        : type.db && type.db.createdAt
-          ? new Date(type.db.createdAt)
+      const creationDate = typeData.includeOnRecentlyAddedTimestamp
+        ? new Date(typeData.includeOnRecentlyAddedTimestamp)
+        : typeData.db && typeData.db.createdAt
+          ? new Date(typeData.db.createdAt)
           : null;
 
       let humanFormattedDate = "Date unavailable";
@@ -41,16 +39,25 @@ async function getMostRecentIncludeRecentlyTypes(limit) {
       }
 
       return {
-        ...type,
+        ...typeData,
         createdAt:
-          type.includeOnRecentlyAddedTimestamp ||
-          (type.db && type.db.createdAt) ||
+          typeData.includeOnRecentlyAddedTimestamp ||
+          (typeData.db && typeData.db.createdAt) ||
           0,
         humanFormattedDate: humanFormattedDate,
       };
     });
 
-    return enhancedTypes;
+    // Sort by timestamp and limit results
+    const sortedTypes = enhancedTypes
+      .sort(
+        (a, b) =>
+          (b.includeOnRecentlyAddedTimestamp || 0) -
+          (a.includeOnRecentlyAddedTimestamp || 0),
+      )
+      .slice(0, limit);
+
+    return sortedTypes;
   } catch (err) {
     Log.error("Error fetching or processing recent items:", err);
     throw err;

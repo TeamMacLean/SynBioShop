@@ -76,10 +76,29 @@
 </div>
 
 <style>
-  /* Fix z-index to ensure elements don't block header dropdown */
+  /* Fix z-index and positioning to ensure elements don't block header dropdown */
   .container {
     position: relative;
     z-index: 1;
+    margin-top: 20px;
+  }
+
+  /* Ensure nav elements are above page content */
+  nav.nav {
+    position: relative !important;
+    z-index: 10000 !important;
+  }
+
+  .nav-top-right {
+    z-index: 10001 !important;
+  }
+
+  .user {
+    z-index: 10002 !important;
+  }
+
+  .user-menu {
+    z-index: 10003 !important;
   }
 
   table.striped tbody tr:nth-child(even) {
