@@ -13,12 +13,12 @@
 
     <link rel="stylesheet" type="text/css" href="/style/style.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/dropzone.min.css">
-    
+
 </head>
 
 <body>
     <script>
-        document.signedInUser = null; 
+        document.signedInUser = null;
 
         if (typeof locals !== 'undefined' && locals.signedInUser) {
             document.signedInUser = JSON.parse('<%- JSON.stringify(locals.signedInUser) %>');
@@ -33,4 +33,4 @@
         </div>
     <% } %>
 
-    <% include flashes.ejs %>
+    <%- include('flashes.ejs') %>

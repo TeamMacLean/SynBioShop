@@ -1,6 +1,6 @@
 table {
   width: 100%;
-  font-size: 0.625rem;
+  font-size: 1rem; /* Increased from 0.625rem (10px) to 1rem (16px) for better readability */
 
   &.cart {
     margin-bottom: 20px;
@@ -8,14 +8,20 @@ table {
 
   th,
   td {
-    padding: 8px 20px 8px 0px;
+    padding: 12px 20px 12px 0px; /* Increased padding for better spacing */
     text-align: left;
     border-bottom: 1px solid @grey;
 
-    max-width: 100px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    /* Allow text wrapping for better content display */
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    vertical-align: top;
+  }
+
+  th {
+    font-weight: 600;
+    font-size: 1.1rem; /* Slightly larger for headers */
   }
 
   tr {
@@ -89,5 +95,3 @@ table {
 
   }
 }
-
-

@@ -5,11 +5,12 @@ const express = require("express");
 const app = express();
 const config = require("./config.json");
 const session = require("express-session");
-const rethinkSession = require("session-rethinkdb")(session);
+const CustomRethinkStore = require("./lib/sessionStore");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
+global.io = io; // Make io globally available for dev mode notifications
 require("./sockets")(io); // index file for sockets
 
 // --- IMPORT NECESSARY MODELS FOR res.locals DATA ---
@@ -29,14 +30,14 @@ const routes = require("./routes");
  * @returns {string} The escaped string
  */
 function escapeHtml(str) {
-  if (!str) return '';
+  if (!str) return "";
   return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
+    .replace(/\//g, "&#x2F;");
 }
 
 // --- Express App Setup ---
@@ -46,7 +47,21 @@ app.set("view engine", "ejs");
 // --- Middleware Chain ---
 // Serve static assets first, including LESS compilation
 app.use(require("less-middleware")(path.join(__dirname, "public")));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(
+  express.static(path.join(__dirname, "public"), {
+    etag: false,
+    maxAge: 0,
+    setHeaders: (res, path) => {
+      // Disable caching for JS files to ensure latest version is always loaded
+      if (path.endsWith(".js")) {
+        res.set(
+          "Cache-Control",
+          "no-store, no-cache, must-revalidate, private",
+        );
+      }
+    },
+  }),
+);
 
 // Body Parsers and Cookie Parser
 app.use(express.json({ limit: "50mb" }));
@@ -55,14 +70,21 @@ app.use(cookieParser());
 
 // Session Middleware
 const r = require("./lib/thinky").r; // r is needed for RethinkDB queries (like in Order.filter)
-const store = new rethinkSession(r);
+
+// Use our custom session store that properly uses the configured database
+const store = new CustomRethinkStore(session, {
+  db: config.dbName || "synbioshop",
+  table: "sessions",
+  sessionTimeout: 86400000, // 1 day
+  flushInterval: 60000, // 1 minute
+});
 app.use(
   session({
     secret: config.secret,
     resave: false,
     saveUninitialized: false,
     store,
-  })
+  }),
 );
 
 // Passport.js Authentication (initialize and session)
@@ -97,11 +119,14 @@ app.use((req, res, next) => {
 util.setupPassport();
 
 // --- res.locals Middleware (NOW ASYNCHRONOUS for DB fetches) ---
-app.use(async (req, res, next) => { // <<< CHANGED: Made this middleware 'async' <<<
+app.use(async (req, res, next) => {
+  // <<< CHANGED: Made this middleware 'async' <<<
   // Make general config values available to all views
   res.locals.disablePremade = config.disablePremade;
   res.locals.disableCart = config.disableCart;
   res.locals.isPricingAvailable = config.isPricingAvailable;
+  res.locals.pricePerUnit = config.pricePerUnit;
+  res.locals.devMode = config.devMode; // Pass dev mode flag to views
 
   // Make user data available to all EJS templates as `locals.signedInUser`
   if (req.user) {
@@ -111,16 +136,17 @@ app.use(async (req, res, next) => { // <<< CHANGED: Made this middleware 'async'
       mail: escapeHtml(req.user.mail),
       isAdmin: util.isAdmin(req.user.username),
       company: escapeHtml(req.user.company),
-      iconURL: req.user.iconURL ? req.user.iconURL : config.defaultUserIcon
+      iconURL: req.user.iconURL ? req.user.iconURL : config.defaultUserIcon,
     };
 
     // --- NEW/MODIFIED: Asynchronously fetch Cart Item Count ---
     try {
       const carts = await Cart.filter({ username: req.user.username })
-                              .getJoin({ items: true }) // Need items to count length
-                              .run(); // Execute the query
+        .getJoin({ items: true }) // Need items to count length
+        .run(); // Execute the query
 
-      if (carts && carts.length === 1 && carts[0].items) { // Safe access
+      if (carts && carts.length === 1 && carts[0].items) {
+        // Safe access
         res.locals.signedInUser.cart = carts[0]; // Assign the actual cart object
         res.locals.signedInUser.cart.items.length = carts[0].items.length; // Set the length property for the count
       } else {
@@ -128,20 +154,22 @@ app.use(async (req, res, next) => { // <<< CHANGED: Made this middleware 'async'
         res.locals.signedInUser.cart.items.length = 0; // Explicitly set length to 0
       }
     } catch (err) {
-      console.error('Error fetching cart count for locals:', err);
+      console.error("Error fetching cart count for locals:", err);
       res.locals.signedInUser.cart = { items: [] }; // Default empty on error
       res.locals.signedInUser.cart.items.length = 0;
     }
 
     // --- NEW/MODIFIED: Asynchronously fetch Incomplete Order Count ---
     try {
-        const incompleteCount = await Order.filter(
-            r.and(r.row("complete").eq(false), r.row("cancelled").eq(false))
-        ).count().execute();
-        res.locals.incompleteCount = incompleteCount;
+      const incompleteCount = await Order.filter(
+        r.and(r.row("complete").eq(false), r.row("cancelled").eq(false)),
+      )
+        .count()
+        .execute();
+      res.locals.incompleteCount = incompleteCount;
     } catch (err) {
-        console.error('Error fetching incomplete order count for locals:', err);
-        res.locals.incompleteCount = 0; // Default to 0 on error
+      console.error("Error fetching incomplete order count for locals:", err);
+      res.locals.incompleteCount = 0; // Default to 0 on error
     }
 
     next(); // Proceed to next middleware ONLY after async fetches complete
@@ -165,7 +193,7 @@ app.use((req, res, next) => {
       next();
     })
     .catch((err) => {
-      console.error('Error loading billboard:', err);
+      console.error("Error loading billboard:", err);
       res.locals.billboard = null;
       next();
     });

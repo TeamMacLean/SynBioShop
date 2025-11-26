@@ -75,27 +75,111 @@ ordersController.mine = async (req, res) => {
 
 /**
  * Renders a list of all orders, filtered by user if not an admin.
+ * Optimized with pagination and separate queries for open/closed orders.
  * @param {Object} req - Express request object.
  * @param {Object} res - Express response object.
  */
 ordersController.showAll = async (req, res) => {
   const { username } = req.user;
-  const isAdmin = Util.isAdmin(username); // Assuming Util.isAdmin checks config or user roles
+  const isAdmin = Util.isAdmin(username);
 
-  const filter = isAdmin ? {} : { username };
+  // Pagination parameters
+  const perPage = 50; // Limit to 50 orders per page
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
 
   try {
-    const orders = await Order.filter(filter).getJoin({ items: true }).run();
-
-    const sortedOrders = { open: [], closed: [] };
-    for (const order of orders) {
-      if (order.complete || order.cancelled) {
-        sortedOrders.closed.push(order);
-      } else {
-        sortedOrders.open.push(order);
+    // Build filter conditions using raw ReQL for better control
+    const buildOpenFilter = (order) => {
+      let condition = thinky.r.and(
+        order("complete").eq(false),
+        order("cancelled").eq(false),
+      );
+      if (!isAdmin) {
+        condition = thinky.r.and(condition, order("username").eq(username));
       }
-    }
-    res.render("orders/all", { orders: sortedOrders });
+      return condition;
+    };
+
+    const buildClosedFilter = (order) => {
+      let condition = thinky.r.or(
+        order("complete").eq(true),
+        order("cancelled").eq(true),
+      );
+      if (!isAdmin) {
+        condition = thinky.r.and(condition, order("username").eq(username));
+      }
+      return condition;
+    };
+
+    // Use raw ReQL queries for full control
+    const openOrdersRaw = await thinky.r
+      .table("Order")
+      .filter(buildOpenFilter)
+      .orderBy(thinky.r.desc("createdAt"))
+      .limit(perPage)
+      .run();
+
+    const closedOrdersRaw = await thinky.r
+      .table("Order")
+      .filter(buildClosedFilter)
+      .orderBy(thinky.r.desc("createdAt"))
+      .slice((page - 1) * perPage, page * perPage)
+      .run();
+
+    // Convert to model instances and fetch joined data
+    const [openOrders, closedOrders] = await Promise.all([
+      Promise.all(
+        openOrdersRaw.map(async (orderData) => {
+          const order = new Order(orderData);
+          // Manually fetch items
+          const items = await thinky.r
+            .table("CartItem")
+            .filter({ orderID: order.id })
+            .run();
+          order.items = items;
+          return order;
+        }),
+      ),
+      Promise.all(
+        closedOrdersRaw.map(async (orderData) => {
+          const order = new Order(orderData);
+          // Manually fetch items
+          const items = await thinky.r
+            .table("CartItem")
+            .filter({ orderID: order.id })
+            .run();
+          order.items = items;
+          return order;
+        }),
+      ),
+    ]);
+
+    // Count total closed orders for pagination
+    const closedCountQuery = Order.filter((order) => {
+      let condition = thinky.r.or(
+        order("complete").eq(true),
+        order("cancelled").eq(true),
+      );
+      if (!isAdmin) {
+        condition = thinky.r.and(condition, order("username").eq(username));
+      }
+      return condition;
+    });
+
+    const closedCount = await closedCountQuery.count().execute();
+
+    const sortedOrders = {
+      open: openOrders,
+      closed: closedOrders,
+    };
+
+    res.render("orders/all", {
+      orders: sortedOrders,
+      page,
+      perPage,
+      closedCount,
+      totalPages: Math.ceil(closedCount / perPage),
+    });
   } catch (err) {
     handleError(err, res);
   }
@@ -103,18 +187,31 @@ ordersController.showAll = async (req, res) => {
 
 // --- Helper Functions for EJS (Moved here from EJS for server-side access) ---
 function formatJsDateForEJS(dateStr) {
-    if (!dateStr) return 'N/A';
-    var d = new Date(dateStr);
-    var day = d.getDate();
-    var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    var month = monthNames[d.getMonth()];
-    var year = d.getFullYear();
-    return `${day} ${month} ${year}`;
+  if (!dateStr) return "N/A";
+  var d = new Date(dateStr);
+  var day = d.getDate();
+  var monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  var month = monthNames[d.getMonth()];
+  var year = d.getFullYear();
+  return `${day} ${month} ${year}`;
 }
 
 function formatJsTotalCostForEJS(cost) {
-    // Ensure cost is a number, default to 0, and format to 2 decimal places
-    return Number(cost || 0).toFixed(2);
+  // Ensure cost is a number, default to 0, and format to 2 decimal places
+  return Number(cost || 0).toFixed(2);
 }
 // --- END Helper Functions ---
 
@@ -124,8 +221,7 @@ ordersController.simonSummary = async (req, res) => {
   page = Math.max(1, page);
 
   try {
-    const paginatedOrders = await Order
-      .orderBy(thinky.r.desc("createdAt"))
+    const paginatedOrders = await Order.orderBy(thinky.r.desc("createdAt"))
       .slice((page - 1) * perPage, page * perPage)
       .getJoin({ items: true })
       .run();
@@ -137,30 +233,39 @@ ordersController.simonSummary = async (req, res) => {
           try {
             // Node v12 compatible checks (replaces user?.name)
             const users = await ldap.getNameFromUsername(order.username);
-            orderWithTypes.fullName = (users && users.length > 0 && users[0].name) ? users[0].name : order.username;
+            orderWithTypes.fullName =
+              users && users.length > 0 && users[0].name
+                ? users[0].name
+                : order.username;
           } catch (ldapErr) {
-            console.warn('LDAP lookup failed for ' + order.username + ':', ldapErr.message); // Node v12 concat
+            console.warn(
+              "LDAP lookup failed for " + order.username + ":",
+              ldapErr.message,
+            ); // Node v12 concat
             orderWithTypes.fullName = order.username;
           }
           return orderWithTypes;
         } catch (typeErr) {
-          console.error('Failed to get types for order ' + order.id + ':', typeErr); // Node v12 concat
+          console.error(
+            "Failed to get types for order " + order.id + ":",
+            typeErr,
+          ); // Node v12 concat
           return null;
         }
-      })
+      }),
     );
 
-    const validOrders = processedOrders.filter(order => order !== null);
+    const validOrders = processedOrders.filter((order) => order !== null);
     const totalCount = await Order.count().execute();
 
-    res.render('orders/summary', {
+    res.render("orders/summary", {
       orders: validOrders,
       count: totalCount,
       page: page,
       perPage: perPage,
       // --- NEW: Pass helper functions to EJS locals ---
       formatDate: formatJsDateForEJS,
-      formatTotalCost: formatJsTotalCostForEJS
+      formatTotalCost: formatJsTotalCostForEJS,
     });
   } catch (err) {
     handleError(err, res);
@@ -177,36 +282,43 @@ ordersController.exportOrders = async (req, res, next) => {
   const { start: startParam, end: endParam } = req.query;
 
   if (!startParam || !endParam) {
-    return res.status(400).json({ error: 'Please provide both start and end dates.' });
+    return res
+      .status(400)
+      .json({ error: "Please provide both start and end dates." });
   }
 
-    try {
+  try {
     const startDate = new Date(startParam);
     const endDate = new Date(endParam);
     endDate.setHours(23, 59, 59, 999);
 
-    const orders = await Order
-      .between(startDate, endDate, {
-        index: "createdAt",
-        leftBound: "closed",
-        rightBound: "closed"
-      })
+    const orders = await Order.between(startDate, endDate, {
+      index: "createdAt",
+      leftBound: "closed",
+      rightBound: "closed",
+    })
       .orderBy({ index: "createdAt" })
-      .filter(orderItem => // Changed 'order' to 'orderItem' to avoid conflict with Order model name.
-        orderItem("costCode").ne(null)
-          .and(orderItem("totalCost").ne(null))
-          .and(orderItem("totalCost").ne(""))
-          .and(orderItem("cancelled").eq(false)) // <<< NEW: Filter out cancelled orders >>>
+      .filter(
+        (
+          orderItem, // Changed 'order' to 'orderItem' to avoid conflict with Order model name.
+        ) =>
+          orderItem("costCode")
+            .ne(null)
+            .and(orderItem("totalCost").ne(null))
+            .and(orderItem("totalCost").ne(""))
+            .and(orderItem("cancelled").eq(false)), // <<< NEW: Filter out cancelled orders >>>
       )
       .getJoin({ items: true })
       .run();
 
-    const ordersWithTypes = await Promise.all(orders.map(order => order.getTypes()));
+    const ordersWithTypes = await Promise.all(
+      orders.map((order) => order.getTypes()),
+    );
 
     res.json(ordersWithTypes);
   } catch (err) {
-    console.error('Error in exportOrders middleware:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error in exportOrders middleware:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -223,7 +335,8 @@ ordersController.simonRepeatOrders = async (req, res) => {
     if (!itemsByUser[username]) {
       itemsByUser[username] = {};
     }
-    itemsByUser[username][itemName] = (itemsByUser[username][itemName] || 0) + 1;
+    itemsByUser[username][itemName] =
+      (itemsByUser[username][itemName] || 0) + 1;
   };
 
   try {
@@ -234,12 +347,16 @@ ordersController.simonRepeatOrders = async (req, res) => {
       for (const item of order.items) {
         // Fetch type for each item to get its name
         typeFetchPromises.push(
-          item.getType()
-            .then(type => ({ username: order.username, itemName: type.name }))
-            .catch(err => {
-              console.warn(`Could not get type for item ${item.id} in order ${order.id}:`, err.message);
+          item
+            .getType()
+            .then((type) => ({ username: order.username, itemName: type.name }))
+            .catch((err) => {
+              console.warn(
+                `Could not get type for item ${item.id} in order ${order.id}:`,
+                err.message,
+              );
               return null; // Return null if type fetching fails
-            })
+            }),
         );
       }
     }

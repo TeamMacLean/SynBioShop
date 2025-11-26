@@ -48,3 +48,5 @@ const File = require("../file");
 Type3.model.hasMany(File, "mapFile", "id", "typeID");
 const SequenceFile = require("../sequenceFile");
 Type3.model.hasMany(SequenceFile, "sequenceFiles", "id", "typeID");
+const Category = require("../category");
+Type3.model.belongsTo(Category, "category", "categoryID", "id");

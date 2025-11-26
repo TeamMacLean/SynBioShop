@@ -1,5 +1,5 @@
-<% include ../../head.ejs %>
-<% include ./../sidebar.ejs %>
+<%- include('../../head.ejs') %>
+<%- include('./../sidebar.ejs') %>
 
 <div class="sidebar-push">
     <div class="container">
@@ -12,7 +12,7 @@
                     <button class="btn btn-primary primary" id="uploadSequenceFilesButton" data-micromodal-trigger="modal-1"> <% /* Changed to data-micromodal-trigger */ %>
                         Upload sequence files
                     </button>
-                    
+
                     <% if(item.disabled){ %>
                         <form action="/premade/item/<%- item.id %>/enable" method="POST" style="display:inline;">
                             <button type="submit" class="button success areyousure">Enable Item</button>
@@ -35,14 +35,14 @@
             <hr>
             <p><span class="bold">Concentration:</span> <%- item.concentration || 'N/A' %></p>
             <p><span class="bold">SynBioID:</span> <%- item.synBioID || 'N/A' %></p>
-            <p style="color:red;"><span class="bold">Note:</span> <%- item.note || 'N/A' %></p>            
+            <p style="color:red;"><span class="bold">Note:</span> <%- item.note || 'N/A' %></p>
             <hr>
         <% } %>
 
         <% if (item.citations && item.citations.length) { %>
             <label class='bold'>Relevant publications:</label>
             <div id='displaycitations' style="margin-bottom:20px;">
-                <table>    
+                <table>
                     <thead>
                         <tr>
                             <th>URL</th>
@@ -52,10 +52,10 @@
                     <tbody>
                         <% item.citations.forEach(function(citationObj){ %> <% /* Changed map to forEach */ %>
                             <tr>
-                                <td> 
-                                    <a 
-                                        href="<%= citationObj.url %>" 
-                                        rel="noopener noreferrer nofollow" 
+                                <td>
+                                    <a
+                                        href="<%= citationObj.url %>"
+                                        rel="noopener noreferrer nofollow"
                                         target="_blank"
                                     >
                                         <%= citationObj.url %>
@@ -80,15 +80,19 @@
             <!-- "Add to cart" should be a POST request -->
             <form action="/cart/add" method="POST" style="display:inline;"> <% /* Assuming '/cart/add' is your add-to-cart route */ %>
                 <input type="hidden" name="typeID" value="<%- item.id %>" />
-                <button 
-                    type="submit" 
-                    class="button success areyousure" 
-                    <%= isInCart ? 'disabled' : '' %>
+                <button
+                    type="submit"
+                    class="button success areyousure"
+                    <%= (isInCart || item.disabled) ? 'disabled' : '' %>
                 >
                     <%= isInCart ? 'Added to Cart' : 'Add to cart' %>
                 </button>
-                </button>
             </form>
+            <% if(item.disabled){ %>
+                <p style="color: #dc3545; margin-top: 10px; font-style: italic;">
+                    <strong>Note:</strong> This item is currently disabled and cannot be added to cart.
+                </p>
+            <% } %>
             <% } %>
         </fieldset>
 
@@ -111,7 +115,7 @@
                 <div class="row">
                     <% item.sequenceFiles.forEach((sequenceFile) => { %> <% /* Changed map to forEach */ %>
                         <div class="col6">
-                            <div class="d-flex justify-content-space-between">                                                                
+                            <div class="d-flex justify-content-space-between">
                                 <div class="d-flex align-items-center"><span><%= sequenceFile.originalName %></span></div>
                                 <div class="d-flex flex-direction-row pb10px">
                                     <a href="<%- sequenceFile.downloadPath() %>" class="button primary outline" download>
@@ -119,29 +123,29 @@
                                     </a>
                                     <% if(locals.signedInUser && locals.signedInUser.isAdmin){ %>
                                         <div class="pl5px">
-                                            <form 
+                                            <form
                                                 method="POST"
-                                                action="/premade/item/<%- item.id %>/deleteSequenceFile"        
+                                                action="/premade/item/<%- item.id %>/deleteSequenceFile"
                                                 style="display:inline;"
                                             >
                                                 <input type="hidden" name="sequenceFileID" value="<%- sequenceFile.id %>" />
-                                                <button 
+                                                <button
                                                     type="submit"
-                                                    class=" button danger outline icon areyousure" 
+                                                    class=" button danger outline icon areyousure"
                                                 >
                                                     <span data-icon="&#xe019;"></span>
                                                 </button>
                                             </form>
                                         </div>
                                     <% } %>
-                                </div>                         
+                                </div>
                             </div>
                         </div>
                     <% }) %>
                 </div>
             </div>
-        <% } %>                     
-        
+        <% } %>
+
         <% if(item.documentation){ %>
             <hr>
             <div class="document"><%- item.documentation %></div>
@@ -150,5 +154,5 @@
     </div>
 </div>
 
-<% include ../../foot.ejs %>
-<% include ./_sequenceFileUploadModal.ejs %>
+<%- include('../../foot.ejs') %>
+<%- include('./_sequenceFileUploadModal.ejs') %>

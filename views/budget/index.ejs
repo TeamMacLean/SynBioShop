@@ -1,0 +1,116 @@
+<%- include('../head.ejs') %>
+
+<div class="container">
+  <div class="row">
+    <div class="col12">
+      <h1>Budget Holders Management</h1>
+      <p class="muted-text">Manage budget holders for the ordering system. Only administrators can access this page.</p>
+    </div>
+  </div>
+
+  <div class="row" style="margin-bottom: 2rem;">
+    <div class="col12">
+      <a href="/budget/new" class="button success">
+        <span data-icon="&#xe109;"></span> Add New Budget Holder
+      </a>
+    </div>
+  </div>
+
+  <% if (budgetHolders && budgetHolders.length > 0) { %>
+    <div class="row">
+      <div class="col12">
+        <table class="striped">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Description</th>
+              <th class="center" style="width: 150px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% budgetHolders.forEach(function(holder) { %>
+              <tr>
+                <td><code><%= holder.username %></code></td>
+                <td><%= holder.description %></td>
+                <td class="center">
+                  <a href="/budget/<%= holder.id %>/edit"
+                     class="button outline small"
+                     title="Edit budget holder"
+                     style="margin-right: 0.5rem;">
+                    <span data-icon="&#xe254;"></span>
+                  </a>
+                  <form action="/budget/<%= holder.id %>/delete"
+                        method="post"
+                        style="display: inline-block;"
+                        onsubmit="return confirm('Are you sure you want to delete budget holder \'<%= holder.username %>\'? This action cannot be undone.');">
+                    <button type="submit"
+                            class="button danger outline small areyousure"
+                            title="Delete budget holder">
+                      <span data-icon="&#xe019;"></span>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 2rem;">
+          <p class="muted-text">
+            <strong>Total Budget Holders:</strong> <%= budgetHolders.length %>
+          </p>
+        </div>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="row">
+      <div class="col12">
+        <div class="alert alert-info">
+          <p><strong>No budget holders found.</strong></p>
+          <p>Click "Add New Budget Holder" above to create your first budget holder.</p>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="row" style="margin-top: 2rem;">
+    <div class="col12">
+      <a href="/" class="button outline">← Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<style>
+  table.striped tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  table.striped tbody tr:hover {
+    background-color: #f0f0f0;
+  }
+
+  code {
+    background-color: #e8e8e8;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.9em;
+  }
+
+  .alert {
+    padding: 1.5rem;
+    border-radius: 4px;
+    border-left: 4px solid #3498db;
+    background-color: #ecf8ff;
+  }
+
+  .alert-info {
+    border-left-color: #3498db;
+    background-color: #ecf8ff;
+  }
+
+  .button.small {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+</style>

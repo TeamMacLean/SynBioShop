@@ -1,4 +1,4 @@
-<% include ../head.ejs %>
+<%- include('../head.ejs') %>
 
 <style>
     .wrapper-for-recently-added-items {
@@ -31,14 +31,14 @@
                             <!-- <td width='15%'>
                                 < % - item.humanFormattedDate %>
                             </td> -->
-                            <td> 
+                            <td>
                                 <%- item.description && item.description.length > 240 ? item.description.substring(0, 237) + '...' : item.description %>
                             </td>
                         </tr>
                     <% }) %>
                 </tbody>
             </table>
-            
+
         <% } else { %>
             <p class="center muted-text">
                 No items found. Please contact system administrator if you think this is in error.
@@ -48,4 +48,4 @@
 
 </div>
 
-<% include ../foot.ejs %>
+<%- include('../foot.ejs') %>

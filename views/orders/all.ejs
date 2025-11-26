@@ -1,4 +1,4 @@
-<% include ../head.ejs %>
+<%- include('../head.ejs') %>
 
 <div class="container">
   <h1 class="center">Orders</h1>
@@ -31,6 +31,7 @@
   <hr class="spacer"> <%/* Add a separator for visual clarity */%>
 
   <h3 class="center">Closed Orders</h3>
+  <p class="center muted-text">Showing page <%= page %> of <%= totalPages %> (<%= closedCount %> total closed orders)</p>
   <div class="table-container"> <%/* Wrap table for potential responsiveness */%>
     <table class="table">
       <thead>
@@ -47,15 +48,10 @@
       <tbody>
         <% if (orders.closed.length === 0) { %>
           <tr>
-            <td colspan="7" class="center muted-text">No closed orders.</td>
+            <td colspan="7" class="center muted-text">No closed orders on this page.</td>
           </tr>
         <% } else { %>
-          <% orders.closed
-            .sort((a, b) => { /* Sort by janCode descending if available, else by createdAt */
-              if (a.janCode && b.janCode) return b.janCode - a.janCode;
-              return new Date(b.createdAt) - new Date(a.createdAt);
-            })
-            .forEach(order => { %>
+          <% orders.closed.forEach(order => { %>
             <tr>
               <td><%- order.janCode %></td>
               <td><%- order.createdHumanDate() %></td>
@@ -63,7 +59,8 @@
                 <%- order.cancelled ? 'CANCELLED' : order.completedHumanDate() %>
               </td>
               <td><%- order.username %></td>
-              <td><%= order.totalCost !== null && order.totalCost !== undefined ? '£' + Number(order.totalCost).toFixed(2) : 'n/a' %></td>              <td><%- order.costCode || 'n/a' %></td>
+              <td><%= order.totalCost !== null && order.totalCost !== undefined ? '£' + Number(order.totalCost).toFixed(2) : 'n/a' %></td>
+              <td><%- order.costCode || 'n/a' %></td>
               <td><a href="/order/<%- order.id %>">View</a></td>
             </tr>
           <% }); %>
@@ -71,6 +68,21 @@
       </tbody>
     </table>
   </div>
+
+  <%/* Pagination controls */%>
+  <% if (totalPages > 1) { %>
+    <div class="center" style="margin-top: 20px;">
+      <% if (page > 1) { %>
+        <a href="/orders?page=<%= page - 1 %>" class="button">Previous</a>
+      <% } %>
+
+      <span style="margin: 0 15px;">Page <%= page %> of <%= totalPages %></span>
+
+      <% if (page < totalPages) { %>
+        <a href="/orders?page=<%= page + 1 %>" class="button">Next</a>
+      <% } %>
+    </div>
+  <% } %>
 </div>
 
-<% include ../foot.ejs %>
+<%- include('../foot.ejs') %>

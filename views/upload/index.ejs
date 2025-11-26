@@ -1,4 +1,4 @@
-<% include ../head.ejs %>
+<%- include('../head.ejs') %>
 
 <div class="container">
 
@@ -8,18 +8,19 @@
 
     <h2>Upload New File</h2>
 
-    <form action="/upload" method="post" enctype="multipart/form-data">
+    <form action="/upload" method="post" enctype="multipart/form-data" id="uploadForm">
         <div class="form-group">
             <label for="fileUploadInput" class="form-label">Select File:</label> <% /* Added label for accessibility */ %>
             <input type="file" name="file" id="fileUploadInput" required> <% /* Added id and required */ %>
         </div>
         <div class="form-group">
-            <button class="button primary" type="submit">Upload File</button> <% /* Changed to button, clarified text */ %>
+            <button class="button primary" type="submit" id="uploadButton" disabled>Upload File</button> <% /* Disabled by default */ %>
         </div>
     </form>
     <hr>
 
     <h2>Existing Files</h2>
+    <p class="muted-text"><i>Sorted by upload date (newest first)</i></p>
     <div class="row ">
         <% if (files && files.length > 0) { %> <% /* Check if files exist */ %>
             <% files.forEach(function(file){ %> <% /* Changed map to forEach */ %>
@@ -56,18 +57,37 @@
 
 </div>
 
-<script src="/components/clipboard/dist/clipboard.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
 <script>
-    var clipboard = new Clipboard('.clipboard');
+    // Enable/disable upload button based on file selection
+    var fileInput = document.getElementById('fileUploadInput');
+    var uploadButton = document.getElementById('uploadButton');
+
+    fileInput.addEventListener('change', function() {
+        if (fileInput.files.length > 0) {
+            uploadButton.disabled = false;
+        } else {
+            uploadButton.disabled = true;
+        }
+    });
+
+    // Clipboard functionality
+    var clipboard = new ClipboardJS('.clipboard');
     clipboard.on('success', function (e) {
-        // You might want to provide visual feedback here (e.g., "Copied!").
         console.log('Text copied:', e.text);
         e.clearSelection();
+        // Optional: Show a tooltip or notification
+        var btn = e.trigger;
+        var originalTitle = btn.getAttribute('title');
+        btn.setAttribute('title', 'Copied!');
+        setTimeout(function() {
+            btn.setAttribute('title', originalTitle);
+        }, 2000);
     });
     clipboard.on('error', function (e) {
         console.error('Failed to copy text:', e.action);
-        // Provide feedback to the user that copying failed.
+        alert('Failed to copy to clipboard. Please copy manually.');
     });
 </script>
 
-<% include ../foot.ejs %>
+<%- include('../foot.ejs') %>

@@ -11,3 +11,4 @@ log/*
 **/.DS_Store
 /mnt/
 demo.http
+tmp

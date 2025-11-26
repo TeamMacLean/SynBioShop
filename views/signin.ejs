@@ -1,4 +1,4 @@
-<% include ./head-no-nav.ejs %>
+<%- include('./head-no-nav.ejs') %>
 
 <div class="container">
     <div class="narrow-center">
@@ -10,10 +10,18 @@
             <div class="login-body">
                 <p class="center">Sign in to continue</p>
 
+                <% if(typeof devMode !== 'undefined' && devMode) { %>
+                <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ffeeba;">
+                    <strong>🔧 DEV MODE ACTIVE</strong><br>
+                    <small>Login with username: <code>deeks</code> and any non-empty password<br>
+                    LDAP authentication is bypassed</small>
+                </div>
+                <% } %>
+
                 <form method="post" action="/signin">
-                <label for="username">NBI Username (not full email address!)</label>
+                <label for="username"><% if(typeof devMode !== 'undefined' && devMode) { %>Dev Username<% } else { %>NBI Username (not full email address!)<% } %></label>
                     <div class="form-group has-feedback">
-                    
+
                         <input class="wide has-icon" type="text" id="username" name="username" placeholder="Username"
                                required
                                autofocus>
@@ -21,7 +29,7 @@
                     </div>
                     <label for="password">Password</label>
                     <div class="form-group has-feedback">
-                    
+
                         <input class="wide has-icon" type="password" id="password" name="password"
                                placeholder="Password" required>
                         <span class="icon_lock input-icon"></span>
@@ -35,4 +43,4 @@
     </div>
 </div>
 
-<% include ./foot %>
+<%- include('./foot') %>

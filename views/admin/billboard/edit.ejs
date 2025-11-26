@@ -1,23 +1,330 @@
-<% include ../../head.ejs %>
+<%- include('../../head.ejs') %>
 
 <div class="container">
-    <h1 class="center">Billboard</h1>
+    <div class="page-header">
+        <h1>📢 Billboard Manager</h1>
+        <p class="subtitle">Control the banner message displayed across the site</p>
+    </div>
 
-    <form action="/admin/billboard" method="post">
-        <label for="body">Text</label>
-        <textarea id="text" name="text" class="wide"><%- billboard.text %></textarea>
+    <div class="billboard-editor">
+        <form action="/admin/billboard" method="post">
+            <div class="form-section">
+                <div class="preview-section">
+                    <h3>Preview</h3>
+                    <div class="billboard-preview <%= billboard && billboard.enabled ? 'enabled' : 'disabled' %>">
+                        <div class="billboard-content">
+                            <p id="preview-text">
+                                <%= billboard && billboard.text ? billboard.text : 'No message set' %>
+                            </p>
+                        </div>
+                    </div>
+                    <p class="preview-note">
+                        <% if (billboard && billboard.enabled) { %>
+                            ✅ Currently visible to all users
+                        <% } else { %>
+                            ⚠️ Currently hidden from users
+                        <% } %>
+                    </p>
+                </div>
 
-        <label for="body">Enabled</label>
-        <% let checked = billboard.enabled ? "checked" : "" %>
-        <input type="checkbox" id="enabled" name="enabled" <%= checked %>>
+                <div class="form-group">
+                    <label for="text">Banner Message</label>
+                    <textarea
+                        id="text"
+                        name="text"
+                        class="wide billboard-textarea"
+                        placeholder="Enter the message to display to all users..."
+                        rows="4"><%= billboard ? billboard.text : '' %></textarea>
+                    <small class="form-hint">This message will appear at the top of every page when enabled</small>
+                </div>
 
-        <hr>
-        <div class="block">
-            <button type="submit" class="success">Save</button>
-        </div>
-    </form>
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input
+                            type="checkbox"
+                            id="enabled"
+                            name="enabled"
+                            <%= billboard && billboard.enabled ? 'checked' : '' %>>
+                        <span class="checkbox-text">
+                            <strong>Enable Billboard</strong>
+                            <small>Display this message across the entire site</small>
+                        </span>
+                    </label>
+                </div>
 
+                <hr>
 
+                <div class="button-group">
+                    <button type="submit" class="button primary">
+                        <span>💾 Save Changes</span>
+                    </button>
+                    <a href="/" class="button secondary">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
-<% include ../../foot.ejs %>
+<style>
+    .page-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .page-header h1 {
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+    }
+
+    .subtitle {
+        color: #7f8c8d;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .billboard-editor {
+        max-width: 800px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .form-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .preview-section {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+    }
+
+    .preview-section h3 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        color: #495057;
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .billboard-preview {
+        background: #fff3cd;
+        border: 2px solid #ffc107;
+        border-radius: 4px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 0.75rem;
+        position: relative;
+    }
+
+    .billboard-preview.disabled {
+        background: #f8f9fa;
+        border-color: #dee2e6;
+        opacity: 0.6;
+    }
+
+    .billboard-preview.disabled::after {
+        content: '(Disabled)';
+        position: absolute;
+        top: 0.5rem;
+        right: 1rem;
+        font-size: 0.75rem;
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .billboard-content p {
+        margin: 0;
+        color: #856404;
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    .billboard-preview.disabled .billboard-content p {
+        color: #6c757d;
+    }
+
+    .preview-note {
+        margin: 0;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .billboard-textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #dee2e6;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 1rem;
+        resize: vertical;
+        transition: border-color 0.2s;
+    }
+
+    .billboard-textarea:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+    }
+
+    .form-hint {
+        display: block;
+        margin-top: 0.5rem;
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+
+    .checkbox-group {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: flex-start;
+        cursor: pointer;
+        margin: 0;
+        font-weight: normal;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        margin-top: 0.25rem;
+        margin-right: 0.75rem;
+        width: 1.25rem;
+        height: 1.25rem;
+        cursor: pointer;
+    }
+
+    .checkbox-text {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .checkbox-text strong {
+        color: #2c3e50;
+        font-size: 1rem;
+    }
+
+    .checkbox-text small {
+        color: #6c757d;
+        font-size: 0.875rem;
+        font-weight: normal;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .button {
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .button.primary {
+        background: #28a745;
+        color: white;
+    }
+
+    .button.primary:hover {
+        background: #218838;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(40,167,69,0.3);
+    }
+
+    .button.secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .button.secondary:hover {
+        background: #5a6268;
+    }
+
+    hr {
+        border: none;
+        border-top: 1px solid #dee2e6;
+        margin: 1.5rem 0;
+    }
+
+    <% if (typeof devMode !== 'undefined' && devMode) { %>
+    .billboard-editor {
+        border: 2px solid #ff9800;
+    }
+
+    .billboard-editor::before {
+        content: '🔧 DEV MODE';
+        display: block;
+        background: #ff9800;
+        color: white;
+        text-align: center;
+        padding: 0.5rem;
+        margin: -2rem -2rem 1.5rem -2rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+    <% } %>
+</style>
+
+<script>
+    // Live preview update
+    const textarea = document.getElementById('text');
+    const enabledCheckbox = document.getElementById('enabled');
+    const previewText = document.getElementById('preview-text');
+    const previewBillboard = document.querySelector('.billboard-preview');
+    const previewNote = document.querySelector('.preview-note');
+
+    function updatePreview() {
+        const text = textarea.value.trim();
+        const enabled = enabledCheckbox.checked;
+
+        previewText.textContent = text || 'No message set';
+
+        if (enabled) {
+            previewBillboard.classList.remove('disabled');
+            previewBillboard.classList.add('enabled');
+            previewNote.innerHTML = '✅ Currently visible to all users';
+        } else {
+            previewBillboard.classList.remove('enabled');
+            previewBillboard.classList.add('disabled');
+            previewNote.innerHTML = '⚠️ Currently hidden from users';
+        }
+    }
+
+    textarea.addEventListener('input', updatePreview);
+    enabledCheckbox.addEventListener('change', updatePreview);
+</script>
+
+<%- include('../../foot.ejs') %>

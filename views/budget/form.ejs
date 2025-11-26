@@ -1,0 +1,174 @@
+<%- include('../head.ejs') %>
+
+<div class="container">
+  <div class="row">
+    <div class="col12">
+      <h1><%= title %></h1>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col12 col8-md">
+      <form method="<%= method %>" action="<%= action %>">
+
+        <!-- Username Field -->
+        <div class="form-group">
+          <label for="username" class="form-label">
+            Username <span class="required">*</span>
+          </label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="form-control"
+            value="<%= budgetHolder ? budgetHolder.username : '' %>"
+            required
+            minlength="3"
+            maxlength="20"
+            pattern="[a-zA-Z0-9]+"
+            placeholder="e.g., cwilliam"
+          />
+          <small class="form-text muted-text">
+            3-20 characters, alphanumeric only (e.g., 'cwilliam', 'smithj')
+          </small>
+        </div>
+
+        <!-- Description Field -->
+        <div class="form-group">
+          <label for="description" class="form-label">
+            Description <span class="required">*</span>
+          </label>
+          <input
+            type="text"
+            id="description"
+            name="description"
+            class="form-control"
+            value="<%= budgetHolder ? budgetHolder.description : '' %>"
+            required
+            minlength="10"
+            maxlength="150"
+            placeholder="e.g., SMITH John Smith [Department (INST)]"
+          />
+          <small class="form-text muted-text">
+            10-150 characters. Format: LASTNAME Firstname Lastname [Department (Institution)]
+          </small>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-group" style="margin-top: 2rem;">
+          <button type="submit" class="button success">
+            <span data-icon="&#xe161;"></span>
+            <%= budgetHolder ? 'Update' : 'Create' %> Budget Holder
+          </button>
+          <a href="/budget" class="button outline" style="margin-left: 1rem;">
+            Cancel
+          </a>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Help Panel -->
+    <div class="col12 col4-md">
+      <div class="help-panel">
+        <h3>Guidelines</h3>
+
+        <h4>Username</h4>
+        <ul>
+          <li>Must be unique</li>
+          <li>Use lowercase letters and numbers only</li>
+          <li>Typically their institutional username</li>
+          <li>Examples: cwilliam, smithj, jonesa</li>
+        </ul>
+
+        <h4>Description</h4>
+        <ul>
+          <li>Full name and department</li>
+          <li>Format: LASTNAME Firstname Lastname [Department (Institution)]</li>
+          <li>Example: SMITH John Smith [Finance & Accounts (NBIP)]</li>
+        </ul>
+
+        <h4>Note</h4>
+        <p>Budget holders will appear in the dropdown menu when non-TSL users place orders.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .form-text {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+  }
+
+  .required {
+    color: #e74c3c;
+  }
+
+  .help-panel {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 4px;
+    border-left: 4px solid #3498db;
+  }
+
+  .help-panel h3 {
+    margin-top: 0;
+    color: #2c3e50;
+  }
+
+  .help-panel h4 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    color: #34495e;
+    font-size: 1rem;
+  }
+
+  .help-panel ul {
+    margin: 0.5rem 0 0 1.5rem;
+    padding: 0;
+  }
+
+  .help-panel li {
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+  }
+
+  .help-panel p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 768px) {
+    .help-panel {
+      margin-top: 2rem;
+    }
+  }
+</style>

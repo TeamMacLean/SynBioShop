@@ -1,10 +1,10 @@
 const Auth = {};
-const passport = require('passport');
-const crypto = require('crypto');
-const renderError = require('../lib/renderError');
-const config = require('../config.json');
-const LOG = require('../lib/log');
-const ldap = require('ldapjs');
+const passport = require("passport");
+const crypto = require("crypto");
+const renderError = require("../lib/renderError");
+const config = require("../config.json");
+const LOG = require("../lib/log");
+const ldap = require("ldapjs");
 
 /**
  * Generate Gravatar URL from email address
@@ -12,12 +12,12 @@ const ldap = require('ldapjs');
  * @returns {string} The Gravatar URL
  */
 function getGravatarUrl(email) {
-    if (!email) return null;
-    const hash = crypto
-        .createHash('md5')
-        .update(email.toLowerCase().trim())
-        .digest('hex');
-    return 'https://www.gravatar.com/avatar/' + hash;
+  if (!email) return null;
+  const hash = crypto
+    .createHash("md5")
+    .update(email.toLowerCase().trim())
+    .digest("hex");
+  return "https://www.gravatar.com/avatar/" + hash;
 }
 
 /**
@@ -26,97 +26,121 @@ function getGravatarUrl(email) {
  * @param res {response}
  */
 Auth.index = (req, res) => {
-    res.render('index');
+  res.render("index");
 };
 
 Auth.signIn = (req, res) => {
-    res.render('signin');
+  res.render("signin", {
+    devMode: config.devMode,
+    admins: config.admins,
+  });
 };
 
-Auth.signOut = (req, res) => {
-    req.logout();
-    res.redirect('/');
+Auth.signOut = (req, res, next) => {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/");
+  });
 };
 
 Auth.signInPost = (req, res, next) => {
+  // Use local strategy in dev mode, LDAP in production
+  const strategy = config.devMode ? "local" : "ldapauth";
 
-    passport.authenticate('ldapauth', (err, user, info) => {
-        if (err) {
-            LOG.error(err, info.message, user);
-            console.error(err, info.message, user)
-            return next(err);
-        }
-        if (!user) {
-            var message = 'No user obj found';
-            console.error(message)
-            LOG.error(message);
-            if (info && info.message) {
-                message += `, ${info.message}`;
-            }
-            return renderError(message, res);
-            //return res.render('error', {error: message});
-        }
-        req.logIn(user, err => {
-            if (err) {
-                return next(err);
-            }
+  if (config.devMode) {
+    console.log("🔧 DEV MODE: Using local authentication");
+  }
 
-            req.user.iconURL = getGravatarUrl(req.user.mail) || config.defaultUserIcon;
+  passport.authenticate(strategy, (err, user, info) => {
+    if (err) {
+      LOG.error(err, info.message, user);
+      console.error(err, info.message, user);
+      return next(err);
+    }
+    if (!user) {
+      var message = "No user obj found";
+      console.error(message);
+      LOG.error(message);
+      if (info && info.message) {
+        message += `, ${info.message}`;
+      }
+      return renderError(message, res);
+      //return res.render('error', {error: message});
+    }
+    req.logIn(user, (err) => {
+      if (err) {
+        return next(err);
+      }
 
-            const formattedUser = {
-              username: user.username,
-              name: user.name,
-              memberOfHowMany: user.memberOf.length,
-              company: user.company,
-            };
+      req.user.iconURL =
+        getGravatarUrl(req.user.mail) || config.defaultUserIcon;
 
-            console.log('user logged in', formattedUser);
+      const formattedUser = {
+        username: user.username,
+        name: user.name,
+        memberOfHowMany: user.memberOf.length,
+        company: user.company,
+      };
 
-            //take them to the page they wanted before signing in :)
-            if (req.session.returnTo) {
-                return res.redirect(req.session.returnTo);
-            } else {
-                return res.redirect('/');
-            }
-        });
-    })(req, res, next);
+      //console.log("user logged in", formattedUser);
+
+      //take them to the page they wanted before signing in :)
+      if (req.session.returnTo) {
+        return res.redirect(req.session.returnTo);
+      } else {
+        return res.redirect("/");
+      }
+    });
+  })(req, res, next);
 };
 
 Auth.whoami = (req, res, next) => {
-    return res.redirect('/');
+  return res.redirect("/");
 };
 
 Auth.checkLDAPUser = (req, res, next) => {
-    const username = req.body.username;
+  const username = req.body.username;
+
+  // In dev mode, just check if user is in admins list
+  if (config.devMode) {
+    const userExists = config.admins.includes(username);
+    console.log(
+      `🔧 DEV MODE: Checking user ${username} - exists: ${userExists}`,
+    );
+    return res.send({ exists: userExists });
+  }
+
   const client = ldap.createClient({
-    url: config.ldap.url
+    url: config.ldap.url,
   });
 
-  client.bind(config.ldap.bindDn, config.ldap.bindCredentials, err => {
+  client.bind(config.ldap.bindDn, config.ldap.bindCredentials, (err) => {
     if (err) {
       client.unbind();
-      console.error('LDAP bind failed:', err);
-      return res.status(500).send('LDAP bind failed');
+      console.error("LDAP bind failed:", err);
+      return res.status(500).send("LDAP bind failed");
     }
 
     const searchOptions = {
-      scope: 'sub',
-      filter: `(sAMAccountName=${username})`
+      scope: "sub",
+      filter: `(sAMAccountName=${username})`,
     };
 
     client.search(config.ldap.searchBase, searchOptions, (err, result) => {
       if (err) {
         client.unbind();
-        console.error('LDAP search failed:', err);
-        return res.status(500).send('LDAP search failed');
+        console.error("LDAP search failed:", err);
+        return res.status(500).send("LDAP search failed");
       }
 
       let userExists = false;
-      result.on('searchEntry', entry => {
+      result.on("searchEntry", (entry) => {
         userExists = true;
       });
 
-      result.on('end', () => {
+      result.on("end", () => {
         client.unbind();
         res.send({ exists: userExists });
       });

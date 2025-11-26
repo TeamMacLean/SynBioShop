@@ -1,5 +1,5 @@
-<% include ../../head.ejs %>
-<% include ./../sidebar.ejs %>
+<%- include('../../head.ejs') %>
+<%- include('./../sidebar.ejs') %>
 
 <div class="sidebar-push">
     <div class="container">
@@ -17,7 +17,7 @@
             <div class="form-group button-group"> <% /* Added button-group class for styling */ %>
                 <a href="/premade/category/<%- category.id %>/edit" class="button primary">Edit Category</a>
                 <a href="/premade/category/<%- category.id %>/new" class="button primary">New Item</a>
-                
+
                 <% if(category.disabled){ %>
                     <form action="/premade/category/<%- category.id %>/enable" method="POST" style="display:inline;">
                         <button type="submit" class="button success areyousure">Enable Category</button>
@@ -35,7 +35,7 @@
         <% } %>
 
         <h1 class="center"><%- category.name %></h1>
-        
+
         <div class="document">
             <%- category.description %>
         </div>
@@ -59,7 +59,7 @@
                     <% if (!item.disabled || (locals.signedInUser && locals.signedInUser.isAdmin)) { %> <% /* Simplified admin display logic */ %>
                         <tr class="<% if(item.disabled){ %>disabled<% } %>">
                             <!-- Name column -->
-                            <td style="white-space:nowrap;" data-th="Name">
+                            <td data-th="Name">
                                 <a href="/premade/item/<%- item.id %>"><%- item.name %></a>
                             </td>
                             <!-- Other columns (dynamic) -->
@@ -67,7 +67,6 @@
                                 <% if (contentsIndex !== whoMadeItHeaderIndex) { %> <% /* Only render if not the 'Who made it' column */ %>
                                     <td
                                         <% if (contentsIndex === 0){ %> width="35%" <% /* Apply width to the first 'newHeading' column (description) */ %> <% } %>
-                                        style="white-space:nowrap;"
                                         data-th="<%- newHeadings[contentsIndex] %>"
                                     >
                                         <%- contents %>
@@ -87,4 +86,4 @@
     </div>
 </div>
 
-<% include ../../foot.ejs %>
+<%- include('../../foot.ejs') %>

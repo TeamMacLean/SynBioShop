@@ -8,11 +8,11 @@ const Order = thinky.createModel("Order", {
   id: type.string(),
   username: type.string().required(),
   signatory: type.string(),
-  complete: type.boolean().required().default(false),
-  cancelled: type.boolean().required().default(false),
-  createdAt: type.date().default(r.now()),
+  complete: type.boolean().default(false),
+  cancelled: type.boolean().default(false),
+  createdAt: type.date(),
   completedAt: type.date(),
-  janCode: type.string().required(),
+  janCode: type.string(),
   costCode: type.string().min(3).max(20),
   totalCost: type.string(),
   totalQuantity: type.string().min(1),
@@ -49,7 +49,7 @@ Order.define("getTypes", function () {
                 });
               // .catch(err => b2(err));
             });
-          })
+          }),
         )
           .then((nothing) => good(orderWithItems))
           .catch((err) => bad(err));
@@ -63,11 +63,16 @@ Order.define("getTypes", function () {
 Order.pre("save", function (next) {
   const order = this;
 
+  // Set createdAt if not already set
+  if (!order.createdAt) {
+    order.createdAt = new Date();
+  }
+
   if (!order.janCode) {
     Order.run({ cursor: false }) // Skip cursor to get raw data
       .then((allOrders) => {
         const allJanCodes = allOrders.map((o) =>
-          parseInt(o.janCode || "0", 10)
+          parseInt(o.janCode || "0", 10),
         );
         const highestJanCode = Math.max(...allJanCodes);
         const newJanCode = highestJanCode + 1;
@@ -77,7 +82,7 @@ Order.pre("save", function (next) {
           "PRESAVE - prevHighestJanCode:",
           highestJanCode,
           "+ newJancodeAsString:",
-          newJanCodeStr
+          newJanCodeStr,
         );
 
         order.janCode = newJanCodeStr;
@@ -95,12 +100,13 @@ Order.pre("save", function (next) {
   }
 });
 
-Order.orderBy(r.asc("createdAt")).then((orders) => {
-  orders.map((order, ind) => {
-    order.janCode = "" + ind;
-    order.save();
-  });
-});
+// Initialize janCode for existing orders (commented out - needs async handling)
+// Order.orderBy(r.asc("createdAt")).then((orders) => {
+//   orders.map((order, ind) => {
+//     order.janCode = "" + ind;
+//     order.save();
+//   });
+// });
 
 module.exports = Order;
 const CartItem = require("./cartItem");

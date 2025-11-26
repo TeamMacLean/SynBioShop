@@ -18,5 +18,109 @@
 
 <script src="/js/main.js"></script>
 
+<% if(typeof devMode !== 'undefined' && devMode) { %>
+<!-- Dev Mode Indicator and Toast System -->
+<div id="dev-mode-banner" style="position: fixed; bottom: 0; left: 0; right: 0; background: #ff6b6b; color: white; padding: 5px; text-align: center; z-index: 10000; font-size: 12px;">
+    🔧 DEV MODE ACTIVE - Emails logged to console, LDAP auth bypassed
+</div>
+
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 10001;"></div>
+
+<style>
+    .dev-toast {
+        background: #4CAF50;
+        color: white;
+        padding: 16px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        min-width: 300px;
+        animation: slideIn 0.3s ease-out;
+        position: relative;
+    }
+
+    .dev-toast.email {
+        background: #2196F3;
+    }
+
+    .dev-toast.warning {
+        background: #ff9800;
+    }
+
+    .dev-toast.error {
+        background: #f44336;
+    }
+
+    .dev-toast-close {
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        cursor: pointer;
+        font-size: 20px;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+</style>
+
+<script>
+    // Dev mode toast notification system
+    function showDevToast(message, type = 'info', duration = 5000) {
+        const toastContainer = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'dev-toast ' + type;
+        toast.innerHTML = `
+            <span class="dev-toast-close" onclick="this.parentElement.remove()">×</span>
+            <div>${message}</div>
+        `;
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
+
+    // Listen for dev mode events via socket.io
+    if (typeof socket !== 'undefined') {
+        socket.on('dev-email-sent', function(data) {
+            const message = `📧 Email intercepted:<br>
+                To: ${data.to}<br>
+                Subject: ${data.subject}<br>
+                <small>Check console for details</small>`;
+            showDevToast(message, 'email', 7000);
+        });
+
+        socket.on('dev-notification', function(data) {
+            showDevToast(data.message, data.type || 'info', data.duration || 5000);
+        });
+    }
+
+    // Show initial dev mode notification
+    window.addEventListener('DOMContentLoaded', function() {
+        showDevToast('🔧 Dev Mode Active - Using local authentication', 'warning', 3000);
+    });
+</script>
+<% } %>
+
 </body>
 </html>

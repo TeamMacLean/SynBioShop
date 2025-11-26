@@ -1,10 +1,12 @@
-<% include ../../head.ejs %>
-<% include ./../sidebar.ejs %>
+<%- include('../../head.ejs') %>
+<%- include('./../sidebar.ejs') %>
 
 <div class="sidebar-push">
     <div class="container" id="form-container">
 
-        <h2>Edit Item for <%- category.name %></h2>
+        <h2 style="margin-bottom: 30px;">
+            <%= type.id ? 'Edit Item' : 'New Item' %> for <%- category.name %>
+        </h2>
 
         <form id="itemForm" method="post" action="/premade/category/<%- category.id %>/new" enctype='multipart/form-data'>
 
@@ -16,14 +18,16 @@
                 <input type="hidden" name="id" id="id" value="<%- type.id %>">
             <% } %>
 
+            <h3 style="margin: 20px 0;">Basic Information</h3>
+
             <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" value="<%- type.name || '' %>" required>
+                <label for="name">Name <span style="color: red;">*</span></label>
+                <input type="text" id="name" name="name" value="<%- type.name || '' %>" required placeholder="Enter item name">
             </div>
 
             <div class="form-group">
                 <label for="description">Description</label>
-                <input type="text" name="description" id="description" value="<%- type.description || '' %>">
+                <input type="text" name="description" id="description" value="<%- type.description || '' %>" placeholder="Brief description of the item">
             </div>
 
             <div class="form-group">
@@ -40,14 +44,17 @@
             </div>
 
             <br />
+            <hr style="margin: 30px 0; border: none; border-top: 2px solid #e0e0e0;">
 
             <% /* Citation Section */ %>
+            <h3 style="margin-bottom: 20px;">Publications</h3>
             <div class="form-group">
                 <label>Relevant publications</label>
+                <p style="color: #666; font-size: 0.9rem; margin-top: 5px;">Add URLs and descriptions for related publications. URLs will automatically be formatted with https:// if needed.</p>
 
                 <% if (type.citations && type.citations.length) { %>
                     <div id='display-citations'>
-                        <table>    
+                        <table>
                             <thead>
                                 <tr>
                                     <th>URL</th>
@@ -76,47 +83,36 @@
                 <div id="new-citation-fields" class="citation-fields-group">
                     <% if (!(type.citations && type.citations.length)) { %>
                         <% /* Initial empty citation fields if no citations or citations were reset */ %>
-                        <div class="citation-entry">
-                            <table>
-                                <tr>
-                                    <td>
-                                        <div style="display:flex;flex-direction:column">
-                                            <div>Publication URL</div>
-                                            <div><i>(<b>MUST</b> use http:// or https:// for external links)</i></div>
-                                        </div>
-                                    </td>
-                                    <td><input type="text" name="linkurl[]" value=""></td>
-                                </tr>
-                                <tr>
-                                    <td>Publication Description:</td>
-                                    <td><textarea name="linkdesc[]" cols="50" rows="5"></textarea></td>
-                                </tr>
-                            </table>
+                        <div class="citation-entry" style="background: #f9f9f9; padding: 20px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #e0e0e0;">
+                            <div style="margin-bottom: 15px;">
+                                <label for="linkurl-0" style="display: block; font-weight: 600; margin-bottom: 5px;">Publication URL</label>
+                                <input type="text" name="linkurl[]" id="linkurl-0" class="publication-url" placeholder="e.g., www.example.com/paper or doi.org/10.1234/example" style="width: 100%; padding: 10px; font-size: 1rem;">
+                                <small style="color: #666; display: block; margin-top: 5px;">No need to include http:// or https:// - it will be added automatically</small>
+                            </div>
+                            <div>
+                                <label for="linkdesc-0" style="display: block; font-weight: 600; margin-bottom: 5px;">Publication Description</label>
+                                <textarea name="linkdesc[]" id="linkdesc-0" rows="3" placeholder="Brief description of this publication..." style="width: 100%; padding: 10px; font-size: 1rem;"></textarea>
+                            </div>
                         </div>
                     <% } %>
                 </div>
-                <p id="add-new-citation-link-wrapper" style='margin-top: 10px;'>
-                    <a href="#" id="add-new-citation-link">Add Another Publication</a>
+                <p id="add-new-citation-link-wrapper" style='margin-top: 15px;'>
+                    <button type="button" id="add-new-citation-link" class="button primary outline" style="width: auto;">+ Add Another Publication</button>
                 </p>
 
                 <% /* Citation Template (Hidden) */ %>
                 <div id="citation-template" style="display:none;">
-                    <div class="citation-entry">
-                        <table>
-                            <tr>
-                                <td>
-                                    <div style="display:flex;flex-direction:column">
-                                        <div>Publication URL</div>
-                                        <div><i>(<b>MUST</b> use http:// or https:// for external links)</i></div>
-                                    </div>
-                                </td>
-                                <td><input type="text" name="linkurl[]" value=""></td>
-                            </tr>
-                            <tr>
-                                <td>Publication Description:</td>
-                                <td><textarea name="linkdesc[]" cols="50" rows="5"></textarea></td>
-                            </tr>
-                        </table>
+                    <div class="citation-entry" style="background: #f9f9f9; padding: 20px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #e0e0e0; position: relative;">
+                        <button type="button" class="remove-citation-field" style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">Remove</button>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Publication URL</label>
+                            <input type="text" name="linkurl[]" class="publication-url" placeholder="e.g., www.example.com/paper or doi.org/10.1234/example" style="width: 100%; padding: 10px; font-size: 1rem;">
+                            <small style="color: #666; display: block; margin-top: 5px;">No need to include http:// or https:// - it will be added automatically</small>
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Publication Description</label>
+                            <textarea name="linkdesc[]" rows="3" placeholder="Brief description of this publication..." style="width: 100%; padding: 10px; font-size: 1rem;"></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -129,11 +125,11 @@
             <% type.fields && type.fields.forEach(function(field){ %> <% /* Ensure type.fields exists */ %>
                 <div class="form-group">
                     <label for="<%- field.name %>"><%- field.text %></label>
-                    <input 
-                        type="<%- field.type %>" 
-                        id="<%- field.name %>" 
+                    <input
+                        type="<%- field.type %>"
+                        id="<%- field.name %>"
                         name="<%- field.name %>"
-                        value="<%- type[field.name] || '' %>" 
+                        value="<%- type[field.name] || '' %>"
                         <%= field.required ? 'required' : '' %> <% /* Add required conditionally */ %>
                     >
                 </div>
@@ -162,9 +158,11 @@
                 <input type="file" id="mapFile" name="mapFile">
             </div>
 
-            <div class="form-group">
-                <p><i>(<b>N.B.</b> please press save in order to be able to start editing sequence files.)</i></p>
+            <% if (!type.id) { %>
+            <div class="form-group" style="background: #fffbea; padding: 15px; border-left: 4px solid #f0ad4e; border-radius: 4px;">
+                <strong>Note:</strong> Please save this item first before you can upload sequence files. Sequence files can be added after the item is created.
             </div>
+            <% } %>
 
             <div class="form-group">
                 <label for="documentation">documentation</label>
@@ -177,7 +175,7 @@
                     type="checkbox"
                     name="includeonrecentlyadded"
                     id="includeonrecentlyadded"
-                    <%- type.includeOnRecentlyAdded ? 'checked' : '' %>
+                    <%- (type.includeOnRecentlyAdded || !type.id) ? 'checked' : '' %>
                 >
             </div>
 
@@ -192,6 +190,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // --- Citation Management ---
+    const itemForm = document.getElementById('itemForm');
     const newCitationFieldsContainer = document.getElementById('new-citation-fields');
     const addCitationLink = document.getElementById('add-new-citation-link');
     const citationTemplate = document.getElementById('citation-template');
@@ -207,6 +206,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const textareaDesc = templateContent.querySelector('textarea[name="linkdesc[]"]');
         if (inputUrl) inputUrl.value = '';
         if (textareaDesc) textareaDesc.value = '';
+
+        // Add event listener to remove button
+        const removeBtn = templateContent.querySelector('.remove-citation-field');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                templateContent.remove();
+            });
+        }
+
         newCitationFieldsContainer.appendChild(templateContent);
     }
 
@@ -215,6 +223,33 @@ document.addEventListener('DOMContentLoaded', function() {
         addCitationLink.addEventListener('click', function(e) {
             e.preventDefault();
             addNewCitationField();
+        });
+    }
+
+    // Function to auto-add https:// to URLs if missing
+    function ensureHttps(url) {
+        if (!url || url.trim() === '') return '';
+        url = url.trim();
+        // If it already has http:// or https://, return as is
+        if (/^https?:\/\//i.test(url)) {
+            return url;
+        }
+        // Otherwise, add https://
+        return 'https://' + url;
+    }
+
+    // Auto-format URLs when form is submitted
+    if (itemForm) {
+        itemForm.addEventListener('submit', function(event) {
+            // Find all publication URL inputs
+            const urlInputs = document.querySelectorAll('input.publication-url, input[name="linkurl[]"]');
+            urlInputs.forEach(input => {
+                if (input.value && input.value.trim() !== '') {
+                    input.value = ensureHttps(input.value);
+                }
+            });
+            // Don't return anything to avoid promise issues
+            return;
         });
     }
 
@@ -271,17 +306,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- Form Submission Handler (Pre-validation) ---
-    const itemForm = document.getElementById('itemForm');
     if (itemForm) {
         itemForm.addEventListener('submit', function(event) {
             if (!validateConcentration()) {
                 event.preventDefault(); // Stop form submission
-                return;
+                return false;
             }
             // Add other pre-submission validations here if any
+            return true;
         });
     }
 });
 </script>
 
-<% include ../../foot.ejs %>
+<%- include('../../foot.ejs') %>
