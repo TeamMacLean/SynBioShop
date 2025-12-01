@@ -2,7 +2,7 @@ const Auth = {};
 const passport = require("passport");
 const crypto = require("crypto");
 const renderError = require("../lib/renderError");
-const config = require("../config.json");
+const config = require("../config");
 const LOG = require("../lib/log");
 const ldap = require("ldapjs");
 
@@ -30,8 +30,10 @@ Auth.index = (req, res) => {
 };
 
 Auth.signIn = (req, res) => {
+  // In VPN mode, don't expose dev mode UI even if devMode is true in config
+  const showDevMode = config.devMode && !config.vpnMode;
   res.render("signin", {
-    devMode: config.devMode,
+    devMode: showDevMode,
     admins: config.admins,
   });
 };
@@ -46,11 +48,14 @@ Auth.signOut = (req, res, next) => {
 };
 
 Auth.signInPost = (req, res, next) => {
-  // Use local strategy in dev mode, LDAP in production
-  const strategy = config.devMode ? "local" : "ldapauth";
+  // Use local strategy in dev mode (unless VPN mode), LDAP in production or VPN mode
+  const useLocalAuth = config.devMode && !config.vpnMode;
+  const strategy = useLocalAuth ? "local" : "ldapauth";
 
-  if (config.devMode) {
+  if (useLocalAuth) {
     console.log("🔧 DEV MODE: Using local authentication");
+  } else if (config.vpnMode) {
+    console.log("🔐 VPN MODE: Using LDAP authentication");
   }
 
   passport.authenticate(strategy, (err, user, info) => {
@@ -103,13 +108,18 @@ Auth.whoami = (req, res, next) => {
 Auth.checkLDAPUser = (req, res, next) => {
   const username = req.body.username;
 
-  // In dev mode, just check if user is in admins list
-  if (config.devMode) {
+  // In dev mode (not VPN), just check if user is in admins list
+  if (config.devMode && !config.vpnMode) {
     const userExists = config.admins.includes(username);
     console.log(
       `🔧 DEV MODE: Checking user ${username} - exists: ${userExists}`,
     );
     return res.send({ exists: userExists });
+  }
+
+  // VPN mode or production: use LDAP
+  if (config.vpnMode) {
+    console.log(`🔐 VPN MODE: Checking LDAP for user ${username}`);
   }
 
   const client = ldap.createClient({

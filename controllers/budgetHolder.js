@@ -7,7 +7,7 @@
 
 const BudgetHolder = require("../models/budgetHolder");
 const Flash = require("../lib/flash");
-const config = require("../config.json");
+const config = require("../config");
 
 const BudgetHolderController = {};
 
@@ -33,11 +33,13 @@ BudgetHolderController.ensureAdmin = (req, res, next) => {
  */
 BudgetHolderController.index = async (req, res) => {
   try {
-    const budgetHolders = await BudgetHolder.orderBy({ index: "username" }).run();
+    const budgetHolders = await BudgetHolder.orderBy({
+      index: "username",
+    }).run();
 
     res.render("budget/index", {
       budgetHolders,
-      title: "Budget Holders Management"
+      title: "Budget Holders Management",
     });
   } catch (err) {
     console.error("Error loading budget holders:", err);
@@ -54,7 +56,7 @@ BudgetHolderController.new = (req, res) => {
     title: "Add Budget Holder",
     budgetHolder: null,
     action: "/budget",
-    method: "POST"
+    method: "POST",
   });
 };
 
@@ -69,7 +71,7 @@ BudgetHolderController.edit = async (req, res) => {
       title: "Edit Budget Holder",
       budgetHolder,
       action: `/budget/${budgetHolder.id}`,
-      method: "POST"
+      method: "POST",
     });
   } catch (err) {
     console.error("Error loading budget holder:", err);
@@ -105,13 +107,15 @@ BudgetHolderController.create = async (req, res) => {
       title: "Add Budget Holder",
       budgetHolder: { username, description },
       action: "/budget",
-      method: "POST"
+      method: "POST",
     });
   }
 
   try {
     // Check if username already exists
-    const existing = await BudgetHolder.filter({ username: username.trim() }).run();
+    const existing = await BudgetHolder.filter({
+      username: username.trim(),
+    }).run();
 
     if (existing.length > 0) {
       Flash.error(req, `Username "${username}" already exists.`);
@@ -119,21 +123,20 @@ BudgetHolderController.create = async (req, res) => {
         title: "Add Budget Holder",
         budgetHolder: { username, description },
         action: "/budget",
-        method: "POST"
+        method: "POST",
       });
     }
 
     // Create new budget holder
     const holder = new BudgetHolder({
       username: username.trim(),
-      description: description.trim()
+      description: description.trim(),
     });
 
     await holder.save();
 
     Flash.success(req, `Budget holder "${username}" created successfully.`);
     res.redirect("/budget");
-
   } catch (err) {
     console.error("Error creating budget holder:", err);
     Flash.error(req, "Failed to create budget holder. Please try again.");
@@ -141,7 +144,7 @@ BudgetHolderController.create = async (req, res) => {
       title: "Add Budget Holder",
       budgetHolder: { username, description },
       action: "/budget",
-      method: "POST"
+      method: "POST",
     });
   }
 };
@@ -179,7 +182,9 @@ BudgetHolderController.update = async (req, res) => {
 
     // Check if username is being changed and if new username already exists
     if (holder.username !== username.trim()) {
-      const existing = await BudgetHolder.filter({ username: username.trim() }).run();
+      const existing = await BudgetHolder.filter({
+        username: username.trim(),
+      }).run();
       if (existing.length > 0) {
         Flash.error(req, `Username "${username}" already exists.`);
         return res.redirect(`/budget/${holderId}/edit`);
@@ -193,7 +198,6 @@ BudgetHolderController.update = async (req, res) => {
 
     Flash.success(req, `Budget holder "${username}" updated successfully.`);
     res.redirect("/budget");
-
   } catch (err) {
     console.error("Error updating budget holder:", err);
     Flash.error(req, "Failed to update budget holder. Please try again.");
@@ -215,7 +219,6 @@ BudgetHolderController.delete = async (req, res) => {
 
     Flash.success(req, `Budget holder "${username}" deleted successfully.`);
     res.redirect("/budget");
-
   } catch (err) {
     console.error("Error deleting budget holder:", err);
     Flash.error(req, "Failed to delete budget holder. Please try again.");

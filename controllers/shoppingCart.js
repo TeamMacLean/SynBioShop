@@ -13,7 +13,7 @@ const Order = require("../models/order");
 const Email = require("../lib/email");
 const Csv = require("../lib/csv");
 const Flash = require("../lib/flash");
-const config = require("../config.json");
+const config = require("../config");
 const pricingService = require("../lib/pricingService");
 const budgetHolders = require("../config/budgetHolders");
 

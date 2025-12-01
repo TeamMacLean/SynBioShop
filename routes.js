@@ -3,7 +3,7 @@ const router = express.Router();
 const path = require("path");
 
 const Util = require("./lib/util");
-const config = require("./config.json");
+const config = require("./config");
 
 function isAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {

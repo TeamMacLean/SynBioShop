@@ -6,7 +6,7 @@ const SequenceFile = require("../models/sequenceFile");
 const Flash = require("../lib/flash");
 const Log = require("../lib/log");
 const renderError = require("../lib/renderError");
-const config = require("../config.json");
+const config = require("../config");
 const { r } = require("../lib/thinky");
 
 const uploadController = {};

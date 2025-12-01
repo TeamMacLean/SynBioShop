@@ -5,7 +5,7 @@ const Flash = require("../lib/flash");
 const Util = require("../lib/util");
 const thinky = require("../lib/thinky");
 const ldap = require("../lib/ldap");
-const config = require("../config.json");
+const config = require("../config");
 
 const ordersController = {};
 
