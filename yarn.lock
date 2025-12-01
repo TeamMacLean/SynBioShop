@@ -4324,9 +4324,9 @@ precond@0.2:
   resolved "https://registry.npmjs.org/precond/-/precond-0.2.3.tgz"
   integrity sha512-QCYG84SgGyGzqJ/vlMsxeXd/pgL/I94ixdNFyh1PusWmTCyVfPJjZ1K1jvHtsbfnXQs2TSkEP2fR7QiMZAnKFQ==
 
-preview-email@*:
+preview-email@^3.0.17:
   version "3.1.0"
-  resolved "https://registry.npmjs.org/preview-email/-/preview-email-3.1.0.tgz"
+  resolved "https://registry.yarnpkg.com/preview-email/-/preview-email-3.1.0.tgz#ee8525d878afef4309ae548116e4a4fe8b119a6d"
   integrity sha512-ZtV1YrwscEjlrUzYrTSs6Nwo49JM3pXLM4fFOBSC3wSni+bxaWlw9/Qgk75PZO8M7cX2EybmL2iwvaV3vkAttw==
   dependencies:
     ci-info "^3.8.0"
