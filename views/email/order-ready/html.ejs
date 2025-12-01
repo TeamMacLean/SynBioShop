@@ -6,13 +6,13 @@
     <title>SynBio Order Ready for Collection</title>
    <style type="text/css">
         body { margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif; line-height: 1.6; }
-        .email-container { 
-            width: 100%; 
-            margin: 20px auto; 
+        .email-container {
+            width: 100%;
+            margin: 20px auto;
             padding: 10px;
-            background-color: #ffffff; 
-            border: 1px solid #dddddd; 
-            border-collapse: collapse; 
+            background-color: #ffffff;
+            border: 1px solid #dddddd;
+            border-collapse: collapse;
             table-layout: fixed; /* NEW: Crucial for consistent column widths */
         }
         .header { background-color: #f8f8f8; padding: 20px; text-align: center; border-bottom: 1px solid #dddddd; }
@@ -23,10 +23,10 @@
         .order-info a { color: #007bff; text-decoration: none; }
         .order-info a:hover { text-decoration: underline; }
         /* MODIFIED: Ensure wrapping for instructions and agreement text */
-        .instructions, .agreement-text { 
-            padding: 0 20px 20px 20px; 
-            font-size: 13px; 
-            color: #555555; 
+        .instructions, .agreement-text {
+            padding: 0 20px 20px 20px;
+            font-size: 13px;
+            color: #555555;
             /* Force text wrapping within these TD cells */
             word-wrap: break-word; /* Older syntax */
             overflow-wrap: break-word; /* Newer syntax */
@@ -39,37 +39,37 @@
         .instructions .important-note { text-decoration: underline; margin-bottom: 1em; display: block; }
         .instructions a { color: #007bff; text-decoration: underline; }
         .section-title { background-color: #eeeeee; padding: 10px 20px; font-size: 18px; color: #333333; border-bottom: 1px solid #dddddd; }
-        
+
         /* Fixed: Apply padding to the TD containing the table for consistent margins */
         .table-container-td {
-            padding: 0 20px; 
+            padding: 0 20px;
             vertical-align: top;
         }
-        
-        .content-table { 
-            width: 100%; 
-            border-collapse: collapse; 
+
+        .content-table {
+            width: 100%;
+            border-collapse: collapse;
             table-layout: fixed; /* NEW: Important for reliable column widths */
         }
-        .content-table th, .content-table td { 
-            padding: 12px; 
-            text-align: left; 
-            border-bottom: 1px solid #dddddd; 
+        .content-table th, .content-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dddddd;
             /* Force text wrapping within cells if content is too long */
-            word-wrap: break-word; 
+            word-wrap: break-word;
             overflow-wrap: break-word;
             white-space: normal; /* Ensure text can wrap */
         }
         .content-table th.center, .content-table td.center { text-align: center; }
         .content-table th { background-color: #f8f8f8; font-weight: bold; color: #333333; }
-        
+
         /* New explicit widths for THs to control layout reliably */
         .content-table th:nth-child(1) { width: 30%; } /* Item */
         .content-table th:nth-child(2) { width: 10%; } /* Quantity */
         .content-table th:nth-child(3) { width: 15%; } /* Price */
         .content-table th:nth-child(4) { width: 25%; } /* Concentration */
         .content-table th:nth-child(5) { width: 20%; } /* SynBio ID */
-        
+
         /* Sum of above widths is 100%. If Price is conditional, need to adjust */
         /* If price is hidden, the column sum would be 80%. This might shift columns. */
         /* A more robust approach if columns are dynamic is to define fixed pixel widths for crucial columns. */
@@ -85,6 +85,7 @@
 </head>
 <body>
     <table class="email-container" border="0" cellpadding="0" cellspacing="0">
+        <%- include('../_partials/vpn-banner.ejs') %>
         <!-- Header -->
         <tr>
             <td class="header">
@@ -92,7 +93,7 @@
                 <h1>SynBio Order Ready</h1>
             </td>
         </tr>
-        
+
         <!-- Order Info -->
         <tr>
             <td class="order-info">
@@ -107,19 +108,19 @@
         <tr>
             <td class="instructions">
                 <p>Plasmids should be collected from the SynBio collection box, located immediately to the left of the TSL agar plates in the TSL first floor cold room (Room #131).</p>
-                <p>All orders will be contained in small, clear plastic bags and will be clearly labelled with their respective SynBio order number (as shown above).</p> 
+                <p>All orders will be contained in small, clear plastic bags and will be clearly labelled with their respective SynBio order number (as shown above).</p>
                 <p>Orders will be strictly arranged with the most recent order at the front. Please do NOT alter this order when searching/collecting your own order(s).</p>
                 <p>When collecting your plasmids please check the contents of each bag carefully against your own records.</p>
                 <p>If you encounter any problems, please see Mark or Liam (Office: TSL Ground Floor, room G70a or SynBio lab bench: TSL floor 1, room 140).</p>
                 <div class="important-note"><strong>Important note:</strong></div>
                 <p>
-                    TSL SynBio material supplied to TSL & JIC scientists is subject to a Material Transfer Agreement & mustn't be distributed/shared with any parties beyond TSL/JIC. 
+                    TSL SynBio material supplied to TSL & JIC scientists is subject to a Material Transfer Agreement & mustn't be distributed/shared with any parties beyond TSL/JIC.
                 </p>
                 <p>
                     Any third parties who request use of such material should be directed to TSL SynBio (please email <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a>).
                 </p>
                 <p>
-                    Material supplied by TSL SynBio is for non-commercial research purposes only. 
+                    Material supplied by TSL SynBio is for non-commercial research purposes only.
                 </p>
                 <p>
                     If you wish to use supplied material for commercial purposes, please contact <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a>.
@@ -129,7 +130,7 @@
                 </p>
             </td>
         </tr>
-        
+
         <!-- Order Details Table -->
         <tr>
             <td class="section-title">Order Details</td>
@@ -191,7 +192,7 @@
                 </table>
             </td>
         </tr>
-        
+
         <!-- Footer Link -->
         <tr>
             <td class="footer">

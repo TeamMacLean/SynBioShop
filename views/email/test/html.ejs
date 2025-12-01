@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Email</title>
+</head>
+<body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h1 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">Test Email Template</h1>
+
+        <p style="color: #666; font-size: 16px;">This is a simple test email to verify the email-templates library is working correctly.</p>
+
+        <h2 style="color: #444;">Static Content</h2>
+        <p>If you can see this, the HTML template is rendering.</p>
+
+        <h2 style="color: #444;">Dynamic Content</h2>
+        <ul style="line-height: 1.8;">
+            <li><strong>Test Message:</strong> <%= locals.testMessage || 'No message provided' %></li>
+            <li><strong>Timestamp:</strong> <%= locals.timestamp || new Date().toISOString() %></li>
+            <li><strong>Base URL:</strong> <%= locals.baseURL || 'Not set' %></li>
+        </ul>
+
+        <% if (locals.order) { %>
+        <h2 style="color: #444;">Order Data Test</h2>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <tr style="background-color: #f8f8f8;">
+                <td style="padding: 10px; border: 1px solid #ddd;"><strong>Order ID:</strong></td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><%= locals.order.id || 'N/A' %></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><strong>Jan Code:</strong></td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><%= locals.order.janCode || 'N/A' %></td>
+            </tr>
+            <tr style="background-color: #f8f8f8;">
+                <td style="padding: 10px; border: 1px solid #ddd;"><strong>Username:</strong></td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><%= locals.order.username || 'N/A' %></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><strong>Items Count:</strong></td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><%= locals.order.items ? locals.order.items.length : 0 %></td>
+            </tr>
+        </table>
+
+        <% if (locals.order.items && locals.order.items.length > 0) { %>
+        <h3 style="color: #444;">Items:</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background-color: #007bff; color: white;">
+                    <th style="padding: 10px; border: 1px solid #ddd;">Name</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Qty</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">SynBio ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% locals.order.items.forEach(function(item, index) { %>
+                <tr style="background-color: <%= index % 2 === 0 ? '#ffffff' : '#f8f8f8' %>;">
+                    <td style="padding: 10px; border: 1px solid #ddd;"><%= item.type ? item.type.name : 'Unknown' %></td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;"><%= item.quantity || 0 %></td>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><%= item.type ? item.type.synBioID : 'N/A' %></td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+        <% } %>
+        <% } else { %>
+        <p style="color: #999; font-style: italic;">No order data was passed to this template.</p>
+        <% } %>
+
+        <% if (locals._devMode || locals._vpnMode) { %>
+        <div style="margin-top: 20px; padding: 15px; background-color: <%= locals._devMode ? '#d1ecf1' : '#fff3cd' %>; border: 2px solid <%= locals._devMode ? '#bee5eb' : '#ffc107' %>; border-radius: 4px;">
+            <strong><%= locals._devMode ? '🔧 DEV MODE' : '⚠️ VPN TEST MODE' %></strong>
+            <p style="margin: 10px 0 0 0;">Intended recipients:</p>
+            <ul style="margin: 5px 0;">
+                <li><strong>To:</strong> <%= locals._intendedRecipients ? locals._intendedRecipients.to : 'N/A' %></li>
+                <% if (locals._intendedRecipients && locals._intendedRecipients.cc) { %>
+                <li><strong>CC:</strong> <%= locals._intendedRecipients.cc %></li>
+                <% } %>
+            </ul>
+        </div>
+        <% } %>
+
+        <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
+        <p style="color: #999; font-size: 12px; text-align: center;">This is a test email from SynBio Shop</p>
+    </div>
+</body>
+</html>

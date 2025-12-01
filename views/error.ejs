@@ -3,17 +3,22 @@
 
     <h1 class="center big">Error</h1>
 
-    <% if(typeof error != 'undefined'){ %>
+    <% if(typeof error != 'undefined' && error){ %>
     <div class="well code error">
-        <span><%- JSON.stringify(error) %></span>
+        <span><%= typeof error === 'string' ? error : JSON.stringify(error) %></span>
     </div>
-    <a href="mailto:george.deeks@tsl.ac.uk?subject=I found a bug with the Syn Bio site&body=<%- encodeURI(error) %>"
+    <a href="mailto:george.deeks@tsl.ac.uk?subject=I found a bug with the Syn Bio site&body=<%= encodeURIComponent(typeof error === 'string' ? error : JSON.stringify(error)) %>"
        class="button primary center" target="_blank"><span data-icon="&#xe010;"></span> Report
         this
         bug</a>
     <% } else { %>
     <p class="center">Something happened... Something bad...</p>
     <% } %>
+
+    <div style="margin-top: 20px; text-align: center;">
+        <a href="/" class="button">Return to Home</a>
+        <a href="/signin" class="button">Try Sign In Again</a>
+    </div>
 
 </div>
 

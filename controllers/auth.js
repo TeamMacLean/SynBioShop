@@ -60,9 +60,28 @@ Auth.signInPost = (req, res, next) => {
 
   passport.authenticate(strategy, (err, user, info) => {
     if (err) {
-      LOG.error(err, info.message, user);
-      console.error(err, info.message, user);
-      return next(err);
+      const infoMessage = info && info.message ? info.message : "Unknown error";
+      LOG.error(err, infoMessage, user);
+      console.error("🔐 Authentication error:", err.message || err);
+      console.error("Info:", infoMessage);
+
+      // Provide helpful error message based on error type
+      let errorMessage = "Authentication failed. Please try again.";
+
+      if (err.code === "ENOTFOUND" || err.code === "ECONNREFUSED") {
+        errorMessage = config.vpnMode
+          ? "Cannot connect to LDAP server. Please ensure you are connected to the VPN and try again."
+          : "Cannot connect to LDAP server. Please contact support.";
+        console.error("🔐 LDAP connection error - server unreachable");
+      } else if (config.vpnMode) {
+        errorMessage =
+          "LDAP authentication failed. Please ensure you are connected to the VPN and try again.";
+        console.error(
+          "🔐 VPN MODE: LDAP authentication failed. Make sure you are connected to the VPN.",
+        );
+      }
+
+      return renderError(errorMessage, res);
     }
     if (!user) {
       var message = "No user obj found";

@@ -30,18 +30,19 @@
 </head>
 <body>
     <table class="email-container" border="0" cellpadding="0" cellspacing="0">
+        <%- include('../_partials/vpn-banner.ejs') %>
         <tr>
             <td class="header">
                 <img src="<%= baseURL %>/img/logo.png" alt="TSL SynBio Logo">
                 <h1>New SynBio Order</h1>
             </td>
         </tr>
-        
+
         <tr>
             <td class="order-info">
                 <p>
-                    <%= (locals.order && locals.order.janCode) || 'N/A' %> placed by 
-                        <%= locals.order && locals.order.user.name || locals.order && locals.order.username || 'N/A' %>
+                    <%= (locals.order && locals.order.janCode) || 'N/A' %> placed by
+                        <%= (locals.order && locals.order.user && locals.order.user.name) || (locals.order && locals.order.username) || (locals.user && locals.user.name) || 'N/A' %>
                 </p>
             </td>
         </tr>
@@ -50,34 +51,34 @@
             <td class="agreement-text">
                 <p>
                     TSL SynBio material supplied to TSL and JIC scientists is subject to a Material Transfer Agreement.
-                </p> 
+                </p>
 
                 <p>
                     It must not be distributed or shared with any parties beyond TSL and JIC.
-                </p> 
+                </p>
 
                 <p>
                     Any third parties who request use of such material should be directed to TSL SynBio.
-                </p> 
+                </p>
 
                 <p>
                     For this, please email <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a>.
-                </p> 
+                </p>
 
                 <p>
                     Material supplied by TSL SynBio is for non-commercial research purposes only.
-                </p> 
+                </p>
 
                 <p>
                     If you wish to use supplied material for commercial purposes, please contact <a href="mailto:Mark.Youles@tsl.ac.uk">Mark.Youles@tsl.ac.uk</a>.
-                </p> 
+                </p>
 
                 <p>
                     This is in order that an appropriate MTA can be drawn up.
-                </p> 
+                </p>
             </td>
         </tr>
-        
+
         <tr>
             <td class="section-title">Order Details</td>
         </tr>
@@ -139,7 +140,7 @@
                 <% } %>
             </td>
         </tr>
-        
+
         <tr>
             <td class="footer">
                 <a href="<%= baseURL %>/order/<%= (locals.order && locals.order.id) || '' %>">View order on site</a>

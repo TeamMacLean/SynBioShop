@@ -7,6 +7,21 @@
     <title>SynBio System Error</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+    <% if ((locals._vpnMode || locals._devMode) && locals._intendedRecipients) { %>
+    <div style="background-color: <%= locals._devMode ? '#d1ecf1' : '#fff3cd' %>; border: 2px solid <%= locals._devMode ? '#bee5eb' : '#ffc107' %>; padding: 15px 20px; margin-bottom: 20px;">
+        <strong style="font-size: 16px;"><%= locals._devMode ? '🔧 DEV MODE' : '⚠️ VPN TEST MODE' %></strong>
+        <p style="margin: 10px 0 5px 0;">
+            This email was sent in <%= locals._devMode ? 'development' : 'VPN test' %> mode to <strong>deeks@nbi.ac.uk</strong>.
+            <br>In production, it would have been sent to:
+        </p>
+        <p style="margin-left: 20px; font-family: monospace; font-size: 13px;">
+            <strong>To:</strong> <%= locals._intendedRecipients.to %>
+            <% if (locals._intendedRecipients.cc) { %>
+            <br><strong>CC:</strong> <%= locals._intendedRecipients.cc %>
+            <% } %>
+        </p>
+    </div>
+    <% } %>
     <h2 style="color: #dc3545;">SynBio System Error Alert</h2>
     <p>A critical error occurred within the SynBio application:</p>
     <pre style="background-color: #f8f8f8; padding: 10px; border: 1px solid #ddd; word-wrap: break-word; white-space: pre-wrap;"><%= emailContent %></pre>

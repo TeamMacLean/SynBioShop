@@ -1,0 +1,46 @@
+Test Email - Plain Text Version
+================================
+
+This is a simple test email to verify the email-templates library is working correctly.
+
+Static Content
+--------------
+If you can see this, the text template is rendering.
+
+Dynamic Content
+---------------
+Test Message: <%= locals.testMessage || 'No message provided' %>
+Timestamp: <%= locals.timestamp || new Date().toISOString() %>
+Base URL: <%= locals.baseURL || 'Not set' %>
+
+<% if (locals.order) { %>
+Order Data Test
+---------------
+Order ID: <%= locals.order.id || 'N/A' %>
+Jan Code: <%= locals.order.janCode || 'N/A' %>
+Username: <%= locals.order.username || 'N/A' %>
+Items Count: <%= locals.order.items ? locals.order.items.length : 0 %>
+
+<% if (locals.order.items && locals.order.items.length > 0) { %>
+Items:
+<% locals.order.items.forEach(function(item, index) { %>
+  <%= index + 1 %>. <%= item.type ? item.type.name : 'Unknown' %> (Qty: <%= item.quantity || 0 %>) - <%= item.type ? item.type.synBioID : 'N/A' %>
+<% }); %>
+<% } %>
+<% } else { %>
+No order data was passed to this template.
+<% } %>
+
+<% if (locals._devMode || locals._vpnMode) { %>
+================================
+<%= locals._devMode ? 'DEV MODE' : 'VPN TEST MODE' %>
+================================
+Intended recipients:
+  To: <%= locals._intendedRecipients ? locals._intendedRecipients.to : 'N/A' %>
+<% if (locals._intendedRecipients && locals._intendedRecipients.cc) { %>
+  CC: <%= locals._intendedRecipients.cc %>
+<% } %>
+<% } %>
+
+---
+This is a test email from SynBio Shop
