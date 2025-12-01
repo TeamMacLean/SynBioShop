@@ -23,6 +23,7 @@
   },
   "scripts": {
     "start": "node server.js",
+    "dev": "nodemon server.js",
     "start-watch": "nodemon server.js",
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development",
