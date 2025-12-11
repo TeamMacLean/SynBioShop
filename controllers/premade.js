@@ -506,10 +506,9 @@ premadeController.category.show = async (req, res) => {
         file: t.file,
         position: t.position || 0,
       };
-      typeDefinition.fields.map((fieldDef) => {
-        if (t[fieldDef.name]) {
-          itemData.items.push(t[fieldDef.name]);
-        }
+      typeDefinition.fields.forEach((fieldDef) => {
+        // Always push a value (even empty string) to maintain alignment with headings
+        itemData.items.push(t[fieldDef.name] || "");
       });
       if (
         itemData.items.some(

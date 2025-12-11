@@ -63,15 +63,17 @@
                                 <a href="/premade/item/<%- item.id %>"><%- item.name %></a>
                             </td>
                             <!-- Other columns (dynamic) -->
-                            <% item.items.forEach(function(contents, contentsIndex){ %> <% /* Changed map to forEach */ %>
-                                <% if (contentsIndex !== whoMadeItHeaderIndex) { %> <% /* Only render if not the 'Who made it' column */ %>
-                                    <td
-                                        <% if (contentsIndex === 0){ %> width="35%" <% /* Apply width to the first 'newHeading' column (description) */ %> <% } %>
-                                        data-th="<%- newHeadings[contentsIndex] %>"
-                                    >
-                                        <%- contents %>
-                                    </td>
-                                <% } %>
+                            <%
+                                // Filter item.items to exclude 'Who made it' column, keeping alignment with newHeadings
+                                const filteredItems = item.items.filter((_, idx) => idx !== whoMadeItHeaderIndex);
+                            %>
+                            <% filteredItems.forEach(function(contents, filteredIndex){ %>
+                                <td
+                                    <% if (filteredIndex === 0){ %> width="35%" <% } %>
+                                    data-th="<%- newHeadings[filteredIndex] %>"
+                                >
+                                    <%- contents %>
+                                </td>
                             <% }) %>
                         </tr>
                     <% } %>
