@@ -382,6 +382,135 @@ ordersController.exportOrders = async (req, res, next) => {
 };
 
 /**
+ * Exports ALL orders (including those without cost/costCode) as JSON for the given date range.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+ordersController.exportAllOrders = async (req, res) => {
+  const { start: startParam, end: endParam } = req.query;
+
+  if (!startParam || !endParam) {
+    return res
+      .status(400)
+      .json({ error: "Please provide both start and end dates." });
+  }
+
+  try {
+    const startDate = new Date(startParam);
+    const endDate = new Date(endParam);
+    endDate.setHours(23, 59, 59, 999);
+
+    console.log("Export all orders - Date range:", { startDate, endDate });
+
+    // Get all orders in date range (excluding cancelled orders only)
+    const orders = await thinky.r
+      .table("Order")
+      .between(startDate, endDate, { index: "createdAt" })
+      .filter((orderItem) => orderItem("cancelled").eq(false))
+      .orderBy(thinky.r.asc("createdAt"))
+      .run();
+
+    console.log(`Found ${orders.length} orders in date range`);
+
+    // Fetch items for each order manually
+    const ordersWithItems = await Promise.all(
+      orders.map(async (order) => {
+        const items = await thinky.r
+          .table("CartItem")
+          .filter({ orderID: order.id })
+          .run();
+        order.items = items;
+        return order;
+      }),
+    );
+
+    // Get types for each order using the Order model method
+    const ordersWithTypes = await Promise.all(
+      ordersWithItems.map(async (orderData) => {
+        const order = new Order(orderData);
+        return await order.getTypes();
+      }),
+    );
+
+    res.json(ordersWithTypes);
+  } catch (err) {
+    console.error("Error in exportAllOrders middleware:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Returns summary data for a given date range including total orders, plasmids, and revenue.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+ordersController.summaryData = async (req, res) => {
+  const { start: startParam, end: endParam } = req.query;
+
+  if (!startParam || !endParam) {
+    return res
+      .status(400)
+      .json({ error: "Please provide both start and end dates." });
+  }
+
+  try {
+    const startDate = new Date(startParam);
+    const endDate = new Date(endParam);
+    endDate.setHours(23, 59, 59, 999);
+
+    console.log("Summary data - Date range:", { startDate, endDate });
+
+    // Get all non-cancelled orders in date range
+    const allOrders = await thinky.r
+      .table("Order")
+      .between(startDate, endDate, { index: "createdAt" })
+      .filter((orderItem) => orderItem("cancelled").eq(false))
+      .run();
+
+    // Calculate costed vs non-costed orders
+    const costedOrders = allOrders.filter(
+      (order) =>
+        order.costCode &&
+        order.costCode.toLowerCase() !== "n/a" &&
+        order.totalCost !== null &&
+        order.totalCost !== "" &&
+        order.totalCost > 0,
+    );
+    const nonCostedOrders = allOrders.length - costedOrders.length;
+
+    // Fetch items for all orders to count plasmids
+    let totalPlasmids = 0;
+    for (const order of allOrders) {
+      const items = await thinky.r
+        .table("CartItem")
+        .filter({ orderID: order.id })
+        .run();
+      totalPlasmids += items.reduce(
+        (sum, item) => sum + (Number(item.quantity) || 0),
+        0,
+      );
+    }
+
+    // Calculate total revenue from costed orders
+    const totalRevenue = costedOrders.reduce(
+      (sum, order) => sum + (Number(order.totalCost) || 0),
+      0,
+    );
+
+    res.json({
+      totalOrders: allOrders.length,
+      costedOrders: costedOrders.length,
+      nonCostedOrders: nonCostedOrders,
+      totalPlasmids: totalPlasmids,
+      totalRevenue: totalRevenue,
+    });
+  } catch (err) {
+    console.error("Error in summaryData middleware:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
  * Analyzes orders to find users who have ordered the same item type multiple times.
  * @param {Object} req - Express request object.
  * @param {Object} res - Express response object.

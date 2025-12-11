@@ -68,6 +68,71 @@
     color: #dc3545; /* Error color */
     margin-left: 10px;
     font-style: italic;
+    flex-basis: 100%;
+    text-align: center;
+  }
+
+  .button-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  #export-all-orders {
+    background-color: #28a745;
+  }
+  #export-all-orders:hover:not(:disabled) {
+    background-color: #1e7e34;
+  }
+
+  #summarise-period {
+    background-color: #6c757d;
+  }
+  #summarise-period:hover:not(:disabled) {
+    background-color: #545b62;
+  }
+
+  /* Summary Widget */
+  .summary-widget {
+    background-color: #e8f4fd;
+    border: 1px solid #b8daff;
+    padding: 20px 25px;
+    margin: 20px auto;
+    border-radius: 8px;
+    position: relative;
+  }
+  .summary-widget h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.2rem;
+    color: #004085;
+    padding-right: 30px;
+  }
+  .summary-widget ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .summary-widget ul li {
+    padding: 5px 0;
+    font-size: 1rem;
+    color: #333;
+  }
+  .summary-widget .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s ease;
+  }
+  .summary-widget .close-btn:hover {
+    color: #333;
   }
 
   /* Table Styles */
@@ -195,15 +260,27 @@
     return `${day}-${month}-${year}`;
   }
 
-  function formatFilename(startDateInput, endDateInput) {
-    if (!startDateInput || !endDateInput) return 'orders_export.csv';
-    return `costed_orders_from_${formatForFilename(startDateInput)}_to_${formatForFilename(endDateInput)}.csv`;
+  function formatFilename(prefix, startDateInput, endDateInput) {
+    if (!startDateInput || !endDateInput) return `${prefix}_export.csv`;
+    return `${prefix}_from_${formatForFilename(startDateInput)}_to_${formatForFilename(endDateInput)}.csv`;
+  }
+
+  function formatDateForDisplay(dateStr) {
+    if (!dateStr) return 'N/A';
+    var d = new Date(dateStr);
+    var day = d.getDate();
+    var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    var month = monthNames[d.getMonth()];
+    var year = d.getFullYear();
+    return `${day} ${month} ${year}`;
   }
 
   function updateExportButtonState() {
     const startDateInput = document.getElementById('start-date'); // Get element directly
     const endDateInput = document.getElementById('end-date');     // Get element directly
     const exportButton = document.getElementById('export-csv');
+    const exportAllButton = document.getElementById('export-all-orders');
+    const summariseButton = document.getElementById('summarise-period');
     const statusDiv = document.getElementById('export-status');
 
     statusDiv.textContent = '';
@@ -211,6 +288,8 @@
     // Check if elements exist before accessing .value
     if (!startDateInput || !endDateInput || !startDateInput.value || !endDateInput.value) {
       exportButton.disabled = true;
+      exportAllButton.disabled = true;
+      summariseButton.disabled = true;
       statusDiv.textContent = 'Please select both start and end dates.';
       return;
     }
@@ -221,11 +300,15 @@
 
     if (startDate > endDate) {
       exportButton.disabled = true;
+      exportAllButton.disabled = true;
+      summariseButton.disabled = true;
       statusDiv.textContent = 'Start date must be before or equal to end date.';
       return;
     }
 
     exportButton.disabled = false;
+    exportAllButton.disabled = false;
+    summariseButton.disabled = false;
   }
 
   // --- CRITICAL FIX: Wrap all DOM interaction code in DOMContentLoaded ---
@@ -247,15 +330,15 @@
 
     updateExportButtonState(); // Call after setting default values
 
-    // Handle CSV Export Click
+    // Handle Export Costed Orders Click
     document.getElementById('export-csv').addEventListener('click', async function() {
-        // Ensure inputs are re-queried or valid (they are now in scope)
         const startDateValue = document.getElementById('start-date').value;
         const endDateValue = document.getElementById('end-date').value;
         const statusDiv = document.getElementById('export-status');
 
         this.disabled = true;
-        statusDiv.textContent = 'Fetching data...';
+        statusDiv.textContent = 'Fetching costed orders...';
+        statusDiv.style.color = '#666';
 
         try {
             const response = await fetch(`/order/export?start=${startDateValue}&end=${endDateValue}`);
@@ -270,7 +353,7 @@
 
             if (!allOrders || allOrders.length === 0) {
                 console.warn('DEBUG: No orders returned from export API.');
-                statusDiv.textContent = 'No orders found for the selected date range.';
+                statusDiv.textContent = 'No costed orders found for the selected date range.';
                 statusDiv.style.color = 'orange';
                 return;
             }
@@ -294,22 +377,152 @@
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
-            
+
             const downloadLink = document.createElement('a');
             downloadLink.href = url;
-            downloadLink.download = formatFilename(startDateValue, endDateValue);
+            downloadLink.download = formatFilename('costed_orders', startDateValue, endDateValue);
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);
             URL.revokeObjectURL(url);
 
-            statusDiv.textContent = 'Export successful!';
+            statusDiv.textContent = 'Costed orders export successful!';
             statusDiv.style.color = 'green';
 
         } catch (err) {
             console.error('CSV Export Error:', err);
             console.error('DEBUG: Full error object:', err);
             statusDiv.textContent = `Error during export: ${err.message}`;
+            statusDiv.style.color = 'red';
+        } finally {
+            this.disabled = false;
+        }
+    });
+
+    // Handle Export All Orders Click
+    document.getElementById('export-all-orders').addEventListener('click', async function() {
+        const startDateValue = document.getElementById('start-date').value;
+        const endDateValue = document.getElementById('end-date').value;
+        const statusDiv = document.getElementById('export-status');
+
+        this.disabled = true;
+        statusDiv.textContent = 'Fetching all orders...';
+        statusDiv.style.color = '#666';
+
+        try {
+            const response = await fetch(`/order/export-all?start=${startDateValue}&end=${endDateValue}`);
+            if (!response.ok) {
+                const errorBody = await response.text();
+                console.error('DEBUG: HTTP error body:', errorBody);
+                throw new Error(`HTTP error! status: ${response.status}. Body: ${errorBody.substring(0, 100)}...`);
+            }
+
+            const allOrders = await response.json();
+            console.log('DEBUG: Fetched all orders:', allOrders);
+
+            if (!allOrders || allOrders.length === 0) {
+                console.warn('DEBUG: No orders returned from export-all API.');
+                statusDiv.textContent = 'No orders found for the selected date range.';
+                statusDiv.style.color = 'orange';
+                return;
+            }
+
+            const csvLines = ['Date,Total Cost,SynBio Constructs,Cost Code,Customer'];
+            allOrders.forEach(function(order) {
+                const dateFormatted = formatDate(order.createdAt);
+                const totalCostFormatted = formatTotalCost(order.totalCost);
+                const constructCount = countConstructs(order.items || []);
+                const constructText = `${constructCount} SynBio ${constructCount === 1 ? 'construct' : 'constructs'}`;
+                const costCodeClean = (order.costCode || 'N/A').replace(/-/g, '');
+                const customer = order.fullName || order.username || 'N/A';
+
+                csvLines.push([dateFormatted, totalCostFormatted, constructText, costCodeClean, `"${customer}"`].join(','));
+            });
+            console.log('DEBUG: CSV lines generated. Count:', csvLines.length);
+
+            const csvContent = csvLines.join('\n');
+            console.log('DEBUG: CSV content generated. Length:', csvContent.length);
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = formatFilename('all_orders', startDateValue, endDateValue);
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(url);
+
+            statusDiv.textContent = 'All orders export successful!';
+            statusDiv.style.color = 'green';
+
+        } catch (err) {
+            console.error('CSV Export Error:', err);
+            console.error('DEBUG: Full error object:', err);
+            statusDiv.textContent = `Error during export: ${err.message}`;
+            statusDiv.style.color = 'red';
+        } finally {
+            this.disabled = false;
+        }
+    });
+
+    // Handle Summarise Period Click
+    document.getElementById('summarise-period').addEventListener('click', async function() {
+        const startDateValue = document.getElementById('start-date').value;
+        const endDateValue = document.getElementById('end-date').value;
+        const statusDiv = document.getElementById('export-status');
+
+        this.disabled = true;
+        statusDiv.textContent = 'Generating summary...';
+        statusDiv.style.color = '#666';
+
+        try {
+            const response = await fetch(`/order/summary-data?start=${startDateValue}&end=${endDateValue}`);
+            if (!response.ok) {
+                const errorBody = await response.text();
+                console.error('DEBUG: HTTP error body:', errorBody);
+                throw new Error(`HTTP error! status: ${response.status}. Body: ${errorBody.substring(0, 100)}...`);
+            }
+
+            const summaryData = await response.json();
+            console.log('DEBUG: Summary data:', summaryData);
+
+            // Remove existing summary widget if present
+            const existingSummary = document.getElementById('summary-widget');
+            if (existingSummary) {
+                existingSummary.remove();
+            }
+
+            // Create summary widget
+            const summaryWidget = document.createElement('div');
+            summaryWidget.id = 'summary-widget';
+            summaryWidget.className = 'summary-widget';
+
+            const startDateDisplay = formatDateForDisplay(startDateValue);
+            const endDateDisplay = formatDateForDisplay(endDateValue);
+
+            summaryWidget.innerHTML = `
+                <button class="close-btn" onclick="this.parentElement.remove()" title="Close summary">&times;</button>
+                <h3>Summary for period ${startDateDisplay} to ${endDateDisplay}:</h3>
+                <ul>
+                    <li>${summaryData.totalOrders} total orders (${summaryData.costedOrders} costed, ${summaryData.nonCostedOrders} non-costed)</li>
+                    <li>${summaryData.totalPlasmids} total plasmids</li>
+                    <li>£${summaryData.totalRevenue.toFixed(2)} generated</li>
+                </ul>
+            `;
+
+            // Insert after the export widget
+            const exportWidget = document.querySelector('.export-widget');
+            exportWidget.insertAdjacentElement('afterend', summaryWidget);
+
+            statusDiv.textContent = 'Summary generated!';
+            statusDiv.style.color = 'green';
+
+        } catch (err) {
+            console.error('Summary Error:', err);
+            console.error('DEBUG: Full error object:', err);
+            statusDiv.textContent = `Error generating summary: ${err.message}`;
             statusDiv.style.color = 'red';
         } finally {
             this.disabled = false;
@@ -369,19 +582,23 @@
   <h1 class="center">Order Summary</h1>
 
   <div class="export-widget">
-    <h2>Download all Orders with a Total Cost and Cost Code that have not been Cancelled</h2>  
+    <h2>Export Orders and Generate Summary</h2>
     <label for="start-date">Start date:</label>
     <input type="date" id="start-date">
     <label for="end-date">End date:</label>
     <input type="date" id="end-date">
-    <button id="export-csv">Export CSV</button>
+    <div class="button-row">
+      <button id="export-csv">Export Costed Orders</button>
+      <button id="export-all-orders">Export All Orders</button>
+      <button id="summarise-period">Summarise Period</button>
+    </div>
     <div id="export-status"></div>
   </div>
 
     <div class="pagination">
     <button onclick="window.location='/order/summary?page=1'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;&lsaquo;</button>
     <button onclick="window.location='/order/summary?page=<%- Math.max(1, currentPage - 1) %>'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;</button>
-    
+
     <% pageButtons.forEach(pageNumber => { %>
       <% if (pageNumber === '...') { %>
         <span>...</span>
@@ -391,7 +608,7 @@
         <button onclick="window.location='/order/summary?page=<%- pageNumber %>'" class="page-number"><%- pageNumber %></button>
       <% } %>
     <% }); %>
-    
+
     <button onclick="window.location='/order/summary?page=<%- Math.min(totalPages, currentPage + 1) %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;</button>
     <button onclick="window.location='/order/summary?page=<%- totalPages %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;&rsaquo;</button>
   </div>
@@ -416,7 +633,7 @@
         <% } else { %>
           <% orders.forEach(order => { %>
             <tr>
-              <td><%= formatDate(order.createdAt) %></td> 
+              <td><%= formatDate(order.createdAt) %></td>
               <td><%- order.fullName || order.username || 'N/A' %></td>
               <td>
                 <ul>
@@ -433,7 +650,7 @@
                   <% } %>
                 </ul>
               </td>
-              <td><%= formatTotalCost(order.totalCost) %></td> 
+              <td><%= formatTotalCost(order.totalCost) %></td>
               <td><%- order.costCode || 'n/a' %></td>
             </tr>
           <% }) %>
@@ -442,11 +659,11 @@
     </table>
   </div>
 
-  
+
   <div class="pagination">
     <button onclick="window.location='/order/summary?page=1'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;&lsaquo;</button>
     <button onclick="window.location='/order/summary?page=<%- Math.max(1, currentPage - 1) %>'" <% if (currentPage <= 1) { %>disabled<% } %> class="previous">&lsaquo;</button>
-    
+
     <% pageButtons.forEach(pageNumber => { %>
       <% if (pageNumber === '...') { %>
         <span>...</span>
@@ -456,7 +673,7 @@
         <button onclick="window.location='/order/summary?page=<%- pageNumber %>'" class="page-number"><%- pageNumber %></button>
       <% } %>
     <% }); %>
-    
+
     <button onclick="window.location='/order/summary?page=<%- Math.min(totalPages, currentPage + 1) %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;</button>
     <button onclick="window.location='/order/summary?page=<%- totalPages %>'" <% if (currentPage >= totalPages) { %>disabled<% } %> class="next">&rsaquo;&rsaquo;</button>
   </div>

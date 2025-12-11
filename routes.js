@@ -340,7 +340,14 @@ router.get("/sequencefilemanager/:id/download", upload.downloadSequenceFile); //
 // --- Orders Routes ---
 router.get("/orders", isAuthenticated, isAdmin, orders.showAll);
 router.get("/order/summary", isAuthenticated, isAdmin, orders.simonSummary);
-router.get("/order/export", isAuthenticated, isAdmin, orders.exportOrders); // Export should be admin only
+router.get("/order/export", isAuthenticated, isAdmin, orders.exportOrders); // Export costed orders only
+router.get(
+  "/order/export-all",
+  isAuthenticated,
+  isAdmin,
+  orders.exportAllOrders,
+); // Export all orders (including non-costed)
+router.get("/order/summary-data", isAuthenticated, isAdmin, orders.summaryData); // Get summary data for date range
 
 router.get("/dupes", isAuthenticated, isAdmin, orders.simonRepeatOrders); // Route name 'dupes' could be more descriptive
 
