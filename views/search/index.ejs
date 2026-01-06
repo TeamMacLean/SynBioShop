@@ -3,10 +3,10 @@
 <div class="container">
 
     <% if (!queryString) { %>
-        
+
         <h2 class="center">No search results</h2>
         <div>No search term entered. Please use the search bar at the top of the page to search Premade items and documentation.</div>
-        
+
     <% } else { %>
 
         <h2 class="center">Search results for '<%- queryString %>'</h2>
@@ -15,8 +15,8 @@
             <h3>Premade</h3>
 
             <div style="padding-top:10px;padding-bottom:20px;">
-                <div class="wrap-collabsible-1"> 
-                    <input id="collapsible-1" class="toggle-1 input-type-checkbox-1" type="checkbox"> 
+                <div class="wrap-collapsible-1">
+                    <input id="collapsible-1" class="toggle-1 input-type-checkbox-1" type="checkbox">
                     <label for="collapsible-1" class="lbl-toggle-1">
                         Level 0 (<%- premadeLevel0.length || 0 %>)
                     </label>
@@ -27,58 +27,58 @@
                                 <table class='table'>
 
                                     <tr>
-                                        <th style='marginRight:100px'> Item </th>
+                                        <th style="width: 250px; min-width: 250px;"> Item </th>
                                         <th> Description </th>
                                     </tr>
-                                
+
                                     <% premadeLevel0.map(function(item){ %>
-                                    
+
                                         <tr>
                                             <td>
-                                                <a 
+                                                <a
                                                     href="<%- '/premade/item/' + item.id %>"
                                                 >
                                                     <b>
-                                                        <%- 
+                                                        <%-
                                                             (item.name && item.name.length > 48) ? (
-                                                                item.name.substring(0, 24) + 
-                                                                    '...' + 
+                                                                item.name.substring(0, 24) +
+                                                                    '...' +
                                                                     item.name.substring((item.name.length - 24), item.name.length)
-                                
-                                                            ) : item.name    
+
+                                                            ) : item.name
                                                         %>
                                                     </b>
                                                 </a>
                                             </td>
-                                            <td> 
-                                                <%- 
+                                            <td>
+                                                <%-
                                                     (item.description && item.description.length > 240) ? (
-                                                        item.description.substring(0, 240) + 
-                                                                '...' + 
+                                                        item.description.substring(0, 240) +
+                                                                '...' +
                                                                 item.description.substring((item.description.length - 240), item.description.length)
-                            
-                                                    ) : item.description 
-                                                %> 
+
+                                                    ) : item.description
+                                                %>
                                             </td>
                                         </tr>
-                            
+
                                     <% }) %>
-                            
+
                                 </table>
                             <% } else { %>
                                 <p>
                                     No items found. Please contact system administrator if you think this is in error.
                                 </p>
                             <% } %>
-                    
+
                         </div>
                     </div>
                 </div>
             </div>
 
             <div style="padding-top:10px;padding-bottom:20px;">
-                <div class="wrap-collabsible-3"> 
-                    <input id="collapsible-3" class="toggle-3 input-type-checkbox-3" type="checkbox"> 
+                <div class="wrap-collapsible-3">
+                    <input id="collapsible-3" class="toggle-3 input-type-checkbox-3" type="checkbox">
                     <label for="collapsible-3" class="lbl-toggle-3">
                         Level 1 (<%- premadeLevel1.length || 0 %>)
                     </label>
@@ -89,43 +89,43 @@
                                 <table class='table'>
 
                                     <tr>
-                                        <th style='marginRight:100px'> Item </th>
+                                        <th style="width: 250px; min-width: 250px;"> Item </th>
                                         <th> Description </th>
                                     </tr>
-                                
+
                                     <% premadeLevel1.map(function(item){ %>
-                                    
+
                                         <tr>
                                             <td>
-                                                <a 
+                                                <a
                                                     href="<%- '/premade/item/' + item.id %>"
                                                 >
                                                     <b>
-                                                        <%- 
+                                                        <%-
                                                             (item.name && item.name.length > 48) ? (
-                                                                item.name.substring(0, 24) + 
-                                                                    '...' + 
+                                                                item.name.substring(0, 24) +
+                                                                    '...' +
                                                                     item.name.substring((item.name.length - 24), item.name.length)
-                                
-                                                            ) : item.name    
+
+                                                            ) : item.name
                                                         %>
                                                     </b>
                                                 </a>
                                             </td>
-                                            <td> 
-                                                <%- 
+                                            <td>
+                                                <%-
                                                     (item.description && item.description.length > 240) ? (
-                                                        item.description.substring(0, 240) + 
-                                                                '...' + 
+                                                        item.description.substring(0, 240) +
+                                                                '...' +
                                                                 item.description.substring((item.description.length - 240), item.description.length)
-                            
-                                                    ) : item.description 
-                                                %> 
+
+                                                    ) : item.description
+                                                %>
                                             </td>
                                         </tr>
-                            
+
                                     <% }) %>
-                            
+
                                 </table>
                             <% } else { %>
                                 <p>
@@ -138,8 +138,8 @@
             </div>
 
             <div style="padding-top:10px;padding-bottom:20px;">
-                <div class="wrap-collabsible-4"> 
-                    <input id="collapsible-4" class="toggle-4 input-type-checkbox-4" type="checkbox"> 
+                <div class="wrap-collapsible-4">
+                    <input id="collapsible-4" class="toggle-4 input-type-checkbox-4" type="checkbox">
                     <label for="collapsible-4" class="lbl-toggle-4">
                         Level 2 (<%- premadeLevel2.length || 0 %>)
                     </label>
@@ -150,43 +150,43 @@
                                 <table class='table'>
 
                                     <tr>
-                                        <th style='marginRight:100px'> Item </th>
+                                        <th style="width: 250px; min-width: 250px;"> Item </th>
                                         <th> Description </th>
                                     </tr>
-                                
+
                                     <% premadeLevel2.map(function(item){ %>
-                                    
+
                                         <tr>
                                             <td>
-                                                <a 
+                                                <a
                                                     href="<%- '/premade/item/' + item.id %>"
                                                 >
                                                     <b>
-                                                        <%- 
+                                                        <%-
                                                             (item.name && item.name.length > 48) ? (
-                                                                item.name.substring(0, 24) + 
-                                                                    '...' + 
+                                                                item.name.substring(0, 24) +
+                                                                    '...' +
                                                                     item.name.substring((item.name.length - 24), item.name.length)
-                                
-                                                            ) : item.name    
+
+                                                            ) : item.name
                                                         %>
                                                     </b>
                                                 </a>
                                             </td>
-                                            <td> 
-                                                <%- 
+                                            <td>
+                                                <%-
                                                     (item.description && item.description.length > 240) ? (
-                                                        item.description.substring(0, 240) + 
-                                                                '...' + 
+                                                        item.description.substring(0, 240) +
+                                                                '...' +
                                                                 item.description.substring((item.description.length - 240), item.description.length)
-                            
-                                                    ) : item.description 
-                                                %> 
+
+                                                    ) : item.description
+                                                %>
                                             </td>
                                         </tr>
-                            
+
                                     <% }) %>
-                            
+
                                 </table>
                             <% } else { %>
                                 <p>
@@ -198,8 +198,8 @@
                 </div>
             </div>
             <div style="padding-top:10px;padding-bottom:20px;">
-                <div class="wrap-collabsible-6"> 
-                    <input id="collapsible-6" class="toggle-6 input-type-checkbox-6" type="checkbox"> 
+                <div class="wrap-collapsible-6">
+                    <input id="collapsible-6" class="toggle-6 input-type-checkbox-6" type="checkbox">
                     <label for="collapsible-6" class="lbl-toggle-6">
                         Level -1 (pUAP) (<%- premadeLevelMinus1.length || 0 %>)
                     </label>
@@ -210,43 +210,43 @@
                                 <table class='table'>
 
                                     <tr>
-                                        <th style='marginRight:100px'> Item </th>
+                                        <th style="width: 250px; min-width: 250px;"> Item </th>
                                         <th> Description </th>
                                     </tr>
-                                
+
                                     <% premadeLevelMinus1.map(function(item){ %>
-                                    
+
                                         <tr>
                                             <td>
-                                                <a 
+                                                <a
                                                     href="<%- '/premade/item/' + item.id %>"
                                                 >
                                                     <b>
-                                                        <%- 
+                                                        <%-
                                                             (item.name && item.name.length > 48) ? (
-                                                                item.name.substring(0, 24) + 
-                                                                    '...' + 
+                                                                item.name.substring(0, 24) +
+                                                                    '...' +
                                                                     item.name.substring((item.name.length - 24), item.name.length)
-                                
-                                                            ) : item.name    
+
+                                                            ) : item.name
                                                         %>
                                                     </b>
                                                 </a>
                                             </td>
-                                            <td> 
-                                                <%- 
+                                            <td>
+                                                <%-
                                                     (item.description && item.description.length > 240) ? (
-                                                        item.description.substring(0, 240) + 
-                                                                '...' + 
+                                                        item.description.substring(0, 240) +
+                                                                '...' +
                                                                 item.description.substring((item.description.length - 240), item.description.length)
-                            
-                                                    ) : item.description 
-                                                %> 
+
+                                                    ) : item.description
+                                                %>
                                             </td>
                                         </tr>
-                            
+
                                     <% }) %>
-                            
+
                                 </table>
                             <% } else { %>
                                 <p>
@@ -259,8 +259,8 @@
             </div>
 
             <div style="padding-top:10px;padding-bottom:20px;">
-                <div class="wrap-collabsible-7"> 
-                    <input id="collapsible-7" class="toggle-7 input-type-checkbox-7" type="checkbox"> 
+                <div class="wrap-collapsible-7">
+                    <input id="collapsible-7" class="toggle-7 input-type-checkbox-7" type="checkbox">
                     <label for="collapsible-7" class="lbl-toggle-7">
                         Level P (<%- premadeLevelP.length || 0 %>)
                     </label>
@@ -271,43 +271,43 @@
                                 <table class='table'>
 
                                     <tr>
-                                        <th style='marginRight:100px'> Item </th>
+                                        <th style="width: 250px; min-width: 250px;"> Item </th>
                                         <th> Description </th>
                                     </tr>
-                                
+
                                     <% premadeLevelP.map(function(item){ %>
-                                    
+
                                         <tr>
                                             <td>
-                                                <a 
+                                                <a
                                                     href="<%- '/premade/item/' + item.id %>"
                                                 >
                                                     <b>
-                                                        <%- 
+                                                        <%-
                                                             (item.name && item.name.length > 48) ? (
-                                                                item.name.substring(0, 24) + 
-                                                                    '...' + 
+                                                                item.name.substring(0, 24) +
+                                                                    '...' +
                                                                     item.name.substring((item.name.length - 24), item.name.length)
-                                
-                                                            ) : item.name    
+
+                                                            ) : item.name
                                                         %>
                                                     </b>
                                                 </a>
                                             </td>
-                                            <td> 
-                                                <%- 
+                                            <td>
+                                                <%-
                                                     (item.description && item.description.length > 240) ? (
-                                                        item.description.substring(0, 240) + 
-                                                                '...' + 
+                                                        item.description.substring(0, 240) +
+                                                                '...' +
                                                                 item.description.substring((item.description.length - 240), item.description.length)
-                            
-                                                    ) : item.description 
-                                                %> 
+
+                                                    ) : item.description
+                                                %>
                                             </td>
                                         </tr>
-                            
+
                                     <% }) %>
-                            
+
                                 </table>
                             <% } else { %>
                                 <p>
@@ -320,8 +320,8 @@
             </div>
 
             <div style="padding-top:10px;padding-bottom:20px;">
-                <div class="wrap-collabsible-8"> 
-                    <input id="collapsible-8" class="toggle-8 input-type-checkbox-8" type="checkbox"> 
+                <div class="wrap-collapsible-8">
+                    <input id="collapsible-8" class="toggle-8 input-type-checkbox-8" type="checkbox">
                     <label for="collapsible-8" class="lbl-toggle-8">
                         Level M (<%- premadeLevelM.length || 0 %>)
                     </label>
@@ -332,43 +332,43 @@
                                 <table class='table'>
 
                                     <tr>
-                                        <th style='marginRight:100px'> Item </th>
+                                        <th style="width: 250px; min-width: 250px;"> Item </th>
                                         <th> Description </th>
                                     </tr>
-                                
+
                                     <% premadeLevelM.map(function(item){ %>
-                                    
+
                                         <tr>
                                             <td>
-                                                <a 
+                                                <a
                                                     href="<%- '/premade/item/' + item.id %>"
                                                 >
                                                     <b>
-                                                        <%- 
+                                                        <%-
                                                             (item.name && item.name.length > 48) ? (
-                                                                item.name.substring(0, 24) + 
-                                                                    '...' + 
+                                                                item.name.substring(0, 24) +
+                                                                    '...' +
                                                                     item.name.substring((item.name.length - 24), item.name.length)
-                                
-                                                            ) : item.name    
+
+                                                            ) : item.name
                                                         %>
                                                     </b>
                                                 </a>
                                             </td>
-                                            <td> 
-                                                <%- 
+                                            <td>
+                                                <%-
                                                     (item.description && item.description.length > 240) ? (
-                                                        item.description.substring(0, 240) + 
-                                                                '...' + 
+                                                        item.description.substring(0, 240) +
+                                                                '...' +
                                                                 item.description.substring((item.description.length - 240), item.description.length)
-                            
-                                                    ) : item.description 
-                                                %> 
+
+                                                    ) : item.description
+                                                %>
                                             </td>
                                         </tr>
-                            
+
                                     <% }) %>
-                            
+
                                 </table>
                             <% } else { %>
                                 <p>
@@ -381,8 +381,8 @@
             </div>
 
             <div style="padding-top:10px;padding-bottom:20px;">
-                <div class="wrap-collabsible-5"> 
-                    <input id="collapsible-5" class="toggle-5 input-type-checkbox-5" type="checkbox"> 
+                <div class="wrap-collapsible-5">
+                    <input id="collapsible-5" class="toggle-5 input-type-checkbox-5" type="checkbox">
                     <label for="collapsible-5" class="lbl-toggle-5">
                         Unknown level (<%- premadeLevelUnknown.length || 0 %>)
                     </label>
@@ -393,40 +393,40 @@
                                 <table class='table'>
 
                                     <tr>
-                                        <th style='marginRight:100px'> Item </th>
+                                        <th style="width: 250px; min-width: 250px;"> Item </th>
                                         <th> Description </th>
                                     </tr>
-                                
-                                    <% premadeLevelUnknown.map(function(item){ %>                                    
+
+                                    <% premadeLevelUnknown.map(function(item){ %>
                                         <tr>
                                             <td>
-                                                <a 
+                                                <a
                                                     href="<%- '/premade/item/' + item.id %>"
                                                 >
                                                     <b>
-                                                        <%- 
+                                                        <%-
                                                             (item.name && item.name.length > 48) ? (
-                                                                item.name.substring(0, 24) + 
-                                                                    '...' + 
+                                                                item.name.substring(0, 24) +
+                                                                    '...' +
                                                                     item.name.substring((item.name.length - 24), item.name.length)
-                                
-                                                            ) : item.name    
+
+                                                            ) : item.name
                                                         %>
                                                     </b>
                                                 </a>
                                             </td>
-                                            <td> 
-                                                <%- 
+                                            <td>
+                                                <%-
                                                     (item.description && item.description.length > 240) ? (
-                                                        item.description.substring(0, 240) + 
-                                                                '...' + 
+                                                        item.description.substring(0, 240) +
+                                                                '...' +
                                                                 item.description.substring((item.description.length - 240), item.description.length)
-                            
-                                                    ) : item.description 
-                                                %> 
+
+                                                    ) : item.description
+                                                %>
                                             </td>
-                                        </tr>                            
-                                    <% }) %>                            
+                                        </tr>
+                                    <% }) %>
                                 </table>
                             <% } else { %>
                                 <p>
@@ -440,38 +440,38 @@
 
         <div style="margin-top: 20px;">
             <h3>Other</h3>
-        
-            <div class="wrap-collapsible-2"> 
-                <input id="collapsible-2" class="toggle-2 input-type-checkbox-2" type="checkbox"> 
+
+            <div class="wrap-collapsible-2">
+                <input id="collapsible-2" class="toggle-2 input-type-checkbox-2" type="checkbox">
                     <label for="collapsible-2" class="lbl-toggle-2">
                         Documentation (<%- documentation.length || 0 %>)
                     </label>
                     <div class="collapsible-content-2">
                         <div class="content-inner-2">
-                            
+
                             <% if (documentation.length) { %>
 
                                 <table class='table'>
-                
+
                                     <tr>
                                         <th> Title </th>
                                         <th> Content </th>
                                     </tr>
-                                
+
                                     <% documentation.map(function(item){ %>
-                                    
+
                                         <tr>
                                             <td>
-                                                <a 
+                                                <a
                                                     href="<%- '/docs/item/' + item.id %>"
                                                 >
-                                                    <%-                             
+                                                    <%-
                                                         (item.name && item.name.length > 96) ? (
-                                                            item.name.substring(0, 48) + 
-                                                                '...' + 
+                                                            item.name.substring(0, 48) +
+                                                                '...' +
                                                                 item.name.substring((item.name.length - 48), item.name.length)
-                
-                                                        ) : item.name    
+
+                                                        ) : item.name
                                                     %>
                                                 </a>
                                             </td>
@@ -481,11 +481,11 @@
                                                 </p>
                                             </td>
                                         </tr>
-                
+
                                     <% }) %>
-                
+
                                 </table>
-                                
+
                             <% } else { %>
                                 <p>
                                     No documentation found. Please contact system administrator if you think this is in error.
@@ -564,7 +564,7 @@
 }
 
 .toggle-1:checked + .lbl-toggle-1 + .collapsible-content-1 {
-  max-height: 100vh;
+  max-height: none;
 }
 
 .toggle-1:checked + .lbl-toggle-1 {
@@ -639,7 +639,7 @@
 }
 
 .toggle-2:checked + .lbl-toggle-2 + .collapsible-content-2 {
-  max-height: 100vh;
+  max-height: none;
 }
 
 .toggle-2:checked + .lbl-toggle-2 {
@@ -714,7 +714,7 @@
 }
 
 .toggle-8:checked + .lbl-toggle-8 + .collapsible-content-8 {
-  max-height: 100vh;
+  max-height: none;
 }
 
 .toggle-8:checked + .lbl-toggle-8 {
@@ -789,7 +789,7 @@
 }
 
 .toggle-4:checked + .lbl-toggle-4 + .collapsible-content-4 {
-  max-height: 100vh;
+  max-height: none;
 }
 
 .toggle-4:checked + .lbl-toggle-4 {
@@ -864,7 +864,7 @@
 }
 
 .toggle-5:checked + .lbl-toggle-5 + .collapsible-content-5 {
-  max-height: 100vh;
+  max-height: none;
 }
 
 .toggle-5:checked + .lbl-toggle-5 {
@@ -939,7 +939,7 @@
 }
 
 .toggle-3:checked + .lbl-toggle-3 + .collapsible-content-3 {
-  max-height: 100vh;
+  max-height: none;
 }
 
 .toggle-3:checked + .lbl-toggle-3 {
@@ -1014,7 +1014,7 @@
 }
 
 .toggle-6:checked + .lbl-toggle-6 + .collapsible-content-6 {
-  max-height: 100vh;
+  max-height: none;
 }
 
 .toggle-6:checked + .lbl-toggle-6 {
@@ -1089,7 +1089,7 @@
 }
 
 .toggle-7:checked + .lbl-toggle-7 + .collapsible-content-7 {
-  max-height: 100vh;
+  max-height: none;
 }
 
 .toggle-7:checked + .lbl-toggle-7 {
@@ -1106,4 +1106,3 @@
 }
 
 </style>
-
