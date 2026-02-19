@@ -553,10 +553,18 @@ ordersController.simonRepeatOrders = async (req, res) => {
     ];
     console.log(`Fetching ${uniqueTypeIds.length} unique types...`);
 
-    const typesData = await thinky.r
-      .table("Type")
-      .getAll(...uniqueTypeIds)
-      .run();
+    // Query all three type tables (Type1, Type2, Type3) since there is no single "Type" table
+    const typeTableNames = ["Type1", "Type2", "Type3"];
+    const typeResults = await Promise.all(
+      typeTableNames.map((tableName) =>
+        thinky.r
+          .table(tableName)
+          .getAll(...uniqueTypeIds)
+          .run()
+          .catch(() => []),
+      ),
+    );
+    const typesData = [].concat(...typeResults);
 
     // Create a map of typeID -> type name for O(1) lookup
     const typeNameMap = {};
