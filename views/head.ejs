@@ -36,6 +36,12 @@
 
 	    <div class="user">
 	        <% if(locals.signedInUser){ %>
+	        <div class="image">
+	            <img src="<%- locals.signedInUser.iconURL %>">
+	            <% if(locals.signedInUser.isAdmin){ %>
+	            <span class="badge"><%- locals.incompleteCount %></span>
+	            <% } %>
+	        </div>
 	        <div class="name">
 	            <span><%- locals.signedInUser.name %></span>
 	        </div>
@@ -111,6 +117,23 @@
         position: absolute;
         right: 0;
         top: 4px;
+    }
+
+    .user .image {
+        margin-right: 8px !important;
+    }
+
+    .user .image img {
+        height: 26px !important;
+        width: 26px !important;
+        margin-top: 5px !important;
+    }
+
+    .user .badge {
+        top: 0px !important;
+        right: -4px !important;
+        padding: 2px 5px !important;
+        font-size: 10px !important;
     }
 
     .user .name {

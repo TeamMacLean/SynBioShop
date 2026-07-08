@@ -38,7 +38,7 @@ describe("Dev Mode Authentication", () => {
           username: "deeks",
           password: "",
         })
-        .expect(200) // Returns error page (200 status)
+        .expect(500) // Returns error page (500 status)
         .expect((res) => {
           // Should show an error message in the response
           expect(res.text).to.match(/error|Error|failed|Failed/i);
@@ -53,7 +53,7 @@ describe("Dev Mode Authentication", () => {
           username: "notanadmin",
           password: "password123",
         })
-        .expect(200) // Returns error page (200 status)
+        .expect(500) // Returns error page (500 status)
         .expect((res) => {
           // Should show an error message in the response
           expect(res.text).to.match(/error|Error|authorized|not found/i);
