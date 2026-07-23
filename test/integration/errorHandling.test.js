@@ -6,7 +6,7 @@ describe("Robust Error Handling & UX Improvements", function () {
   let app;
   let sessionCookie;
 
-  before(function(done) {
+  before(function (done) {
     app = require("../../app.js");
     // Login to get a valid session for authenticated routes
     request(app)
@@ -35,7 +35,7 @@ describe("Robust Error Handling & UX Improvements", function () {
   describe("2. Graceful Subject Not Found", function () {
     it("should redirect to /documents and flash error for non-existent subject", function (done) {
       request(app)
-        .get("/documents/subject/non-existent-id-12345")
+        .get("/docs/non-existent-id-12345")
         .set("Cookie", sessionCookie)
         .expect(302) // Should redirect, not throw 500
         .expect("Location", "/documents")

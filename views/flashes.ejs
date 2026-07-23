@@ -1,5 +1,5 @@
-<% if(locals.messages.success_messages){ %>
-<% locals.messages.success_messages.map(function(success){ %>
+<% if(locals.messages.success){ %>
+<% locals.messages.success.forEach(function(success){ %>
 <div class="flash success">
     <div class="container">
         <span class="pull-left status icon icon_check"></span>
@@ -9,8 +9,21 @@
 </div>
 <% }); %>
 <% } %>
-<% if(locals.messages.info_messages){ %>
-<% locals.messages.info_messages.map(function(info){ %>
+
+<% if(locals.messages.success_messages){ %>
+<% locals.messages.success_messages.forEach(function(success){ %>
+<div class="flash success">
+    <div class="container">
+        <span class="pull-left status icon icon_check"></span>
+        <span class=""><%- success %></span>
+        <a href="#" data-close="true" class="icon icon_close trans_black pull-right"></a>
+    </div>
+</div>
+<% }); %>
+<% } %>
+
+<% if(locals.messages.info){ %>
+<% locals.messages.info.forEach(function(info){ %>
 <div class="flash primary">
     <div class="container">
         <span class="pull-left status icon  icon_info_alt"></span>
@@ -20,12 +33,49 @@
 </div>
 <% }); %>
 <% } %>
-<% if(locals.messages.error_messages){ %>
-<% locals.messages.error_messages.map(function(error){ %>
+
+<% if(locals.messages.info_messages){ %>
+<% locals.messages.info_messages.forEach(function(info){ %>
+<div class="flash primary">
+    <div class="container">
+        <span class="pull-left status icon  icon_info_alt"></span>
+        <span class=""><%- info %></span>
+        <a href="#" data-close="true" class="icon icon_close trans_black pull-right"></a>
+    </div>
+</div>
+<% }); %>
+<% } %>
+
+<% if(locals.messages.error){ %>
+<% locals.messages.error.forEach(function(error){ %>
 <div class="flash error">
     <div class="container">
         <span class="pull-left status icon icon_error-circle_alt"></span>
         <span class=""><%- error %></span>
+        <a href="#" data-close="true" class="icon icon_close trans_black pull-right"></a>
+    </div>
+</div>
+<% }); %>
+<% } %>
+
+<% if(locals.messages.error_messages){ %>
+<% locals.messages.error_messages.forEach(function(error){ %>
+<div class="flash error">
+    <div class="container">
+        <span class="pull-left status icon icon_error-circle_alt"></span>
+        <span class=""><%- error %></span>
+        <a href="#" data-close="true" class="icon icon_close trans_black pull-right"></a>
+    </div>
+</div>
+<% }); %>
+<% } %>
+
+<% if(locals.messages.warning){ %>
+<% locals.messages.warning.forEach(function(warning){ %>
+<div class="flash error" style="background-color: #f39c12;">
+    <div class="container">
+        <span class="pull-left status icon icon_error-triangle_alt"></span>
+        <span class=""><%- warning %></span>
         <a href="#" data-close="true" class="icon icon_close trans_black pull-right"></a>
     </div>
 </div>

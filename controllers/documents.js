@@ -164,7 +164,16 @@ docs.subject.show = (req, res) => {
         })
         .catch((err) => renderError(err, res));
     })
-    .catch((err) => renderError(err, res));
+    .catch((err) => {
+      if (
+        err.name === "DocumentNotFoundError" ||
+        err.message.includes("not found")
+      ) {
+        Flash.error(req, "Subject not found.");
+        return res.redirect("/documents");
+      }
+      renderError(err, res);
+    });
 };
 
 docs.subject.disable = (req, res) => {

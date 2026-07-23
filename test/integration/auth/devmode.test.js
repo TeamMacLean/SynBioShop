@@ -38,11 +38,8 @@ describe("Dev Mode Authentication", () => {
           username: "deeks",
           password: "",
         })
-        .expect(500) // Returns error page (500 status)
-        .expect((res) => {
-          // Should show an error message in the response
-          expect(res.text).to.match(/error|Error|failed|Failed/i);
-        })
+        .expect(302) // Now properly redirects back to signin
+        .expect("Location", "/signin")
         .end(done);
     });
 
@@ -53,11 +50,8 @@ describe("Dev Mode Authentication", () => {
           username: "notanadmin",
           password: "password123",
         })
-        .expect(500) // Returns error page (500 status)
-        .expect((res) => {
-          // Should show an error message in the response
-          expect(res.text).to.match(/error|Error|authorized|not found/i);
-        })
+        .expect(302) // Now properly redirects back to signin
+        .expect("Location", "/signin")
         .end(done);
     });
 
