@@ -349,12 +349,12 @@ async function createOrder(user, cart, formData, totals) {
  * Associate cart items with the order
  */
 async function associateItemsWithOrder(cart, orderId) {
-  const updatePromises = cart.items.map(async (item) => {
-    item.orderID = orderId;
-    return item.save();
-  });
+  if (!cart.items || cart.items.length === 0) return;
 
-  await Promise.all(updatePromises);
+  const itemIds = cart.items.map((item) => item.id);
+  await CartItem.getAll(...itemIds)
+    .update({ orderID: orderId })
+    .execute();
 }
 
 /**

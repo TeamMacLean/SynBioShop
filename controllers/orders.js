@@ -12,6 +12,91 @@ const ordersController = {};
 // --- Helper Functions ---
 
 /**
+ * Helper function to bulk fetch items for a list of orders
+ * @param {Array} orders - Array of Order model instances
+ * @returns {Array} - Orders with their .items populated
+ */
+async function attachItemsToOrders(orders) {
+  if (!orders || orders.length === 0) return orders;
+
+  const orderIDs = orders.map((o) => o.id);
+  const chunkSize = 500;
+  let allItems = [];
+
+  for (let i = 0; i < orderIDs.length; i += chunkSize) {
+    const chunk = orderIDs.slice(i, i + chunkSize);
+    const chunkItems = await thinky.r
+      .table("CartItem")
+      .filter((item) => thinky.r.expr(chunk).contains(item("orderID")))
+      .run();
+    allItems = allItems.concat(chunkItems);
+  }
+
+  const itemsByOrder = {};
+  allItems.forEach((item) => {
+    if (!itemsByOrder[item.orderID]) {
+      itemsByOrder[item.orderID] = [];
+    }
+    itemsByOrder[item.orderID].push(item);
+  });
+
+  return orders.map((order) => {
+    order.items = itemsByOrder[order.id] || [];
+    return order;
+  });
+}
+
+/**
+ * Helper function to bulk fetch types for items in a list of orders
+ * @param {Array} orders - Array of Order model instances (with .items populated)
+ * @returns {Array} - Orders with item types populated
+ */
+async function attachTypesToOrders(orders) {
+  if (!orders || orders.length === 0) return orders;
+
+  const typeIDs = new Set();
+  orders.forEach((order) => {
+    if (order.items) {
+      order.items.forEach((item) => {
+        if (item.typeID) typeIDs.add(item.typeID);
+      });
+    }
+  });
+
+  const uniqueTypeIds = Array.from(typeIDs);
+  if (uniqueTypeIds.length === 0) return orders;
+
+  const typeTableNames = ["Type1", "Type2", "Type3"];
+  const typeResults = await Promise.all(
+    typeTableNames.map((tableName) =>
+      thinky.r
+        .table(tableName)
+        .getAll(...uniqueTypeIds)
+        .run()
+        .catch(() => []),
+    ),
+  );
+  const typesData = [].concat(...typeResults);
+
+  const typeNameMap = {};
+  typesData.forEach((type) => {
+    typeNameMap[type.id] = type;
+  });
+
+  orders.forEach((order) => {
+    if (order.items) {
+      order.items.forEach((item) => {
+        item.type = typeNameMap[item.typeID] || {
+          name: "type not found, possibly deleted",
+        };
+      });
+    }
+  });
+
+  return orders;
+}
+
+/**
  * A consistent way to handle errors in order-related operations.
  * @param {Error} err - The error object.
  * @param {Object} res - The Express response object.
@@ -129,29 +214,11 @@ ordersController.showAll = async (req, res) => {
 
     // Convert to model instances and fetch joined data
     const [openOrders, closedOrders] = await Promise.all([
-      Promise.all(
-        openOrdersRaw.map(async (orderData) => {
-          const order = new Order(orderData);
-          // Manually fetch items
-          const items = await thinky.r
-            .table("CartItem")
-            .filter({ orderID: order.id })
-            .run();
-          order.items = items;
-          return order;
-        }),
+      attachItemsToOrders(
+        openOrdersRaw.map((orderData) => new Order(orderData)),
       ),
-      Promise.all(
-        closedOrdersRaw.map(async (orderData) => {
-          const order = new Order(orderData);
-          // Manually fetch items
-          const items = await thinky.r
-            .table("CartItem")
-            .filter({ orderID: order.id })
-            .run();
-          order.items = items;
-          return order;
-        }),
+      attachItemsToOrders(
+        closedOrdersRaw.map((orderData) => new Order(orderData)),
       ),
     ]);
 
@@ -229,24 +296,16 @@ ordersController.simonSummary = async (req, res) => {
       .slice((page - 1) * perPage, page * perPage)
       .run();
 
-    // Convert to Order instances and fetch items manually
-    const paginatedOrders = await Promise.all(
-      paginatedOrdersRaw.map(async (orderData) => {
-        const order = new Order(orderData);
-        // Fetch items
-        const items = await thinky.r
-          .table("CartItem")
-          .filter({ orderID: order.id })
-          .run();
-        order.items = items;
-        return order;
-      }),
+    // Convert to Order instances and fetch items and types in bulk
+    let paginatedOrders = paginatedOrdersRaw.map(
+      (orderData) => new Order(orderData),
     );
+    paginatedOrders = await attachItemsToOrders(paginatedOrders);
+    paginatedOrders = await attachTypesToOrders(paginatedOrders);
 
     const processedOrders = await Promise.all(
-      paginatedOrders.map(async (order) => {
+      paginatedOrders.map(async (orderWithTypes) => {
         try {
-          const orderWithTypes = await order.getTypes();
           // Skip LDAP lookup in devMode to avoid connection errors
           if (config.devMode) {
             orderWithTypes.fullName = order.username;
@@ -353,28 +412,36 @@ ordersController.exportOrders = async (req, res, next) => {
       `After filtering: ${orders.length} orders with costCode and totalCost`,
     );
 
-    // Fetch items for each order manually
-    const ordersWithItems = await Promise.all(
-      orders.map(async (order) => {
-        const items = await thinky.r
-          .table("CartItem")
-          .filter({ orderID: order.id })
-          .run();
-        order.items = items;
-        return order;
-      }),
-    );
+    // Bulk fetch items for all orders to prevent N+1 query issue
+    const orderIDs = orders.map((o) => o.id);
+    const chunkSize = 500;
+    let allItems = [];
 
-    // Get types for each order using the Order model method
-    const ordersWithTypes = await Promise.all(
-      ordersWithItems.map(async (orderData) => {
-        // Create an Order instance so we can use getTypes()
-        const order = new Order(orderData);
-        return await order.getTypes();
-      }),
-    );
+    for (let i = 0; i < orderIDs.length; i += chunkSize) {
+      const chunk = orderIDs.slice(i, i + chunkSize);
+      const chunkItems = await thinky.r
+        .table("CartItem")
+        .filter((item) => thinky.r.expr(chunk).contains(item("orderID")))
+        .run();
+      allItems = allItems.concat(chunkItems);
+    }
 
-    res.json(ordersWithTypes);
+    // Group items by orderID
+    const itemsByOrder = {};
+    allItems.forEach((item) => {
+      if (!itemsByOrder[item.orderID]) {
+        itemsByOrder[item.orderID] = [];
+      }
+      itemsByOrder[item.orderID].push(item);
+    });
+
+    // Attach items to orders
+    const ordersWithItems = orders.map((order) => {
+      order.items = itemsByOrder[order.id] || [];
+      return order;
+    });
+
+    res.json(ordersWithItems);
   } catch (err) {
     console.error("Error in exportOrders middleware:", err);
     res.status(500).json({ error: "Internal server error" });
@@ -412,27 +479,36 @@ ordersController.exportAllOrders = async (req, res) => {
 
     console.log(`Found ${orders.length} orders in date range`);
 
-    // Fetch items for each order manually
-    const ordersWithItems = await Promise.all(
-      orders.map(async (order) => {
-        const items = await thinky.r
-          .table("CartItem")
-          .filter({ orderID: order.id })
-          .run();
-        order.items = items;
-        return order;
-      }),
-    );
+    // Bulk fetch items for all orders to prevent N+1 query issue
+    const orderIDs = orders.map((o) => o.id);
+    const chunkSize = 500;
+    let allItems = [];
 
-    // Get types for each order using the Order model method
-    const ordersWithTypes = await Promise.all(
-      ordersWithItems.map(async (orderData) => {
-        const order = new Order(orderData);
-        return await order.getTypes();
-      }),
-    );
+    for (let i = 0; i < orderIDs.length; i += chunkSize) {
+      const chunk = orderIDs.slice(i, i + chunkSize);
+      const chunkItems = await thinky.r
+        .table("CartItem")
+        .filter((item) => thinky.r.expr(chunk).contains(item("orderID")))
+        .run();
+      allItems = allItems.concat(chunkItems);
+    }
 
-    res.json(ordersWithTypes);
+    // Group items by orderID
+    const itemsByOrder = {};
+    allItems.forEach((item) => {
+      if (!itemsByOrder[item.orderID]) {
+        itemsByOrder[item.orderID] = [];
+      }
+      itemsByOrder[item.orderID].push(item);
+    });
+
+    // Attach items to orders
+    const ordersWithItems = orders.map((order) => {
+      order.items = itemsByOrder[order.id] || [];
+      return order;
+    });
+
+    res.json(ordersWithItems);
   } catch (err) {
     console.error("Error in exportAllOrders middleware:", err);
     res.status(500).json({ error: "Internal server error" });

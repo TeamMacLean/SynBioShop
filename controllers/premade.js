@@ -140,9 +140,20 @@ premadeController.index = async (req, res) => {
 premadeController.export = async (req, res) => {
   try {
     const categories = await Category.getJoin({ db: true });
+
+    // Bulk fetch all types to prevent N+1 queries per category
+    const allTypes = await Type.getAll();
+    const typesByCategory = {};
+    allTypes.forEach((t) => {
+      if (!typesByCategory[t.categoryID]) {
+        typesByCategory[t.categoryID] = [];
+      }
+      typesByCategory[t.categoryID].push(t);
+    });
+
     const outputData = await Promise.all(
       categories.map(async (category) => {
-        const typesForCategory = await Type.getByCategory(category.id); // <-- This is where 'types' comes from
+        const typesForCategory = typesByCategory[category.id] || []; // Use cached types
 
         const typeDefinition =
           category.db && category.db.type
