@@ -43,7 +43,10 @@ BudgetHolderController.index = async (req, res) => {
     });
   } catch (err) {
     console.error("Error loading budget holders:", err);
-    Flash.error(req, "Failed to load budget holders.");
+    Flash.error(
+      req,
+      "We couldn't load the budget holders right now. Please try again later.",
+    );
     res.redirect("/");
   }
 };
@@ -75,7 +78,7 @@ BudgetHolderController.edit = async (req, res) => {
     });
   } catch (err) {
     console.error("Error loading budget holder:", err);
-    Flash.error(req, "Budget holder not found.");
+    Flash.error(req, "The selected budget holder could not be found.");
     res.redirect("/budget");
   }
 };
@@ -118,7 +121,10 @@ BudgetHolderController.create = async (req, res) => {
     }).run();
 
     if (existing.length > 0) {
-      Flash.error(req, `Username "${username}" already exists.`);
+      Flash.error(
+        req,
+        `A budget holder with the username "${username}" already exists.`,
+      );
       return res.render("budget/form", {
         title: "Add Budget Holder",
         budgetHolder: { username, description },
@@ -186,7 +192,10 @@ BudgetHolderController.update = async (req, res) => {
         username: username.trim(),
       }).run();
       if (existing.length > 0) {
-        Flash.error(req, `Username "${username}" already exists.`);
+        Flash.error(
+          req,
+          `A budget holder with the username "${username}" already exists.`,
+        );
         return res.redirect(`/budget/${holderId}/edit`);
       }
     }

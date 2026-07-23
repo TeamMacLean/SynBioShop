@@ -55,13 +55,19 @@ Admin.billboard.editPost = (req, res) => {
         })
         .catch((err) => {
           console.error("Error saving billboard:", err);
-          Flash.error(req, "Failed to save billboard. Please try again.");
+          Flash.error(
+            req,
+            "We couldn't save the billboard message. Please try again.",
+          );
           return renderError(err, res);
         });
     })
     .catch((err) => {
       console.error("Error loading billboard:", err);
-      Flash.error(req, "Failed to load billboard. Please try again.");
+      Flash.error(
+        req,
+        "We couldn't load the billboard right now. Please try again later.",
+      );
       return renderError(err, res);
     });
 };

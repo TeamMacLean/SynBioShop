@@ -134,7 +134,7 @@ uploadController.uploadFilePost = async (req, res) => {
 
   try {
     await processFileUpload(file, savePath, "File");
-    Flash.success(req, "Uploaded new file: " + file.originalname);
+    Flash.success(req, "File uploaded successfully: " + file.originalname);
     res.redirect("/filemanager");
   } catch (err) {
     handleError(err, res);
@@ -152,14 +152,14 @@ uploadController.uploadSequenceFile = async (req, res) => {
   const seqFile = req.files && req.files.file;
 
   if (!seqFile) {
-    Flash.error(req, "No sequence file uploaded.");
+    Flash.error(req, "Please select a sequence file to upload.");
     return res.redirect("/premade/item/" + itemID); // Redirect back to the item
   }
 
   // Get filename - express-fileupload uses 'name', multer uses 'filename' or 'originalname'
   const fileName = seqFile.name || seqFile.filename || seqFile.originalname;
   if (!fileName) {
-    Flash.error(req, "Invalid file upload - no filename found.");
+    Flash.error(req, "We couldn't process the file. Please try again.");
     return res.redirect("/premade/item/" + itemID);
   }
 
@@ -249,14 +249,20 @@ uploadController.deleteFile = async (req, res) => {
   const fileIdToDelete = req.body.fileId || req.params.id || req.query.id;
 
   if (!fileIdToDelete) {
-    Flash.error(req, "Error: No file ID provided for deletion.");
+    Flash.error(
+      req,
+      "We couldn't delete the file because it wasn't specified.",
+    );
     return res.redirect(req.get("Referrer") || "/");
   }
 
   try {
     const file = await File.get(fileIdToDelete); // Use the general File model
     if (!file) {
-      Flash.error(req, "File not found or already deleted.");
+      Flash.error(
+        req,
+        "This file could not be found. It may have already been deleted.",
+      );
       return res.redirect(req.get("Referrer") || "/");
     }
 
@@ -264,7 +270,7 @@ uploadController.deleteFile = async (req, res) => {
     // await fsPromises.unlink(file.path);
 
     await file.delete(); // Delete from File model
-    Flash.success(req, `${file.originalName} deleted successfully.`);
+    Flash.success(req, "File deleted successfully.");
     res.redirect(req.get("Referrer") || "/");
   } catch (err) {
     handleError(err, res, `Failed to delete file: ${err.message}`);
@@ -286,7 +292,10 @@ uploadController.deleteSequenceFile = async (req, res) => {
     console.error(
       "ERROR: No valid file ID could be extracted for deletion. Preventing DB query.",
     );
-    Flash.error(req, "Error: No sequence file ID provided for deletion.");
+    Flash.error(
+      req,
+      "We couldn't delete the sequence file because it wasn't specified.",
+    );
     return res.redirect(req.get("Referrer") || "/");
   }
 
@@ -298,7 +307,10 @@ uploadController.deleteSequenceFile = async (req, res) => {
       console.warn(
         `WARNING: Sequence file with ID ${fileIdToDelete} not found in DB.`,
       );
-      Flash.error(req, "Sequence file not found or already deleted.");
+      Flash.error(
+        req,
+        "This sequence file could not be found. It may have already been deleted.",
+      );
       return res.redirect(req.get("Referrer") || "/");
     }
 
@@ -312,7 +324,7 @@ uploadController.deleteSequenceFile = async (req, res) => {
     console.log(
       `Successfully deleted sequence file ${sequenceFile.originalName} (ID: ${fileIdToDelete}).`,
     );
-    Flash.success(req, `${sequenceFile.originalName} deleted successfully.`);
+    Flash.success(req, "Sequence file deleted successfully.");
     return res.redirect(req.get("Referrer") || "/");
   } catch (err) {
     // Specific logging for deletion failure.

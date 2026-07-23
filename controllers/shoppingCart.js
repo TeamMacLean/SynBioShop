@@ -194,7 +194,10 @@ ShoppingCartController.addViaPostRoute = async (req, res) => {
 
   try {
     if (!typeID || !username) {
-      Flash.error(req, "Missing required information.");
+      Flash.error(
+        req,
+        "We couldn't add this item. Some information is missing.",
+      );
       return res.redirect(req.get("Referrer") || "/");
     }
 
@@ -205,7 +208,7 @@ ShoppingCartController.addViaPostRoute = async (req, res) => {
     if (err && err.type && err.message) {
       Flash[err.type](req, err.message);
     } else {
-      Flash.error(req, "An unexpected error occurred");
+      Flash.error(req, "An unexpected error occurred. Please try again.");
       console.error("Error in add to cart:", err);
     }
     return res.redirect(req.get("Referrer") || "/");

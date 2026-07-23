@@ -315,11 +315,11 @@ premadeController.rearrangeSave = async (req, res) => {
     }
 
     await Promise.all(savePromises);
-    Flash.success(req, "Rearrangement saved successfully.");
+    Flash.success(req, "New layout saved successfully.");
     Log.info("Rearrangement saved by user " + req.user.username + "."); // Changed to concatenate string
     res.sendStatus(200);
   } catch (err) {
-    Flash.error(req, "Failed to save rearrangement: " + err.message); // Changed to concatenate string
+    Flash.error(req, "We couldn't save the new layout. Please try again.");
     Log.error("Error saving rearrangement: " + err.message, err); // Changed to concatenate string
     res.status(400).json({ error: err.message });
   }
@@ -347,11 +347,11 @@ premadeController.db.save = async (req, res) => {
       db.name = name;
       db.description = description;
       await db.save();
-      Flash.success(req, 'DB "' + name + '" updated.'); // Changed to concatenate string
+      Flash.success(req, 'Database "' + name + '" updated successfully.');
     } else {
       const newDb = new DB({ name, type, description });
       await newDb.save();
-      Flash.success(req, 'DB "' + name + '" created.'); // Changed to concatenate string
+      Flash.success(req, 'Database "' + name + '" created successfully.');
     }
     res.redirect("/premade");
   } catch (err) {
@@ -377,7 +377,7 @@ premadeController.db.disable = async (req, res) => {
     if (!db) throw new Error("DB not found for disabling.");
     db.disabled = true;
     await db.save();
-    Flash.info(req, 'DB "' + db.name + '" disabled.'); // Changed to concatenate string
+    Flash.info(req, 'Database "' + db.name + '" has been disabled.');
     res.redirect("/premade/" + id); // Changed to concatenate string
   } catch (err) {
     handleError(err, res);
@@ -391,7 +391,7 @@ premadeController.db.enable = async (req, res) => {
     if (!db) throw new Error("DB not found for enabling.");
     db.disabled = false;
     await db.save();
-    Flash.info(req, 'DB "' + db.name + '" enabled.'); // Changed to concatenate string
+    Flash.info(req, 'Database "' + db.name + '" is now enabled.');
     res.redirect("/premade/" + id); // Changed to concatenate string
   } catch (err) {
     handleError(err, res);
@@ -405,7 +405,7 @@ premadeController.db.delete = async (req, res) => {
     if (!db) throw new Error("DB not found for deletion.");
     const dbName = db.name;
     await db.delete();
-    Flash.success(req, 'DB "' + dbName + '" deleted.'); // Changed to concatenate string
+    Flash.success(req, 'Database "' + dbName + '" deleted successfully.');
     res.redirect("/premade/");
   } catch (err) {
     handleError(err, res);
@@ -460,11 +460,11 @@ premadeController.category.save = async (req, res) => {
       category.name = name;
       category.description = description;
       savedCategory = await category.save();
-      Flash.success(req, 'Category "' + name + '" updated.'); // Changed to concatenate string
+      Flash.success(req, 'Category "' + name + '" updated successfully.');
     } else {
       const newCategory = new Category({ name, description, dbID });
       savedCategory = await newCategory.save();
-      Flash.success(req, 'Category "' + name + '" created.'); // Changed to concatenate string
+      Flash.success(req, 'Category "' + name + '" created successfully.');
     }
     res.redirect("/premade/category/" + savedCategory.id); // Changed to concatenate string
   } catch (err) {
@@ -550,7 +550,7 @@ premadeController.category.enable = async (req, res) => {
     if (!category) throw new Error("Category not found for enabling.");
     category.disabled = false;
     await category.save();
-    Flash.info(req, 'Category "' + category.name + '" enabled.'); // Changed to concatenate string
+    Flash.info(req, 'Category "' + category.name + '" is now enabled.');
     res.redirect("/premade/category/" + categoryID); // Changed to concatenate string
   } catch (err) {
     handleError(err, res);
@@ -564,7 +564,7 @@ premadeController.category.disable = async (req, res) => {
     if (!category) throw new Error("Category not found for disabling.");
     category.disabled = true;
     await category.save();
-    Flash.info(req, 'Category "' + category.name + '" disabled.'); // Changed to concatenate string
+    Flash.info(req, 'Category "' + category.name + '" has been disabled.');
     res.redirect("/premade/category/" + categoryID); // Changed to concatenate string
   } catch (err) {
     handleError(err, res);
@@ -578,7 +578,10 @@ premadeController.category.delete = async (req, res) => {
     if (!category) throw new Error("Category not found for deletion.");
     const dbID = category.dbID;
     await category.delete();
-    Flash.success(req, 'Category "' + category.name + '" deleted.'); // Changed to concatenate string
+    Flash.success(
+      req,
+      'Category "' + category.name + '" deleted successfully.',
+    );
     res.redirect("/premade/" + dbID); // Changed to concatenate string
   } catch (err) {
     handleError(err, res);
@@ -685,7 +688,7 @@ premadeController.item.save = async (req, res) => {
       }
 
       savedType = await typeInstance.save();
-      Flash.success(req, 'Item "' + name + '" updated.');
+      Flash.success(req, 'Item "' + name + '" updated successfully.');
     } else {
       // Creating a NEW item
       const newTypeData = {
@@ -728,7 +731,7 @@ premadeController.item.save = async (req, res) => {
       newType.name = name;
 
       savedType = await newType.save(); // This is where the ValidationError happens
-      Flash.success(req, 'Item "' + name + '" created.');
+      Flash.success(req, 'Item "' + name + '" created successfully.');
     }
 
     await processMapFile(savedType, req);
@@ -744,9 +747,7 @@ premadeController.item.save = async (req, res) => {
       );
       Flash.error(
         req,
-        "Validation Error: " +
-          err.message +
-          ". Please check all required fields.",
+        "We couldn't save the item. Please check all required fields and try again.",
       );
     } else {
       handleError(err, res);
@@ -835,7 +836,7 @@ premadeController.item.enable = async (req, res) => {
     if (!type) throw new Error("Item not found for enabling.");
     type.disabled = false;
     await type.save();
-    Flash.info(req, 'Item "' + type.name + '" enabled.'); // Changed to concatenate string
+    Flash.info(req, 'Item "' + type.name + '" is now enabled.');
     res.redirect("/premade/item/" + itemID); // Changed to concatenate string
   } catch (err) {
     handleError(err, res);
@@ -849,7 +850,7 @@ premadeController.item.disable = async (req, res) => {
     if (!type) throw new Error("Item not found for disabling.");
     type.disabled = true;
     await type.save();
-    Flash.info(req, 'Item "' + type.name + '" disabled.'); // Changed to concatenate string
+    Flash.info(req, 'Item "' + type.name + '" has been disabled.');
     res.redirect("/premade/item/" + itemID); // Changed to concatenate string
   } catch (err) {
     handleError(err, res);
@@ -904,7 +905,7 @@ premadeController.item.delete = async (req, res) => {
 
     const categoryID = type.categoryID;
     await type.delete();
-    Flash.success(req, 'Item "' + type.name + '" deleted.'); // Changed to concatenate string
+    Flash.success(req, 'Item "' + type.name + '" deleted successfully.');
     res.redirect("/premade/category/" + categoryID); // Changed to concatenate string
   } catch (err) {
     handleError(err, res);

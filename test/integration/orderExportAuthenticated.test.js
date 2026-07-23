@@ -71,4 +71,19 @@ describe("Order Export Authenticated Integration Tests", function () {
         });
     });
   });
+
+  describe("Authenticated Order Summary Page (GET /order/summary)", function () {
+    it("should successfully render the order summary page", function (done) {
+      request(app)
+        .get("/order/summary")
+        .set("Cookie", sessionCookie)
+        .expect(200)
+        .end(function (err, res) {
+          if (err) return done(err);
+
+          expect(res.text).to.include("Export"); // Basic check that it rendered
+          done();
+        });
+    });
+  });
 });

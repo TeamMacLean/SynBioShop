@@ -114,12 +114,12 @@ docs.rearrangeSave = (req, res) => {
 
   Promise.all(toDo)
     .then(() => {
-      Flash.success(req, "Rearrange saved");
+      Flash.success(req, "Document layout saved successfully.");
       Log.error("Rearrange saved");
       return res.sendStatus(200);
     })
     .catch((err) => {
-      Flash.error(req, err);
+      Flash.error(req, "We couldn't save the new layout. Please try again.");
       Log.error(err);
       return res.sendStatus(400).json({ error: err });
     });
@@ -155,7 +155,7 @@ docs.subject.show = (req, res) => {
     .getJoin({ documents: true, subjects: { documents: true } })
     .then((subject) => {
       if (!subject) {
-        Flash.error(req, "Subject not found.");
+        Flash.error(req, "The requested subject could not be found.");
         return res.redirect("/documents");
       }
       getTopLevelSubjects()
@@ -169,7 +169,7 @@ docs.subject.show = (req, res) => {
         err.name === "DocumentNotFoundError" ||
         err.message.includes("not found")
       ) {
-        Flash.error(req, "Subject not found.");
+        Flash.error(req, "The requested subject could not be found.");
         return res.redirect("/documents");
       }
       renderError(err, res);

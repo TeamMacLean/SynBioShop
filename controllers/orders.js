@@ -308,26 +308,30 @@ ordersController.simonSummary = async (req, res) => {
         try {
           // Skip LDAP lookup in devMode to avoid connection errors
           if (config.devMode) {
-            orderWithTypes.fullName = order.username;
+            orderWithTypes.fullName = orderWithTypes.username;
           } else {
             try {
               // Node v12 compatible checks (replaces user?.name)
-              const users = await ldap.getNameFromUsername(order.username);
+              const users = await ldap.getNameFromUsername(
+                orderWithTypes.username,
+              );
               const firstUser = users && users.length > 0 ? users[0] : null;
               orderWithTypes.fullName =
-                firstUser && firstUser.name ? firstUser.name : order.username;
+                firstUser && firstUser.name
+                  ? firstUser.name
+                  : orderWithTypes.username;
             } catch (ldapErr) {
               console.warn(
-                "LDAP lookup failed for " + order.username + ":",
+                "LDAP lookup failed for " + orderWithTypes.username + ":",
                 ldapErr.message,
               ); // Node v12 concat
-              orderWithTypes.fullName = order.username;
+              orderWithTypes.fullName = orderWithTypes.username;
             }
           }
           return orderWithTypes;
         } catch (typeErr) {
           console.error(
-            "Failed to get types for order " + order.id + ":",
+            "Error fetching types for order " + orderWithTypes.id + ":",
             typeErr,
           ); // Node v12 concat
           return null;
@@ -703,7 +707,10 @@ ordersController.markAsComplete = async (req, res) => {
     await orderWithTypes.save();
     await Email.orderReady(orderWithTypes); // Send notification email
 
-    Flash.success(req, `Completion email sent to ${orderWithTypes.username}.`);
+    Flash.success(
+      req,
+      `Order marked as complete and notification sent to ${orderWithTypes.username}.`,
+    );
     res.redirect(`/order/${orderID}`);
   } catch (err) {
     handleError(err, res);
@@ -718,10 +725,13 @@ ordersController.markAsComplete = async (req, res) => {
 ordersController.markAsIncomplete = async (req, res) => {
   const { id: orderID } = req.params;
   try {
-    const order = await Order.get(orderID); // No need for join here
+    const order = await getOrderWithDetails(orderID, false);
+
     order.complete = false;
+    order.completedAt = null;
+
     await order.save();
-    Flash.info(req, `Order ${orderID} marked as incomplete.`);
+    Flash.info(req, `Order has been marked as incomplete.`);
     res.redirect(`/order/${orderID}`);
   } catch (err) {
     handleError(err, res);
@@ -736,13 +746,12 @@ ordersController.markAsIncomplete = async (req, res) => {
 ordersController.markAsCancelled = async (req, res) => {
   const { id: orderID } = req.params;
   try {
-    const order = await Order.get(orderID);
+    const order = await getOrderWithDetails(orderID, false);
+
     order.cancelled = true;
-    order.costCode = null; // Ensure 'costCode' is null if cancelled
-    order.totalCost = null; // Ensure 'totalCost' is null if cancelled
-    order.complete = false; // Ensure 'complete' is false if cancelled
+
     await order.save();
-    Flash.info(req, `Order ${orderID} marked as cancelled.`);
+    Flash.info(req, `Order has been cancelled.`);
     res.redirect(`/order/${orderID}`);
   } catch (err) {
     handleError(err, res);
@@ -750,17 +759,19 @@ ordersController.markAsCancelled = async (req, res) => {
 };
 
 /**
- * Marks an order as un-cancelled (restores it).
+ * Marks an order as not cancelled.
  * @param {Object} req - Express request object.
  * @param {Object} res - Express response object.
  */
 ordersController.markAsUnCancelled = async (req, res) => {
   const { id: orderID } = req.params;
   try {
-    const order = await Order.get(orderID);
+    const order = await getOrderWithDetails(orderID, false);
+
     order.cancelled = false;
+
     await order.save();
-    Flash.info(req, `Order ${orderID} marked as not cancelled.`);
+    Flash.info(req, `Order is no longer cancelled.`);
     res.redirect(`/order/${orderID}`);
   } catch (err) {
     handleError(err, res);

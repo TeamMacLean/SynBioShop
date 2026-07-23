@@ -85,12 +85,14 @@ Auth.signInPost = (req, res, next) => {
       return renderError(errorMessage, res);
     }
     if (!user) {
-      let message = "Invalid username/password";
-      if (info && info.message) {
-        message += `, ${info.message}`;
-      }
-      console.log(`[Auth] Failed login attempt: ${message}`);
-      Flash.error(req, message);
+      const logMessage =
+        info && info.message
+          ? `Invalid credentials details: ${info.message}`
+          : "Invalid username/password";
+      console.log(`[Auth] Failed login attempt: ${logMessage}`);
+
+      // Flash a single, clean error message to the user
+      Flash.error(req, "Invalid username/password");
       return res.redirect("/signin");
     }
     req.logIn(user, (err) => {

@@ -38,7 +38,15 @@ describe("Visual Flash Messages Integration Test", function () {
 
       // Verify the HTML contains the visual flash message container and text
       expect(renderRes.text).to.include('class="flash error"');
-      expect(renderRes.text).to.include('Invalid username/password');
+      expect(renderRes.text).to.include("Invalid username/password");
+
+      // Specifically assert that the message is NOT duplicated (e.g. "Invalid username/password, Invalid username/password")
+      expect(renderRes.text).to.not.include(
+        "Invalid username/password, Invalid username/password",
+      );
+      expect(renderRes.text).to.not.include(
+        "Invalid username/password, Missing credentials",
+      );
     });
   });
 });
