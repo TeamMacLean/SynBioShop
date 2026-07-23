@@ -99,7 +99,18 @@ app.use(flash());
 const upload = multer({
   dest: config.tmpDir,
 });
-app.use(upload.any());
+app.use((req, res, next) => {
+  upload.any()(req, res, (err) => {
+    if (err) {
+      if (err.message === "Unexpected end of form") {
+        console.warn("Upload aborted: Unexpected end of form");
+        return res.status(400).send("Upload aborted by client.");
+      }
+      return next(err);
+    }
+    next();
+  });
+});
 
 // Backwards compatibility middleware: convert req.files array to object
 // Old multer (0.1.8) used req.files as object keyed by fieldname
@@ -204,6 +215,15 @@ app.set("json spaces", 2);
 
 // --- Main Routes ---
 app.use("/", routes);
+
+// Global Error Handler for common web errors like malformed URIs
+app.use((err, req, res, next) => {
+  if (err instanceof URIError) {
+    console.warn(`Malformed URI requested: ${req.originalUrl}`);
+    return res.status(400).send("Bad Request: Invalid URI");
+  }
+  next(err);
+});
 
 // --- Server Start ---
 module.exports = server;

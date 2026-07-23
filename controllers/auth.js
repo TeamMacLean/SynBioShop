@@ -5,6 +5,7 @@ const renderError = require("../lib/renderError");
 const config = require("../config");
 const LOG = require("../lib/log");
 const ldap = require("ldapjs");
+const Flash = require("../lib/flash");
 
 /**
  * Generate Gravatar URL from email address
@@ -84,14 +85,13 @@ Auth.signInPost = (req, res, next) => {
       return renderError(errorMessage, res);
     }
     if (!user) {
-      var message = "No user obj found";
-      console.error(message);
-      LOG.error(message);
+      let message = "Invalid username/password";
       if (info && info.message) {
         message += `, ${info.message}`;
       }
-      return renderError(message, res);
-      //return res.render('error', {error: message});
+      console.log(`[Auth] Failed login attempt: ${message}`);
+      Flash.error(req, message);
+      return res.redirect("/signin");
     }
     req.logIn(user, (err) => {
       if (err) {

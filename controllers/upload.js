@@ -250,14 +250,14 @@ uploadController.deleteFile = async (req, res) => {
 
   if (!fileIdToDelete) {
     Flash.error(req, "Error: No file ID provided for deletion.");
-    return res.redirect("back");
+    return res.redirect(req.get("Referrer") || "/");
   }
 
   try {
     const file = await File.get(fileIdToDelete); // Use the general File model
     if (!file) {
       Flash.error(req, "File not found or already deleted.");
-      return res.redirect("back");
+      return res.redirect(req.get("Referrer") || "/");
     }
 
     // Optionally, delete the actual file from disk:
@@ -265,7 +265,7 @@ uploadController.deleteFile = async (req, res) => {
 
     await file.delete(); // Delete from File model
     Flash.success(req, `${file.originalName} deleted successfully.`);
-    res.redirect("back");
+    res.redirect(req.get("Referrer") || "/");
   } catch (err) {
     handleError(err, res, `Failed to delete file: ${err.message}`);
   }
@@ -287,7 +287,7 @@ uploadController.deleteSequenceFile = async (req, res) => {
       "ERROR: No valid file ID could be extracted for deletion. Preventing DB query.",
     );
     Flash.error(req, "Error: No sequence file ID provided for deletion.");
-    return res.redirect("back");
+    return res.redirect(req.get("Referrer") || "/");
   }
 
   try {
@@ -299,7 +299,7 @@ uploadController.deleteSequenceFile = async (req, res) => {
         `WARNING: Sequence file with ID ${fileIdToDelete} not found in DB.`,
       );
       Flash.error(req, "Sequence file not found or already deleted.");
-      return res.redirect("back");
+      return res.redirect(req.get("Referrer") || "/");
     }
 
     console.log(
@@ -313,7 +313,7 @@ uploadController.deleteSequenceFile = async (req, res) => {
       `Successfully deleted sequence file ${sequenceFile.originalName} (ID: ${fileIdToDelete}).`,
     );
     Flash.success(req, `${sequenceFile.originalName} deleted successfully.`);
-    return res.redirect("back");
+    return res.redirect(req.get("Referrer") || "/");
   } catch (err) {
     // Specific logging for deletion failure.
     console.error("FATAL ERROR in deleteSequenceFile handler:", err);

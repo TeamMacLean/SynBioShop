@@ -154,6 +154,10 @@ docs.subject.show = (req, res) => {
   Subject.get(subjectID)
     .getJoin({ documents: true, subjects: { documents: true } })
     .then((subject) => {
+      if (!subject) {
+        Flash.error(req, "Subject not found.");
+        return res.redirect("/documents");
+      }
       getTopLevelSubjects()
         .then((subjects) => {
           return res.render("documents/subject/show", { subject, subjects });

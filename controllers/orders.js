@@ -313,10 +313,9 @@ ordersController.simonSummary = async (req, res) => {
             try {
               // Node v12 compatible checks (replaces user?.name)
               const users = await ldap.getNameFromUsername(order.username);
+              const firstUser = users && users.length > 0 ? users[0] : null;
               orderWithTypes.fullName =
-                users && users.length > 0 && users[0].name
-                  ? users[0].name
-                  : order.username;
+                firstUser && firstUser.name ? firstUser.name : order.username;
             } catch (ldapErr) {
               console.warn(
                 "LDAP lookup failed for " + order.username + ":",
