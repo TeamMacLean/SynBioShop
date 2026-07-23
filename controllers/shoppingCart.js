@@ -16,6 +16,7 @@ const Flash = require("../lib/flash");
 const config = require("../config");
 const pricingService = require("../lib/pricingService");
 const budgetHolders = require("../config/budgetHolders");
+const thinky = require("../lib/thinky");
 
 const ShoppingCartController = {};
 
@@ -352,9 +353,11 @@ async function associateItemsWithOrder(cart, orderId) {
   if (!cart.items || cart.items.length === 0) return;
 
   const itemIds = cart.items.map((item) => item.id);
-  await CartItem.getAll(...itemIds)
+  await thinky.r
+    .table("CartItem")
+    .getAll(...itemIds)
     .update({ orderID: orderId })
-    .execute();
+    .run();
 }
 
 /**
