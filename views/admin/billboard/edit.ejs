@@ -8,6 +8,7 @@
 
     <div class="billboard-editor">
         <form action="/admin/billboard" method="post">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
             <div class="form-section">
                 <div class="preview-section">
                     <h3>Preview</h3>

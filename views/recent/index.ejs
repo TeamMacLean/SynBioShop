@@ -30,16 +30,17 @@
                 <tbody>
                     <% items.forEach(function(item){ %>
                         <tr>
+                            <%# Escaped: item names and descriptions are
+                                admin-authored free text and were previously
+                                rendered raw here. %>
                             <td width='25%'>
-                                <a href="/premade/item/<%- item.id %>">
-                                    <%- item.name && item.name.length > 48 ? item.name.substring(0, 45) + '...' : item.name %>
+                                <a href="/premade/item/<%= item.id %>">
+                                    <%= item.name && item.name.length > 48 ? item.name.substring(0, 45) + '...' : item.name %>
                                 </a>
                             </td>
-                            <!-- <td width='15%'>
-                                < % - item.humanFormattedDate %>
-                            </td> -->
+                            <!-- Date column disabled; humanFormattedDate is still computed. -->
                             <td>
-                                <%- item.description && item.description.length > 240 ? item.description.substring(0, 237) + '...' : item.description %>
+                                <%= item.description && item.description.length > 240 ? item.description.substring(0, 237) + '...' : item.description %>
                             </td>
                         </tr>
                     <% }) %>

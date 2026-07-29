@@ -1,207 +1,304 @@
 /**
- * Unit tests for security-related functions
- * Tests HTML escaping and other security utilities
+ * Unit tests for lib/security.js.
+ *
+ * The previous version of this file re-implemented escapeHtml, getGravatarUrl
+ * and isImage inside the test and asserted against those copies, so deleting
+ * the real implementations would not have failed a single assertion.
  */
 
-const chai = require('chai');
-const expect = chai.expect;
-const crypto = require('crypto');
+const { expect } = require("chai");
+const security = require("../../lib/security");
+const config = require("../../config");
 
-describe('Security Functions', function() {
-  describe('HTML Escaping (escapeHtml)', function() {
-    // Since escapeHtml is defined in app.js, we'll test the logic here
-    // This is the same implementation from app.js
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#x27;')
-        .replace(/\//g, '&#x2F;');
-    }
+/** Minimal Express request stand-in. */
+function makeReq({ method = "GET", headers = {}, body = {}, session = {} } = {}) {
+  const lower = {};
+  for (const [k, v] of Object.entries(headers)) lower[k.toLowerCase()] = v;
 
-    it('should escape ampersand', function() {
-      expect(escapeHtml('A & B')).to.equal('A &amp; B');
+  return {
+    method,
+    body,
+    session,
+    originalUrl: "/test",
+    get(name) {
+      return lower[String(name).toLowerCase()];
+    },
+    accepts() {
+      return true;
+    },
+  };
+}
+
+/** Minimal Express response stand-in that records what was sent. */
+function makeRes() {
+  const res = {
+    locals: {},
+    statusCode: 200,
+    headers: {},
+    sent: null,
+    status(code) {
+      res.statusCode = code;
+      return res;
+    },
+    setHeader(name, value) {
+      res.headers[name.toLowerCase()] = value;
+    },
+    send(body) {
+      res.sent = body;
+      return res;
+    },
+    json(body) {
+      res.sent = body;
+      return res;
+    },
+  };
+  return res;
+}
+
+const HOST = "127.0.0.1:3000";
+
+describe("lib/security", function () {
+  describe("safeRedirectTarget", function () {
+    it("returns the path of a same-origin referrer", function () {
+      const req = makeReq({
+        headers: { host: HOST, Referrer: `http://${HOST}/premade/item/42` },
+      });
+      expect(security.safeRedirectTarget(req)).to.equal("/premade/item/42");
     });
 
-    it('should escape less than', function() {
-      expect(escapeHtml('<script>')).to.equal('&lt;script&gt;');
+    it("preserves the query string", function () {
+      const req = makeReq({
+        headers: { host: HOST, Referrer: `http://${HOST}/search?q=abc` },
+      });
+      expect(security.safeRedirectTarget(req)).to.equal("/search?q=abc");
     });
 
-    it('should escape greater than', function() {
-      expect(escapeHtml('a > b')).to.equal('a &gt; b');
+    it("falls back for an off-site referrer", function () {
+      const req = makeReq({
+        headers: { host: HOST, Referrer: "https://evil.example.com/phish" },
+      });
+      expect(security.safeRedirectTarget(req)).to.equal("/");
     });
 
-    it('should escape double quotes', function() {
-      expect(escapeHtml('Hello "World"')).to.equal('Hello &quot;World&quot;');
+    it("falls back for a protocol-relative referrer", function () {
+      // "//evil.com" is a full URL to the browser, not a path.
+      const req = makeReq({
+        headers: { host: HOST, Referrer: "//evil.example.com/phish" },
+      });
+      expect(security.safeRedirectTarget(req)).to.equal("/");
     });
 
-    it('should escape single quotes', function() {
-      expect(escapeHtml("It's nice")).to.equal('It&#x27;s nice');
+    it("falls back when there is no referrer", function () {
+      const req = makeReq({ headers: { host: HOST } });
+      expect(security.safeRedirectTarget(req, "/cart")).to.equal("/cart");
     });
 
-    it('should escape forward slash', function() {
-      expect(escapeHtml('path/to/file')).to.equal('path&#x2F;to&#x2F;file');
+    it("keeps a garbled referrer on-site rather than following it", function () {
+      // Nonsense that is not a valid absolute URL resolves as a relative path
+      // against this host, which is safe; what matters is that it can never
+      // point at another origin.
+      const req = makeReq({ headers: { host: HOST, Referrer: "ht!tp://%%%" } });
+      expect(security.safeRedirectTarget(req)).to.match(/^\/(?!\/)/);
     });
 
-    it('should handle empty string', function() {
-      expect(escapeHtml('')).to.equal('');
+    it("accepts the configured baseURL origin", function () {
+      const req = makeReq({
+        headers: { host: "other-host:9999", Referrer: `${config.baseURL}/cart` },
+      });
+      expect(security.safeRedirectTarget(req)).to.equal("/cart");
     });
 
-    it('should handle null', function() {
-      expect(escapeHtml(null)).to.equal('');
-    });
+    it("never returns something that could redirect off-site", function () {
+      const hostile = [
+        "https://evil.example.com",
+        "//evil.example.com",
+        "http://127.0.0.1:3000@evil.example.com/",
+        "https://127.0.0.1:3000.evil.example.com/",
+      ];
 
-    it('should handle undefined', function() {
-      expect(escapeHtml(undefined)).to.equal('');
-    });
-
-    it('should escape XSS attack vector', function() {
-      const malicious = '<script>alert("XSS")</script>';
-      const escaped = escapeHtml(malicious);
-      expect(escaped).to.equal('&lt;script&gt;alert(&quot;XSS&quot;)&lt;&#x2F;script&gt;');
-      expect(escaped).to.not.include('<script>');
-    });
-
-    it('should escape img tag XSS', function() {
-      const malicious = '<img src=x onerror=alert(1)>';
-      const escaped = escapeHtml(malicious);
-      expect(escaped).to.not.include('<img');
-      expect(escaped).to.include('&lt;img');
-    });
-
-    it('should handle multiple special characters', function() {
-      const input = '<div class="test" onclick=\'alert("hi")\'>&copy;</div>';
-      const escaped = escapeHtml(input);
-      expect(escaped).to.not.include('<');
-      expect(escaped).to.not.include('>');
-      expect(escaped).to.include('&lt;');
-      expect(escaped).to.include('&gt;');
-    });
-
-    it('should convert numbers to strings', function() {
-      expect(escapeHtml(123)).to.equal('123');
-    });
-
-    it('should handle already escaped strings safely', function() {
-      const alreadyEscaped = '&lt;script&gt;';
-      const result = escapeHtml(alreadyEscaped);
-      // Should double-escape the ampersand
-      expect(result).to.equal('&amp;lt;script&amp;gt;');
-    });
-  });
-
-  describe('Gravatar URL Generation', function() {
-    // Test the getGravatarUrl function logic
-    function getGravatarUrl(email) {
-      if (!email) return null;
-      const hash = crypto
-        .createHash('md5')
-        .update(email.toLowerCase().trim())
-        .digest('hex');
-      return 'https://www.gravatar.com/avatar/' + hash;
-    }
-
-    it('should generate valid Gravatar URL', function() {
-      const url = getGravatarUrl('test@example.com');
-      expect(url).to.be.a('string');
-      expect(url).to.include('https://www.gravatar.com/avatar/');
-    });
-
-    it('should generate consistent hash for same email', function() {
-      const url1 = getGravatarUrl('test@example.com');
-      const url2 = getGravatarUrl('test@example.com');
-      expect(url1).to.equal(url2);
-    });
-
-    it('should be case insensitive', function() {
-      const url1 = getGravatarUrl('Test@Example.Com');
-      const url2 = getGravatarUrl('test@example.com');
-      expect(url1).to.equal(url2);
-    });
-
-    it('should trim whitespace', function() {
-      const url1 = getGravatarUrl('  test@example.com  ');
-      const url2 = getGravatarUrl('test@example.com');
-      expect(url1).to.equal(url2);
-    });
-
-    it('should return null for empty email', function() {
-      expect(getGravatarUrl('')).to.be.null;
-      expect(getGravatarUrl(null)).to.be.null;
-      expect(getGravatarUrl(undefined)).to.be.null;
-    });
-
-    it('should generate MD5 hash of email', function() {
-      const email = 'test@example.com';
-      const expectedHash = crypto.createHash('md5').update(email).digest('hex');
-      const url = getGravatarUrl(email);
-      expect(url).to.include(expectedHash);
-    });
-
-    it('should generate 32-character hash', function() {
-      const url = getGravatarUrl('test@example.com');
-      const hash = url.split('/avatar/')[1];
-      expect(hash).to.have.lengthOf(32);
+      for (const referrer of hostile) {
+        const req = makeReq({ headers: { host: HOST, Referrer: referrer } });
+        const target = security.safeRedirectTarget(req);
+        expect(target, `${referrer} produced ${target}`).to.match(/^\/(?!\/)/);
+      }
     });
   });
 
-  describe('Image Extension Detection', function() {
-    const path = require('path');
-    const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp', '.ico', '.tiff', '.tif'];
-
-    function isImage(filepath) {
-      const ext = path.extname(filepath).toLowerCase();
-      return IMAGE_EXTENSIONS.includes(ext);
+  describe("csrfProtection", function () {
+    /** Runs the middleware and reports whether it called next(). */
+    function run(req, res) {
+      let called = false;
+      security.csrfProtection(req, res, () => {
+        called = true;
+      });
+      return called;
     }
 
-    it('should detect .jpg as image', function() {
-      expect(isImage('photo.jpg')).to.be.true;
-      expect(isImage('photo.JPG')).to.be.true;
+    it("lets safe methods through", function () {
+      const req = makeReq({ method: "GET", headers: { host: HOST } });
+      expect(run(req, makeRes())).to.equal(true);
     });
 
-    it('should detect .png as image', function() {
-      expect(isImage('icon.png')).to.be.true;
+    it("exposes a token to templates", function () {
+      const req = makeReq({ method: "GET", headers: { host: HOST } });
+      const res = makeRes();
+      run(req, res);
+      expect(res.locals.csrfToken).to.be.a("string").with.length.greaterThan(20);
     });
 
-    it('should detect .gif as image', function() {
-      expect(isImage('animation.gif')).to.be.true;
+    it("issues the same token for the life of a session", function () {
+      const session = {};
+      const first = makeRes();
+      run(makeReq({ headers: { host: HOST }, session }), first);
+      const second = makeRes();
+      run(makeReq({ headers: { host: HOST }, session }), second);
+
+      expect(first.locals.csrfToken).to.equal(second.locals.csrfToken);
     });
 
-    it('should detect .svg as image', function() {
-      expect(isImage('vector.svg')).to.be.true;
+    it("issues different tokens to different sessions", function () {
+      const a = makeRes();
+      run(makeReq({ headers: { host: HOST }, session: {} }), a);
+      const b = makeRes();
+      run(makeReq({ headers: { host: HOST }, session: {} }), b);
+
+      expect(a.locals.csrfToken).to.not.equal(b.locals.csrfToken);
     });
 
-    it('should detect .webp as image', function() {
-      expect(isImage('modern.webp')).to.be.true;
+    it("does not create a token unless something reads it", function () {
+      // Writing to the session on every request would force a cookie for
+      // anonymous visitors who never needed one.
+      const session = {};
+      const req = makeReq({ headers: { host: HOST }, session });
+      run(req, makeRes());
+      expect(session.csrfToken).to.equal(undefined);
     });
 
-    it('should not detect .txt as image', function() {
-      expect(isImage('document.txt')).to.be.false;
+    it("accepts a POST from this origin", function () {
+      const req = makeReq({
+        method: "POST",
+        headers: { host: HOST, Origin: `http://${HOST}` },
+      });
+      expect(run(req, makeRes())).to.equal(true);
     });
 
-    it('should not detect .pdf as image', function() {
-      expect(isImage('file.pdf')).to.be.false;
+    it("rejects a POST from another origin", function () {
+      const req = makeReq({
+        method: "POST",
+        headers: { host: HOST, Origin: "https://evil.example.com" },
+      });
+      const res = makeRes();
+      expect(run(req, res)).to.equal(false);
+      expect(res.statusCode).to.equal(403);
     });
 
-    it('should not detect .doc as image', function() {
-      expect(isImage('document.doc')).to.be.false;
+    it("rejects a POST whose Referer is another origin", function () {
+      const req = makeReq({
+        method: "POST",
+        headers: { host: HOST, Referer: "https://evil.example.com/page" },
+      });
+      const res = makeRes();
+      expect(run(req, res)).to.equal(false);
+      expect(res.statusCode).to.equal(403);
     });
 
-    it('should be case insensitive', function() {
-      expect(isImage('PHOTO.PNG')).to.be.true;
-      expect(isImage('Photo.PnG')).to.be.true;
+    it("rejects a header-less POST that carries no token", function () {
+      const req = makeReq({ method: "POST", headers: { host: HOST } });
+      const res = makeRes();
+      expect(run(req, res)).to.equal(false);
+      expect(res.statusCode).to.equal(403);
     });
 
-    it('should handle paths with directories', function() {
-      expect(isImage('/path/to/image.jpg')).to.be.true;
-      expect(isImage('/path/to/file.txt')).to.be.false;
+    it("accepts a header-less POST carrying the right token", function () {
+      const session = { csrfToken: "a".repeat(64) };
+      const req = makeReq({
+        method: "POST",
+        headers: { host: HOST },
+        body: { _csrf: "a".repeat(64) },
+        session,
+      });
+      expect(run(req, makeRes())).to.equal(true);
     });
 
-    it('should handle files without extensions', function() {
-      expect(isImage('filename')).to.be.false;
+    it("rejects a header-less POST carrying the wrong token", function () {
+      const session = { csrfToken: "a".repeat(64) };
+      const req = makeReq({
+        method: "POST",
+        headers: { host: HOST },
+        body: { _csrf: "b".repeat(64) },
+        session,
+      });
+      const res = makeRes();
+      expect(run(req, res)).to.equal(false);
+      expect(res.statusCode).to.equal(403);
+    });
+
+    it("rejects a same-origin POST whose token does not match", function () {
+      const session = { csrfToken: "a".repeat(64) };
+      const req = makeReq({
+        method: "POST",
+        headers: { host: HOST, Origin: `http://${HOST}` },
+        body: { _csrf: "wrong" },
+        session,
+      });
+      const res = makeRes();
+      expect(run(req, res)).to.equal(false);
+      expect(res.statusCode).to.equal(403);
+    });
+
+    it("guards DELETE and PUT as well as POST", function () {
+      for (const method of ["PUT", "PATCH", "DELETE"]) {
+        const req = makeReq({
+          method,
+          headers: { host: HOST, Origin: "https://evil.example.com" },
+        });
+        const res = makeRes();
+        expect(run(req, res), `${method} was not guarded`).to.equal(false);
+      }
+    });
+  });
+
+  describe("securityHeaders", function () {
+    it("sets the baseline headers", function () {
+      const res = makeRes();
+      security.securityHeaders(makeReq(), res, () => {});
+
+      expect(res.headers["x-content-type-options"]).to.equal("nosniff");
+      expect(res.headers["x-frame-options"]).to.equal("SAMEORIGIN");
+      expect(res.headers["referrer-policy"]).to.equal("same-origin");
+      expect(res.headers["content-security-policy"]).to.be.a("string");
+    });
+
+    it("forbids plugin content and restricts form submissions", function () {
+      const res = makeRes();
+      security.securityHeaders(makeReq(), res, () => {});
+
+      const csp = res.headers["content-security-policy"];
+      expect(csp).to.include("object-src 'none'");
+      expect(csp).to.include("form-action 'self'");
+      expect(csp).to.include("base-uri 'self'");
+    });
+
+    it("always calls next", function () {
+      let called = false;
+      security.securityHeaders(makeReq(), makeRes(), () => {
+        called = true;
+      });
+      expect(called).to.equal(true);
+    });
+  });
+
+  describe("rateLimit", function () {
+    it("is disabled under test so suites can hammer endpoints", function () {
+      const limiter = security.rateLimit({ windowMs: 1000, max: 1 });
+      let allowed = 0;
+
+      for (let i = 0; i < 10; i++) {
+        limiter(makeReq({ headers: { host: HOST } }), makeRes(), () => {
+          allowed++;
+        });
+      }
+      expect(allowed).to.equal(10);
     });
   });
 });

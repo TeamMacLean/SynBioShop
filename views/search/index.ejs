@@ -9,7 +9,8 @@
 
     <% } else { %>
 
-        <h2 class="center">Search results for '<%- queryString %>'</h2>
+        <%# Escaped output: queryString comes straight from req.query. %>
+        <h2 class="center">Search results for '<%= queryString %>'</h2>
 
         <div>
             <h3>Premade</h3>

@@ -7,6 +7,7 @@
         <h2>New Category for <%- db.name %></h2>
 
         <form method="post" action="/premade/<%- db.id %>/new">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
 
             <% if (typeof category == 'undefined') {
                 var category = {};

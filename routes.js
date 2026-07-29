@@ -1,17 +1,23 @@
 const express = require("express");
 const router = express.Router();
-const path = require("path");
 
 const Util = require("./lib/util");
-const config = require("./config");
+const security = require("./lib/security");
+const { wrapController } = require("./lib/asyncHandler");
 
 function isAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
-  } else {
-    req.session.returnTo = req.path;
-    return res.redirect("/signin");
   }
+
+  // Only remember GET targets. Storing a POST path would bounce the user to a
+  // URL that does not answer GET, and writing to the session on every
+  // anonymous request forces the store to persist a cookie for visitors who
+  // never log in.
+  if (req.method === "GET") {
+    req.session.returnTo = req.originalUrl;
+  }
+  return res.redirect("/signin");
 }
 
 function isAdmin(req, res, next) {
@@ -25,26 +31,42 @@ function isAdmin(req, res, next) {
 }
 
 // --- Controller Imports ---
-const docs = require("./controllers/documents");
-const premade = require("./controllers/premade");
-const custom = require("./controllers/custom");
-const recent = require("./controllers/recent");
-const search = require("./controllers/search");
-const auth = require("./controllers/auth");
-const shoppingCart = require("./controllers/shoppingCart");
-const orders = require("./controllers/orders");
-const upload = require("./controllers/upload");
-const admin = require("./controllers/admin");
-const budgetHolder = require("./controllers/budgetHolder");
+//
+// Every controller is passed through wrapController, which routes rejected
+// promises into Express's error pipeline. Express 4 ignores promises, so
+// without this an async handler that throws leaves the request hanging until
+// the client gives up, and the rejection takes the process down on Node 24.
+const docs = wrapController(require("./controllers/documents"));
+const premade = wrapController(require("./controllers/premade"));
+const custom = wrapController(require("./controllers/custom"));
+const recent = wrapController(require("./controllers/recent"));
+const search = wrapController(require("./controllers/search"));
+const auth = wrapController(require("./controllers/auth"));
+const shoppingCart = wrapController(require("./controllers/shoppingCart"));
+const orders = wrapController(require("./controllers/orders"));
+const upload = wrapController(require("./controllers/upload"));
+const admin = wrapController(require("./controllers/admin"));
+const budgetHolder = wrapController(require("./controllers/budgetHolder"));
+
+// Throttle the endpoints an unauthenticated client can hammer: sign-in against
+// credential stuffing, and the directory lookup against username enumeration.
+const signInLimiter = security.rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: "Too many sign-in attempts. Please wait a few minutes and try again.",
+});
+const lookupLimiter = security.rateLimit({ windowMs: 60 * 1000, max: 10 });
 
 // --- Global/Root Routes ---
 router.get("/", (req, res) => res.render("index"));
 router.get("/whoamoi", isAuthenticated, auth.whoami);
-router.post("/check-ldap-user", auth.checkLDAPUser);
+// Requires a session: it is a directory oracle, and it binds to LDAP with a
+// privileged service account.
+router.post("/check-ldap-user", lookupLimiter, isAuthenticated, auth.checkLDAPUser);
 
 // --- Authentication Routes ---
 router.get("/signin", auth.signIn);
-router.post("/signin", auth.signInPost);
+router.post("/signin", signInLimiter, auth.signInPost);
 router.get("/signout", isAuthenticated, auth.signOut);
 
 // --- Admin-Specific Routes ---
@@ -101,12 +123,19 @@ router
   .get(docs.document.new)
   .post(docs.document.save);
 
-// redundant?
-router
-  .route("/docs/:subjectID/addsubject")
-  .all(isAuthenticated, isAdmin)
-  .get(docs.subject.new)
-  .post(docs.subject.save);
+// GET only. This renders the new-subject form with the parent pre-filled; the
+// form itself posts to /docs/new with parentSubjectID in the body.
+//
+// The POST binding was removed: docs.subject.save treats a subjectID in the
+// route params as "rename this subject", so posting here renamed the parent
+// instead of adding a child. Nothing submitted to it — the form action is
+// hardcoded to /docs/new — so it was a trap with no callers.
+router.get(
+  "/docs/:subjectID/addsubject",
+  isAuthenticated,
+  isAdmin,
+  docs.subject.new,
+);
 
 router.get("/docs/item/:itemID", docs.document.show);
 router
@@ -326,7 +355,9 @@ router.post("/upload", isAuthenticated, isAdmin, upload.uploadFilePost); // For 
 router.post("/imageupload", isAuthenticated, isAdmin, upload.uploadImagePost); // For image uploads (e.g., from TinyMCE)
 
 router.get("/filemanager", isAuthenticated, isAdmin, upload.fileManager); // General file manager view
-router.get("/filemanager/:id/download", upload.download); // Download specific file
+// Was reachable with no middleware at all: anyone with an id could download
+// any managed file.
+router.get("/filemanager/:id/download", isAuthenticated, upload.download); // Download specific file
 
 // HOWDY
 router.post(
@@ -335,7 +366,13 @@ router.post(
   isAdmin,
   upload.deleteFile,
 );
-router.get("/sequencefilemanager/:id/download", upload.downloadSequenceFile); // Download sequence file
+// Same gap as /filemanager/:id/download — proprietary plasmid sequence files
+// were anonymously downloadable.
+router.get(
+  "/sequencefilemanager/:id/download",
+  isAuthenticated,
+  upload.downloadSequenceFile,
+); // Download sequence file
 
 // --- Orders Routes ---
 router.get("/orders", isAuthenticated, isAdmin, orders.showAll);

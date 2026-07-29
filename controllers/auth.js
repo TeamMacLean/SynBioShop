@@ -4,7 +4,7 @@ const crypto = require("crypto");
 const renderError = require("../lib/renderError");
 const config = require("../config");
 const LOG = require("../lib/log");
-const ldap = require("ldapjs");
+const ldapLib = require("../lib/ldap");
 const Flash = require("../lib/flash");
 
 /**
@@ -95,29 +95,48 @@ Auth.signInPost = (req, res, next) => {
       Flash.error(req, "Invalid username/password");
       return res.redirect("/signin");
     }
-    req.logIn(user, (err) => {
-      if (err) {
-        return next(err);
+    // Regenerate the session before establishing the login.
+    //
+    // Without this the pre-authentication session ID survives, so an attacker
+    // who plants a known ID in a victim's browser holds a valid authenticated
+    // session once the victim signs in. `returnTo` is the one thing worth
+    // carrying across, so capture it first.
+    const returnTo = req.session ? req.session.returnTo : null;
+
+    req.session.regenerate((regenErr) => {
+      if (regenErr) {
+        console.error("Session regeneration failed:", regenErr);
+        return next(regenErr);
       }
 
-      req.user.iconURL =
-        getGravatarUrl(req.user.mail) || config.defaultUserIcon;
+      req.logIn(user, (loginErr) => {
+        if (loginErr) {
+          return next(loginErr);
+        }
 
-      const formattedUser = {
-        username: user.username,
-        name: user.name,
-        memberOfHowMany: user.memberOf.length,
-        company: user.company,
-      };
+        req.user.iconURL =
+          getGravatarUrl(req.user.mail) || config.defaultUserIcon;
 
-      //console.log("user logged in", formattedUser);
+        // Persist the regenerated session before redirecting, otherwise the
+        // next request can race the store write and appear logged out.
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("Session save failed after login:", saveErr);
+            return next(saveErr);
+          }
 
-      //take them to the page they wanted before signing in :)
-      if (req.session.returnTo) {
-        return res.redirect(req.session.returnTo);
-      } else {
-        return res.redirect("/");
-      }
+          // Only follow an internal path, so a poisoned returnTo cannot be
+          // used to bounce the user off-site straight after signing in.
+          if (
+            typeof returnTo === "string" &&
+            returnTo.startsWith("/") &&
+            !returnTo.startsWith("//")
+          ) {
+            return res.redirect(returnTo);
+          }
+          return res.redirect("/");
+        });
+      });
     });
   })(req, res, next);
 };
@@ -126,8 +145,12 @@ Auth.whoami = (req, res, next) => {
   return res.redirect("/");
 };
 
-Auth.checkLDAPUser = (req, res, next) => {
-  const username = req.body.username;
+Auth.checkLDAPUser = async (req, res) => {
+  const username = req.body && req.body.username;
+
+  if (typeof username !== "string" || username.trim() === "") {
+    return res.status(400).send({ error: "A username is required." });
+  }
 
   // In dev mode (not VPN), just check if user is in admins list
   if (config.devMode && !config.vpnMode) {
@@ -143,40 +166,19 @@ Auth.checkLDAPUser = (req, res, next) => {
     console.log(`🔐 VPN MODE: Checking LDAP for user ${username}`);
   }
 
-  const client = ldap.createClient({
-    url: config.ldap.url,
-  });
-
-  client.bind(config.ldap.bindDn, config.ldap.bindCredentials, (err) => {
-    if (err) {
-      client.unbind();
-      console.error("LDAP bind failed:", err);
-      return res.status(500).send("LDAP bind failed");
-    }
-
-    const searchOptions = {
-      scope: "sub",
-      filter: `(sAMAccountName=${username})`,
-    };
-
-    client.search(config.ldap.searchBase, searchOptions, (err, result) => {
-      if (err) {
-        client.unbind();
-        console.error("LDAP search failed:", err);
-        return res.status(500).send("LDAP search failed");
-      }
-
-      let userExists = false;
-      result.on("searchEntry", (entry) => {
-        userExists = true;
-      });
-
-      result.on("end", () => {
-        client.unbind();
-        res.send({ exists: userExists });
-      });
-    });
-  });
+  // Delegates to lib/ldap, which escapes the filter value, sets timeouts and
+  // handles the client 'error' event. The previous inline implementation
+  // interpolated the username straight into the filter and crashed the process
+  // when the directory was unreachable.
+  try {
+    const entries = await ldapLib.getNameFromUsername(username);
+    return res.send({ exists: entries.length > 0 });
+  } catch (err) {
+    console.error("LDAP user check failed:", err.message);
+    return res
+      .status(503)
+      .send({ error: "Directory lookup is unavailable. Please try again." });
+  }
 };
 
 module.exports = Auth;

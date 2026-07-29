@@ -9,7 +9,15 @@ const search = socket => {
             return str.replace(/[\-\[\]\/{}()*+?.\\\^$|]/g, '\\$&');
         }
 
-        text = escapeRegExp(text);
+        // A client emitting `search` with no payload used to reach
+        // `undefined.replace(...)`, and socket.io does not catch throws in
+        // listeners — it killed the process.
+        if (typeof text !== 'string' || text.length === 0) {
+            return socket.emit('results', []);
+        }
+
+        // Bound the work a single query can request.
+        text = escapeRegExp(text.slice(0, 200));
 
         const typePromise = new Promise((good, bad)=> {
                 const results = [];
@@ -57,8 +65,8 @@ const search = socket => {
             const flat = [].concat(...results);
             socket.emit('results', flat);
         }).catch((err)=> {
-            console.error('err', err);
-            socket.emit('error', err);
+            console.error('Socket "search" failed:', err && err.message ? err.message : err);
+            socket.emit('error', {message: 'Search could not be completed.'});
         });
 
 

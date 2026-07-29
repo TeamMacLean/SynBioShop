@@ -1,5 +1,7 @@
 const DB = require("../models/db");
 const renderError = require("../lib/renderError");
+const { NotFoundError } = require("../lib/errors");
+const { sanitizeHtml } = require("../lib/sanitize");
 const Type = require("../models/type");
 const Category = require("../models/category");
 const File = require("../models/file"); // Used for processMapFile
@@ -34,6 +36,18 @@ async function getSortedDBs() {
  * @param {Object} res - The Express response object.
  */
 const handleError = (err, res) => {
+  // Not every rejection here is an Error: some model helpers reject with a
+  // bare string, so `err.message` can be undefined.
+  const message = (err && err.message) || String(err);
+
+  // A record that does not exist is a 404, not a server fault. Throwing a bare
+  // Error for every missing row made every typo'd URL look like an outage.
+  if (err instanceof NotFoundError || /not found|could not find/i.test(message)) {
+    console.warn("Premade record not found:", message);
+    if (res.headersSent) return;
+    return res.status(404).render("404");
+  }
+
   console.error("Premade controller error:", err);
   renderError("An error occurred in the Premade section.", res);
 };
@@ -62,8 +76,9 @@ async function processMapFile(savedType, req) {
 
   const file = req.files.mapFile;
 
-  // Get filename - express-fileupload uses 'name', multer uses 'filename' or 'originalname'
-  const fileName = file.name || file.filename || file.originalname;
+  // originalname first: multer's `filename` is the extension-less temp
+  // basename, so preferring it stored map files under a bare hash.
+  const fileName = file.originalname || file.name || file.filename;
   if (!fileName) {
     console.warn("Map file upload: No valid filename found", file);
     return Promise.resolve();
@@ -321,7 +336,9 @@ premadeController.rearrangeSave = async (req, res) => {
   } catch (err) {
     Flash.error(req, "We couldn't save the new layout. Please try again.");
     Log.error("Error saving rearrangement: " + err.message, err); // Changed to concatenate string
-    res.status(400).json({ error: err.message });
+    // A generic message: err.message here can carry parser or database detail
+    // that the client has no business seeing.
+    res.status(400).json({ error: "Could not save the new layout." });
   }
 };
 
@@ -339,7 +356,9 @@ premadeController.db.new = async (req, res) => {
 };
 
 premadeController.db.save = async (req, res) => {
-  const { id, name, type, description } = req.body;
+  const { id, name, type } = req.body;
+  // Rendered unescaped in the catalogue views, so it is sanitised on the way in.
+  const description = sanitizeHtml(req.body.description);
   try {
     if (id) {
       const db = await DB.get(id);
@@ -363,6 +382,10 @@ premadeController.db.show = async (req, res) => {
   const { id } = req.params;
   try {
     const db = await DB.get(id).getJoin({ categories: true });
+    // Without this the template was handed `db: null` and threw while
+    // rendering, turning a mistyped URL into a 500.
+    if (!db) throw new NotFoundError("DB not found: " + id);
+
     const dbs = await getSortedDBs();
     res.render("premade/db/show", { db, dbs });
   } catch (err) {
@@ -450,7 +473,9 @@ premadeController.category.new = async (req, res) => {
 };
 
 premadeController.category.save = async (req, res) => {
-  const { id, name, description } = req.body;
+  const { id, name } = req.body;
+  // Rendered unescaped in views/premade/category/show.ejs.
+  const description = sanitizeHtml(req.body.description);
   const { id: dbID } = req.params;
   try {
     let savedCategory;
@@ -632,13 +657,16 @@ premadeController.item.save = async (req, res) => {
     description,
     concentration,
     synBioID,
-    documentation,
     note,
     level,
     includeonrecentlyadded,
     linkurl,
     linkdesc,
   } = req.body;
+
+  // Rendered unescaped in views/premade/item/show.ejs, so it is sanitised on
+  // the way in rather than trusted because an admin authored it.
+  const documentation = sanitizeHtml(req.body.documentation);
 
   try {
     const db = await DB.get(dbID);
@@ -748,6 +776,13 @@ premadeController.item.save = async (req, res) => {
       Flash.error(
         req,
         "We couldn't save the item. Please check all required fields and try again.",
+      );
+      // This branch used to flash and return without touching `res`, so the
+      // request hung until the client timed out.
+      return res.redirect(
+        req.body.id
+          ? "/premade/item/" + req.body.id + "/edit"
+          : "/premade/category/" + categoryID,
       );
     } else {
       handleError(err, res);

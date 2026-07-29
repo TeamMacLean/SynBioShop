@@ -15,13 +15,16 @@
 
                     <% if(item.disabled){ %>
                         <form action="/premade/item/<%- item.id %>/enable" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                             <button type="submit" class="button success areyousure">Enable Item</button>
                         </form>
                         <form action="/premade/item/<%- item.id %>/delete" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                             <button type="submit" class="button danger areyousure">Delete Item</button>
                         </form>
                     <% } else { %>
                         <form action="/premade/item/<%- item.id %>/disable" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                             <button type="submit" class="button danger areyousure">Disable Item</button>
                         </form>
                     <% } %>
@@ -78,7 +81,8 @@
         <fieldset>
             <% if(!locals.disableCart){ %>
             <!-- "Add to cart" should be a POST request -->
-            <form action="/cart/add" method="POST" style="display:inline;"> <% /* Assuming '/cart/add' is your add-to-cart route */ %>
+            <form action="/cart/add" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>"> <% /* Assuming '/cart/add' is your add-to-cart route */ %>
                 <input type="hidden" name="typeID" value="<%- item.id %>" />
                 <button
                     type="submit"
@@ -128,6 +132,7 @@
                                                 action="/premade/item/<%- item.id %>/deleteSequenceFile"
                                                 style="display:inline;"
                                             >
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                                                 <input type="hidden" name="sequenceFileID" value="<%- sequenceFile.id %>" />
                                                 <button
                                                     type="submit"

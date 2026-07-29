@@ -7,6 +7,7 @@
         <h2>New Database</h2>
 
         <form method="post" action="/premade/new">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
 
             <% if (typeof db == 'undefined') {
                 var db = {};

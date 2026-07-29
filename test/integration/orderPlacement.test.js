@@ -282,7 +282,11 @@ describe("Order Placement Integration Tests", function () {
       expect(totals.totalQuantity).to.equal(5);
       expect(totals.totalCost).to.be.a("number");
       expect(totals.totalCost).to.be.greaterThan(0);
-      expect(totals.totalCost).to.equal(25); // 5 items * £5 each
+
+      // Derived from config rather than hardcoded to 25: pricePerUnit differs
+      // between config.json and config-example.json, and CI uses the latter.
+      const config = require("../../config");
+      expect(totals.totalCost).to.equal(5 * parseFloat(config.pricePerUnit));
     });
   });
 

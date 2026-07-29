@@ -19,6 +19,7 @@
                 <% } %>
 
                 <form method="post" action="/signin">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                 <label for="username"><% if(typeof devMode !== 'undefined' && devMode) { %>Dev Username<% } else { %>NBI Username (not full email address!)<% } %></label>
                     <div class="form-group has-feedback">
 

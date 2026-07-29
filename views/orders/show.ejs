@@ -89,17 +89,21 @@
   <div class="order-actions button-group"> <% /* Added button-group class for styling */ %>
     <% if (order.cancelled) { %>
       <form action="/order/<%- order.id %>/uncancel" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
           <button type="submit" class="button primary areyousure">Undo Cancellation</button>
       </form>
     <% } else if (!order.complete) { %>
       <form action="/order/<%- order.id %>/complete" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
           <button type="submit" class="button primary areyousure">Mark as Complete</button>
       </form>
       <form action="/order/<%- order.id %>/cancel" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
           <button type="submit" class="button danger areyousure">Mark as Cancelled</button>
       </form>
     <% } else { %>
       <form action="/order/<%- order.id %>/incomplete" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
           <button type="submit" class="button primary areyousure">Mark as Incomplete</button>
       </form>
     <% } %>

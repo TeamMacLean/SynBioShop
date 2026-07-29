@@ -17,12 +17,23 @@
 </head>
 
 <body>
+    <%# Data, not code: the JSON sits in its own non-executable block and is
+        parsed from textContent. Interpolating it into a quoted JS string relied
+        on every field having been HTML-escaped upstream first, which was both
+        fragile and the reason names like O'Brien rendered mangled. %>
+    <script type="application/json" id="signed-in-user"><%- jsonForScript(locals.signedInUser || null) %></script>
     <script>
         document.signedInUser = null;
 
-        if (typeof locals !== 'undefined' && locals.signedInUser) {
-            document.signedInUser = JSON.parse('<%- JSON.stringify(locals.signedInUser) %>');
-        }
+        (function () {
+            var el = document.getElementById('signed-in-user');
+            if (!el) return;
+            try {
+                document.signedInUser = JSON.parse(el.textContent);
+            } catch (e) {
+                document.signedInUser = null;
+            }
+        })();
     </script>
 
     <% if (typeof locals !== 'undefined' && locals.billboard && locals.billboard.enabled && locals.billboard.text) { %>

@@ -1,74 +1,54 @@
-const request = require("supertest");
+/**
+ * Admin notification badge.
+ *
+ * views/head.ejs shows the open-order count only to admins, so this is a
+ * positive/negative pair over an authorization-dependent piece of UI.
+ */
+
 const { expect } = require("chai");
+const { signedInAgent } = require("../helpers/agent");
+const testDb = require("../helpers/testDb");
 
-describe("Navigation Badge", () => {
-  let app;
-  let adminSessionCookie;
-  let normalSessionCookie;
+describe("Navigation badge", function () {
+  this.timeout(30000);
 
-  before((done) => {
-    // Load the app
-    app = require("../../app");
+  before(async function () {
+    await testDb.reset();
 
-    // Login as admin first
-    request(app)
-      .post("/signin")
-      .send({
-        username: "deeks",
-        password: "testpassword",
+    // One open order, so the badge has something to report.
+    await testDb.r
+      .table("Order")
+      .insert({
+        username: "someone",
+        janCode: "7500",
+        complete: false,
+        cancelled: false,
+        createdAt: new Date(),
       })
-      .expect(302)
-      .end((err, res) => {
-        if (err) return done(err);
-        const cookies = res.headers["set-cookie"];
-        if (cookies && cookies.length > 0) {
-          adminSessionCookie = cookies[0].split(";")[0];
-        }
-
-        // Login as non-admin
-        request(app)
-          .post("/signin")
-          .send({
-            username: "testuser",
-            password: "testpassword",
-          })
-          .expect(302)
-          .end((err2, res2) => {
-            if (err2) return done(err2);
-            const normalCookies = res2.headers["set-cookie"];
-            if (normalCookies && normalCookies.length > 0) {
-              normalSessionCookie = normalCookies[0].split(";")[0];
-            }
-            done();
-          });
-      });
+      .run();
   });
 
-  it("should render the notification badge for admins", (done) => {
-    request(app)
-      .get("/")
-      .set("Cookie", adminSessionCookie)
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
+  it("renders the badge for an admin", async function () {
+    const agent = await signedInAgent("deeks");
+    const res = await agent.get("/");
 
-        // Assert that the HTML contains the badge class inside the user div
-        expect(res.text).to.include('<span class="badge">');
-        done();
-      });
+    expect(res.status).to.equal(200);
+    expect(res.text).to.include('<span class="badge">');
   });
 
-  it("should NOT render the notification badge for regular users", (done) => {
-    request(app)
-      .get("/")
-      .set("Cookie", normalSessionCookie)
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
+  it("does not render the badge for a non-admin", async function () {
+    const agent = await signedInAgent("testuser");
+    const res = await agent.get("/");
 
-        // Assert that the HTML does NOT contain the badge class
-        expect(res.text).to.not.include('<span class="badge">');
-        done();
-      });
+    expect(res.status).to.equal(200);
+    expect(res.text).to.not.include('<span class="badge">');
+  });
+
+  it("does not render the badge for an anonymous visitor", async function () {
+    const { req } = require("../helpers/agent");
+    const res = await req().get("/");
+
+    expect(res.status).to.equal(200);
+    expect(res.text).to.not.include('<span class="badge">');
   });
 });

@@ -1,43 +1,52 @@
-const chai = require("chai");
-const request = require("supertest");
-const expect = chai.expect;
+/**
+ * Premade catalogue CSV export.
+ *
+ * The previous version asserted `expect(res.text).to.be.a("string")` — which
+ * supertest guarantees for any text response — so it verified nothing about
+ * the CSV's contents.
+ */
 
-describe("Premade Export Integration Test", function () {
-  let app;
-  let sessionCookie;
+const { expect } = require("chai");
+const { signedInAgent, anonymousAgent } = require("../helpers/agent");
+const testDb = require("../helpers/testDb");
 
-  before(function (done) {
-    app = require("../../app.js");
+describe("Premade export", function () {
+  this.timeout(30000);
 
-    // Login as admin first to get session cookie
-    request(app)
-      .post("/signin")
-      .send({
-        username: "deeks",
-        password: "test123",
-      })
-      .expect(302)
-      .end((err, res) => {
-        if (err) return done(err);
-        sessionCookie = res.headers["set-cookie"];
-        done();
-      });
+  let agent;
+
+  before(async function () {
+    await testDb.reset();
+    agent = await signedInAgent("deeks");
   });
 
-  describe("Authenticated Premade Export (GET /premade/export)", function () {
-    it("should successfully return CSV data", function (done) {
-      request(app)
-        .get("/premade/export")
-        .set("Cookie", sessionCookie)
-        .expect(200)
-        .end(function (err, res) {
-          if (err) return done(err);
+  it("requires authentication", async function () {
+    const res = await anonymousAgent().get("/premade/export");
+    expect(res.status).to.equal(302);
+    expect(res.headers.location).to.equal("/signin");
+  });
 
-          expect(res.header['content-type']).to.include('text/csv');
-          expect(res.text).to.be.a('string');
+  it("returns a CSV response", async function () {
+    const res = await agent.get("/premade/export");
+    expect(res.status).to.equal(200);
+    expect(res.headers["content-type"]).to.match(/csv/);
+  });
 
-          done();
-        });
-    });
+  it("includes a header row and the seeded items", async function () {
+    const res = await agent.get("/premade/export");
+
+    const lines = res.text.trim().split("\n");
+    expect(lines.length, "expected a header plus at least one row").to.be.greaterThan(
+      1,
+    );
+
+    // Fixture names, so this cannot pass on an unrelated catalogue.
+    expect(res.text).to.include("pTEST001");
+    expect(res.text).to.include("pTEST002");
+  });
+
+  it("offers the file as a download", async function () {
+    const res = await agent.get("/premade/export");
+    expect(res.headers["content-disposition"] || "").to.match(/attachment/i);
   });
 });

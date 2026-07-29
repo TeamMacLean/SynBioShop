@@ -13,13 +13,16 @@
                 
                 <% if(db.disabled){ %>
                     <form action="/premade/<%- db.id %>/enable" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                         <button type="submit" class="button success areyousure">Enable DB</button>
                     </form>
                     <form action="/premade/<%- db.id %>/delete" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                         <button type="submit" class="button danger areyousure">Delete DB</button>
                     </form>
                 <% } else { %>
                     <form action="/premade/<%- db.id %>/disable" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                         <button type="submit" class="button danger areyousure">Disable DB</button>
                     </form>
                 <% } %>

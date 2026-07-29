@@ -6,6 +6,7 @@ const Util = require("../lib/util");
 const thinky = require("../lib/thinky");
 const ldap = require("../lib/ldap");
 const config = require("../config");
+const { NotFoundError } = require("../lib/errors");
 
 const ordersController = {};
 
@@ -102,8 +103,15 @@ async function attachTypesToOrders(orders) {
  * @param {Object} res - The Express response object.
  */
 const handleError = (err, res) => {
+  // A record that does not exist is a 404, not a server fault. Conflating the
+  // two made a mistyped URL look like an outage.
+  if (err instanceof NotFoundError) {
+    console.warn("Order not found:", err.message);
+    if (res.headersSent) return;
+    return res.status(404).render("404");
+  }
+
   console.error("Order processing error:", err);
-  // Consider a more specific error message or rendering an error page.
   renderError("An error occurred while processing your request.", res);
 };
 
@@ -122,7 +130,7 @@ const getOrderWithDetails = async (orderID, withItemsAndTypes = false) => {
   }
   const order = await query;
   if (!order) {
-    throw new Error(`Order with ID ${orderID} not found.`);
+    throw new NotFoundError(`Order with ID ${orderID} not found.`);
   }
   return order;
 };
@@ -143,20 +151,6 @@ ordersController.show = async (req, res) => {
   } catch (err) {
     handleError(err, res);
   }
-};
-
-/**
- * Placeholder for displaying orders belonging to the current user.
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- */
-ordersController.mine = async (req, res) => {
-  // Implementation needed: Fetch orders for req.user.username
-  // Example:
-  // const username = req.user.username;
-  // const userOrders = await Order.filter({ username }).getJoin({ items: true }).run();
-  // res.render('orders/my_orders', { orders: userOrders });
-  handleError(new Error("Not implemented"), res); // Placeholder
 };
 
 /**
@@ -303,31 +297,44 @@ ordersController.simonSummary = async (req, res) => {
     paginatedOrders = await attachItemsToOrders(paginatedOrders);
     paginatedOrders = await attachTypesToOrders(paginatedOrders);
 
+    // Resolve display names once per distinct username.
+    //
+    // This ran a lookup per order, and lib/ldap opens a fresh client per call,
+    // so a single page view could open 50 concurrent binds against the
+    // directory. A page usually covers far fewer distinct people than orders.
+    const nameByUsername = new Map();
+
+    if (!config.devMode) {
+      const usernames = [
+        ...new Set(paginatedOrders.map((o) => o.username).filter(Boolean)),
+      ];
+
+      await Promise.all(
+        usernames.map(async (username) => {
+          try {
+            const users = await ldap.getNameFromUsername(username);
+            const firstUser = users && users.length > 0 ? users[0] : null;
+            if (firstUser && firstUser.name) {
+              nameByUsername.set(username, firstUser.name);
+            }
+          } catch (ldapErr) {
+            // Fall back to the username; a directory outage must not blank
+            // the page.
+            console.warn(
+              "LDAP lookup failed for " + username + ":",
+              ldapErr.message,
+            );
+          }
+        }),
+      );
+    }
+
     const processedOrders = await Promise.all(
       paginatedOrders.map(async (orderWithTypes) => {
         try {
-          // Skip LDAP lookup in devMode to avoid connection errors
-          if (config.devMode) {
-            orderWithTypes.fullName = orderWithTypes.username;
-          } else {
-            try {
-              // Node v12 compatible checks (replaces user?.name)
-              const users = await ldap.getNameFromUsername(
-                orderWithTypes.username,
-              );
-              const firstUser = users && users.length > 0 ? users[0] : null;
-              orderWithTypes.fullName =
-                firstUser && firstUser.name
-                  ? firstUser.name
-                  : orderWithTypes.username;
-            } catch (ldapErr) {
-              console.warn(
-                "LDAP lookup failed for " + orderWithTypes.username + ":",
-                ldapErr.message,
-              ); // Node v12 concat
-              orderWithTypes.fullName = orderWithTypes.username;
-            }
-          }
+          orderWithTypes.fullName =
+            nameByUsername.get(orderWithTypes.username) ||
+            orderWithTypes.username;
           return orderWithTypes;
         } catch (typeErr) {
           console.error(
@@ -557,13 +564,22 @@ ordersController.summaryData = async (req, res) => {
     );
     const nonCostedOrders = allOrders.length - costedOrders.length;
 
-    // Fetch items for all orders to count plasmids
+    // Count plasmids across the whole range in chunked bulk queries.
+    //
+    // This was one sequential query per order inside a `for await` loop, so a
+    // multi-year range meant thousands of serial round-trips while the request
+    // held a connection open.
     let totalPlasmids = 0;
-    for (const order of allOrders) {
+    const orderIDs = allOrders.map((o) => o.id);
+    const chunkSize = 500;
+
+    for (let i = 0; i < orderIDs.length; i += chunkSize) {
+      const chunk = orderIDs.slice(i, i + chunkSize);
       const items = await thinky.r
         .table("CartItem")
-        .filter({ orderID: order.id })
+        .filter((item) => thinky.r.expr(chunk).contains(item("orderID")))
         .run();
+
       totalPlasmids += items.reduce(
         (sum, item) => sum + (Number(item.quantity) || 0),
         0,
@@ -702,15 +718,30 @@ ordersController.markAsComplete = async (req, res) => {
     const orderWithTypes = await order.getTypes(); // Fetch types for email
 
     orderWithTypes.complete = true;
-    orderWithTypes.completedAt = Date.now();
+    // A raw Date.now() wrote a NUMBER where the schema declares a date, so the
+    // column ended up mixed TIME/NUMBER and any later comparison on it failed.
+    orderWithTypes.completedAt = new Date();
 
     await orderWithTypes.save();
-    await Email.orderReady(orderWithTypes); // Send notification email
 
-    Flash.success(
-      req,
-      `Order marked as complete and notification sent to ${orderWithTypes.username}.`,
-    );
+    // The order is already complete at this point; a mail outage must not undo
+    // that or surface as a failed request. Report it instead, so the admin
+    // knows to tell the customer another way.
+    try {
+      await Email.orderReady(orderWithTypes);
+      Flash.success(
+        req,
+        `Order marked as complete and notification sent to ${orderWithTypes.username}.`,
+      );
+    } catch (mailErr) {
+      console.error("Order-ready email failed:", mailErr && mailErr.message);
+      Flash.warning(
+        req,
+        `Order marked as complete, but the notification email to ` +
+          `${orderWithTypes.username} could not be sent. Please contact them directly.`,
+      );
+    }
+
     res.redirect(`/order/${orderID}`);
   } catch (err) {
     handleError(err, res);

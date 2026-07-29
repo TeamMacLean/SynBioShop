@@ -14,13 +14,16 @@
 
                 <% if(subject.disabled){ %>
                     <form action="/docs/<%- subject.id %>/enable" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                         <button type="submit" class="button success areyousure">Enable Subject</button>
                     </form>
                     <form action="/docs/<%- subject.id %>/delete" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                         <button type="submit" class="button danger areyousure">Delete Subject</button>
                     </form>
                 <% } else { %>
                     <form action="/docs/<%- subject.id %>/disable" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                         <button type="submit" class="button danger areyousure">Disable Subject</button>
                     </form>
                 <% } %>

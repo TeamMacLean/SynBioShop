@@ -12,3 +12,8 @@ log/*
 /mnt/
 demo.http
 tmp
+
+# Test and coverage artefacts
+coverage/
+.nyc_output/
+test/.tmp/

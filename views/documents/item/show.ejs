@@ -12,13 +12,16 @@
                 
                 <% if(document.disabled){ %>
                     <form action="/docs/item/<%- document.id %>/enable" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                         <button type="submit" class="button success areyousure">Enable Document</button>
                     </form>
                     <form action="/docs/item/<%- document.id %>/delete" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                         <button type="submit" class="button danger areyousure">Delete Document</button>
                     </form>
                 <% } else { %>
                     <form action="/docs/item/<%- document.id %>/disable" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                         <button type="submit" class="button danger areyousure">Disable Document</button>
                     </form>
                 <% } %>

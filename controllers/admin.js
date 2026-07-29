@@ -1,6 +1,7 @@
 const Billboard = require("../models/billboard");
 const renderError = require("../lib/renderError");
 const Flash = require("../lib/flash");
+const { sanitizeHtml } = require("../lib/sanitize");
 
 const Admin = {
   billboard: {},
@@ -37,7 +38,10 @@ Admin.billboard.editPost = (req, res) => {
       if (text == null || text.length == 0) {
         billboard.text = "";
       } else {
-        billboard.text = text;
+        // Sanitised on the way in. The billboard renders unescaped on every
+        // page for every visitor, so unsanitised markup here is site-wide
+        // stored XSS.
+        billboard.text = sanitizeHtml(text);
       }
       billboard.enabled = enabled;
 

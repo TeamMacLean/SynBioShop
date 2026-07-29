@@ -9,6 +9,7 @@
     <h2>Upload New File</h2>
 
     <form action="/upload" method="post" enctype="multipart/form-data" id="uploadForm">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
         <div class="form-group">
             <label for="fileUploadInput" class="form-label">Select File:</label> <% /* Added label for accessibility */ %>
             <input type="file" name="file" id="fileUploadInput" required> <% /* Added id and required */ %>
@@ -44,6 +45,7 @@
                         </div>
                         <% /* Convert DELETE <a> to POST form */ %>
                         <form action="/filemanager/<%- file.id %>/delete" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                             <button type="submit" class="button danger areyousure">Delete File</button> <% /* Clarified button text */ %>
                         </form>
                     </div>

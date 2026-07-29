@@ -1,7 +1,8 @@
 {
   "require": ["test/helpers/setup.js"],
-  "timeout": 5000,
+  "timeout": 20000,
   "exit": true,
   "color": true,
-  "spec": "test/**/*.test.js"
+  "spec": "test/**/*.test.js",
+  "forbidOnly": true
 }

@@ -1,4 +1,5 @@
 const DB = require('../db');
+const {NotFoundError} = require('../../lib/errors');
 
 const types = {};
 types.type1 = require('./type1');
@@ -72,11 +73,15 @@ types.getByID = typeID => new Promise((good, bad)=> {
         if (foundItems.length > 0) {
             return good(foundItems[0]);
         } else {
-            return bad(`types.getByID could not find anything for id ${typeID}`);
+            // Reject with a real Error carrying a status. This used to reject
+            // with a bare string, so callers reading `err.message` got
+            // undefined — which turned a missing item into a 500, and threw a
+            // second TypeError from inside the catch block that handled it.
+            return bad(new NotFoundError(`No item found for id ${typeID}`));
         }
 
     }).catch((err)=> {
-        return bad(err);
+        return bad(err instanceof Error ? err : new Error(String(err)));
     })
 });
 

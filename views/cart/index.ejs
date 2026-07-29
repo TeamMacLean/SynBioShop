@@ -295,6 +295,7 @@
     <!-- ORDER FORM -->
     <!-- ======================================================================== -->
     <form id="orderForm" method="post" action="/cart/order">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
       <input type="hidden" name="pricePerUnit" value="<%= pricePerUnit %>" />
 
       <!-- Cart Items Table -->

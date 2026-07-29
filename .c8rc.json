@@ -1,0 +1,8 @@
+{
+  "all": true,
+  "include": ["app.js", "routes.js", "config.js", "controllers/**", "lib/**", "models/**", "sockets/**"],
+  "exclude": ["test/**", "node_modules/**", "public/**", "scripts/**", "views/**"],
+  "reports-dir": "coverage",
+  "check-coverage": false,
+  "skip-full": false
+}

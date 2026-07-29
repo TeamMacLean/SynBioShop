@@ -60,6 +60,89 @@ Order.define("getTypes", function () {
   });
 });
 
+const COUNTERS_TABLE = "counters";
+const JAN_CODE_COUNTER = "janCode";
+
+// Registered through createModel purely so the shared schema bootstrap creates
+// the table and server.js waits for it before accepting traffic.
+thinky.createModel(COUNTERS_TABLE, {
+  id: type.string(),
+  v: type.number().default(0),
+});
+
+/**
+ * Highest numeric janCode currently in the Orders table.
+ *
+ * Only consulted the first time the counter is created. Non-numeric values are
+ * ignored: a single bad janCode used to turn every later Math.max into NaN and
+ * permanently poison the sequence.
+ *
+ * @returns {Promise<number>}
+ */
+async function highestExistingJanCode() {
+  const orders = await r.table("Order").pluck("janCode").run();
+
+  let highest = 0;
+  for (const row of orders) {
+    const parsed = parseInt(row.janCode, 10);
+    if (Number.isFinite(parsed) && parsed > highest) highest = parsed;
+  }
+  return highest;
+}
+
+/**
+ * Reserves the next order number.
+ *
+ * The previous implementation read every order, took `Math.max(...) + 1`, and
+ * wrote it back. Two checkouts inside the same read window produced the same
+ * janCode, and because lib/csv.js names the printer file after it, the second
+ * order silently overwrote the first order's tube labels.
+ *
+ * Both branches below are single atomic writes, which RethinkDB serialises per
+ * document, so concurrent callers always receive distinct numbers.
+ *
+ * @returns {Promise<string>} The reserved code.
+ */
+async function nextJanCode() {
+  // Fast path: the counter already exists, so just increment it.
+  const bumped = await r
+    .table(COUNTERS_TABLE)
+    .get(JAN_CODE_COUNTER)
+    .update({ v: r.row("v").add(1) }, { returnChanges: true })
+    .run();
+
+  if (bumped.replaced && bumped.changes && bumped.changes.length) {
+    return String(bumped.changes[0].new_val.v);
+  }
+
+  // Slow path: no counter document yet. Insert-with-conflict-handler is still
+  // one atomic operation — whoever loses the insert race increments instead of
+  // overwriting, so a burst of first-ever orders cannot collide.
+  const seed = await highestExistingJanCode();
+
+  const created = await r
+    .table(COUNTERS_TABLE)
+    .insert(
+      { id: JAN_CODE_COUNTER, v: seed + 1 },
+      {
+        // RethinkDB requires the conflict resolver to take all three
+        // arguments, even though newDoc is unused here.
+        conflict: (id, oldDoc, newDoc) =>
+          oldDoc.merge({ v: oldDoc("v").add(1) }),
+        returnChanges: "always",
+      },
+    )
+    .run();
+
+  if (!created.changes || !created.changes.length) {
+    throw new Error("Could not reserve an order number (janCode).");
+  }
+
+  return String(created.changes[0].new_val.v);
+}
+
+Order.nextJanCode = nextJanCode;
+
 Order.pre("save", function (next) {
   const order = this;
 
@@ -68,36 +151,14 @@ Order.pre("save", function (next) {
     order.createdAt = new Date();
   }
 
-  if (!order.janCode) {
-    Order.run({ cursor: false }) // Skip cursor to get raw data
-      .then((allOrders) => {
-        const allJanCodes = allOrders.map((o) =>
-          parseInt(o.janCode || "0", 10),
-        );
-        const highestJanCode = Math.max(...allJanCodes);
-        const newJanCode = highestJanCode + 1;
-        const newJanCodeStr = newJanCode.toString();
+  if (order.janCode) return next();
 
-        console.log(
-          "PRESAVE - prevHighestJanCode:",
-          highestJanCode,
-          "+ newJancodeAsString:",
-          newJanCodeStr,
-        );
-
-        order.janCode = newJanCodeStr;
-
-        if (order.janCode !== newJanCodeStr) {
-          console.error("Problems assigning order.janCode");
-        }
-        next();
-      })
-      .catch((err) => {
-        next(err);
-      });
-  } else {
-    next();
-  }
+  nextJanCode()
+    .then((janCode) => {
+      order.janCode = janCode;
+      next();
+    })
+    .catch(next);
 });
 
 // Initialize janCode for existing orders (commented out - needs async handling)

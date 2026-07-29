@@ -28,7 +28,7 @@
 	    <% if(!locals.disableCart){ %>
 	    <a href="/cart" class="nav-cart">
 	        <span class="icon" data-icon="&#xe015;"></span>
-	        <span class="count"><%- locals.signedInUser.cart.items.length %></span>
+	        <span class="count"><%= locals.signedInUser.cart.items.length %></span>
 	    </a>
 	    <% } %>
 
@@ -37,13 +37,13 @@
 	    <div class="user">
 	        <% if(locals.signedInUser){ %>
 	        <div class="image">
-	            <img src="<%- locals.signedInUser.iconURL %>">
+	            <img src="<%= locals.signedInUser.iconURL %>">
 	            <% if(locals.signedInUser.isAdmin){ %>
 	            <span class="badge"><%- locals.incompleteCount %></span>
 	            <% } %>
 	        </div>
 	        <div class="name">
-	            <span><%- locals.signedInUser.name %></span>
+	            <span><%= locals.signedInUser.name %></span>
 	        </div>
 	        <div class="user-menu hidden">
 	            <ul>

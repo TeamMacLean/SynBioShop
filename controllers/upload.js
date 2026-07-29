@@ -1,17 +1,69 @@
 const fs = require("fs");
 const fsPromises = require("fs").promises;
 const path = require("path");
+const crypto = require("crypto");
 const File = require("../models/file");
 const SequenceFile = require("../models/sequenceFile");
 const Flash = require("../lib/flash");
 const Log = require("../lib/log");
 const renderError = require("../lib/renderError");
 const config = require("../config");
-const { r } = require("../lib/thinky");
+const security = require("../lib/security");
 
 const uploadController = {};
 
 // --- Helper Functions ---
+
+/**
+ * Extensions accepted for general and sequence-file uploads.
+ *
+ * uploadRoot sits under public/, which is served statically, so an uploaded
+ * .html or .svg would execute as script on this origin. Restricting to inert
+ * document and sequence formats closes that.
+ */
+const DOCUMENT_EXTENSIONS = [
+  "pdf",
+  "txt",
+  "csv",
+  "doc",
+  "docx",
+  "xls",
+  "xlsx",
+  "gb",
+  "gbk",
+  "fasta",
+  "fa",
+  "seq",
+  "ab1",
+  "zip",
+];
+
+/**
+ * Builds the name a file will be stored under, or null if the type is refused.
+ *
+ * The stored name is generated server-side rather than taken from the upload.
+ * Trusting the client's name let one upload silently overwrite another file of
+ * the same name — including files already referenced by other records.
+ *
+ * @param {string} originalName - The client-supplied filename.
+ * @param {string[]} [allowed] - Permitted extensions, without the dot.
+ * @returns {string|null} A safe filename, or null when the type is not allowed.
+ */
+function safeStoredName(originalName, allowed) {
+  const permitted = allowed || [
+    ...DOCUMENT_EXTENSIONS,
+    ...(config.imageTypesAllowed || []),
+  ];
+
+  // basename() first: busboy already strips directory separators, but this
+  // holds even if the caller passes a name from somewhere else.
+  const base = path.basename(String(originalName));
+  const ext = path.extname(base).replace(/^\./, "").toLowerCase();
+
+  if (!ext || !permitted.includes(ext)) return null;
+
+  return `${crypto.randomBytes(16).toString("hex")}.${ext}`;
+}
 
 /**
  * Checks if a file exists at the given path.
@@ -51,8 +103,13 @@ const handleError = (
  * @param {string} [associatedID] - The ID of the related entity (e.g., typeID for SequenceFile).
  * @returns {Promise<object>} The saved model instance.
  */
-async function processFileUpload(file, savePath, modelName, associatedID) {
-  console.log("reached DEBG for file upload"); // Updated log
+async function processFileUpload(
+  file,
+  savePath,
+  modelName,
+  associatedID,
+  displayName,
+) {
   if (!file) {
     throw new Error("No file provided for upload.");
   }
@@ -74,7 +131,8 @@ async function processFileUpload(file, savePath, modelName, associatedID) {
   const modelData = {
     path: savePath,
     name: finalFileName,
-    originalName: file.originalname || file.name || finalFileName,
+    originalName:
+      displayName || file.originalname || file.name || finalFileName,
   };
   if (associatedID) {
     modelData.typeID = associatedID;
@@ -95,7 +153,9 @@ async function processFileUpload(file, savePath, modelName, associatedID) {
 uploadController.fileManager = async (req, res) => {
   try {
     let files = await File.run();
-    files = files.filter((file) => !file.originalName.includes(".gb"));
+    // A single row with a null originalName used to throw here and 500 the
+    // whole file manager.
+    files = files.filter((file) => !(file.originalName || "").includes(".gb"));
 
     // Sort by createdAt descending (newest first)
     files.sort((a, b) => {
@@ -130,11 +190,20 @@ uploadController.uploadFilePost = async (req, res) => {
     return renderError("Invalid file - no filename found.", res);
   }
 
-  const savePath = path.join(config.uploadRoot, fileName);
+  const storedName = safeStoredName(fileName);
+  if (!storedName) {
+    Flash.error(
+      req,
+      `"${fileName}" is not an accepted file type. Allowed types: ${DOCUMENT_EXTENSIONS.join(", ")}.`,
+    );
+    return res.redirect("/filemanager");
+  }
+
+  const savePath = path.join(config.uploadRoot, storedName);
 
   try {
-    await processFileUpload(file, savePath, "File");
-    Flash.success(req, "File uploaded successfully: " + file.originalname);
+    await processFileUpload(file, savePath, "File", null, fileName);
+    Flash.success(req, "File uploaded successfully: " + fileName);
     res.redirect("/filemanager");
   } catch (err) {
     handleError(err, res);
@@ -156,14 +225,27 @@ uploadController.uploadSequenceFile = async (req, res) => {
     return res.redirect("/premade/item/" + itemID); // Redirect back to the item
   }
 
-  // Get filename - express-fileupload uses 'name', multer uses 'filename' or 'originalname'
-  const fileName = seqFile.name || seqFile.filename || seqFile.originalname;
+  // originalname first. multer's `filename` is the random temp basename with
+  // no extension, so preferring it stored every sequence file under a bare
+  // hash — which is why public/uploads holds entries like
+  // "a6a836a390f010ebc2ed575e3f53896d" with no file type. It also defeats the
+  // extension allowlist, since a name with no extension has nothing to check.
+  const fileName = seqFile.originalname || seqFile.name || seqFile.filename;
   if (!fileName) {
     Flash.error(req, "We couldn't process the file. Please try again.");
     return res.redirect("/premade/item/" + itemID);
   }
 
-  const newPath = path.join(config.uploadRoot, fileName);
+  const storedName = safeStoredName(fileName);
+  if (!storedName) {
+    Flash.error(
+      req,
+      `"${fileName}" is not an accepted sequence file type. Allowed types: ${DOCUMENT_EXTENSIONS.join(", ")}.`,
+    );
+    return res.redirect("/premade/item/" + itemID);
+  }
+
+  const newPath = path.join(config.uploadRoot, storedName);
 
   try {
     await fsPromises.mkdir(config.uploadRoot, { recursive: true });
@@ -183,7 +265,7 @@ uploadController.uploadSequenceFile = async (req, res) => {
     // Save metadata to database
     await new SequenceFile({
       path: newPath,
-      name: fileName,
+      name: storedName,
       originalName: seqFile.originalname || fileName,
       typeID: itemID,
     }).save();
@@ -208,15 +290,16 @@ uploadController.download = async (req, res) => {
   try {
     const file = await File.get(id);
     if (!file) {
-      throw new Error("File metadata not found in DB.");
+      return res.status(404).render("404");
     }
 
     const exists = await fileExists(file.path);
-    if (exists) {
-      return res.download(file.path, file.originalName);
-    } else {
-      throw new Error();
+    if (!exists) {
+      Log.warn(`Managed file missing on disk: ${file.path}`);
+      return res.status(404).render("404");
     }
+
+    return res.download(file.path, file.originalName);
   } catch (err) {
     handleError(err, res, `File ${id} not found`);
   }
@@ -232,8 +315,17 @@ uploadController.downloadSequenceFile = async (req, res) => {
   try {
     const sequenceFile = await SequenceFile.get(id);
     if (!sequenceFile) {
-      throw new Error("Sequence file metadata not found in DB.");
+      return res.status(404).render("404");
     }
+
+    // Unlike its sibling this did no on-disk check, so a row whose file had
+    // been moved produced a raw ENOENT stack trace exposing server paths.
+    const exists = await fileExists(sequenceFile.path);
+    if (!exists) {
+      Log.warn(`Sequence file missing on disk: ${sequenceFile.path}`);
+      return res.status(404).render("404");
+    }
+
     return res.download(sequenceFile.path, sequenceFile.originalName);
   } catch (err) {
     handleError(err, res);
@@ -253,7 +345,7 @@ uploadController.deleteFile = async (req, res) => {
       req,
       "We couldn't delete the file because it wasn't specified.",
     );
-    return res.redirect(req.get("Referrer") || "/");
+    return res.redirect(security.safeRedirectTarget(req, "/"));
   }
 
   try {
@@ -263,7 +355,7 @@ uploadController.deleteFile = async (req, res) => {
         req,
         "This file could not be found. It may have already been deleted.",
       );
-      return res.redirect(req.get("Referrer") || "/");
+      return res.redirect(security.safeRedirectTarget(req, "/"));
     }
 
     // Optionally, delete the actual file from disk:
@@ -271,7 +363,7 @@ uploadController.deleteFile = async (req, res) => {
 
     await file.delete(); // Delete from File model
     Flash.success(req, "File deleted successfully.");
-    res.redirect(req.get("Referrer") || "/");
+    res.redirect(security.safeRedirectTarget(req, "/"));
   } catch (err) {
     handleError(err, res, `Failed to delete file: ${err.message}`);
   }
@@ -296,7 +388,7 @@ uploadController.deleteSequenceFile = async (req, res) => {
       req,
       "We couldn't delete the sequence file because it wasn't specified.",
     );
-    return res.redirect(req.get("Referrer") || "/");
+    return res.redirect(security.safeRedirectTarget(req, "/"));
   }
 
   try {
@@ -311,7 +403,7 @@ uploadController.deleteSequenceFile = async (req, res) => {
         req,
         "This sequence file could not be found. It may have already been deleted.",
       );
-      return res.redirect(req.get("Referrer") || "/");
+      return res.redirect(security.safeRedirectTarget(req, "/"));
     }
 
     console.log(
@@ -325,7 +417,7 @@ uploadController.deleteSequenceFile = async (req, res) => {
       `Successfully deleted sequence file ${sequenceFile.originalName} (ID: ${fileIdToDelete}).`,
     );
     Flash.success(req, "Sequence file deleted successfully.");
-    return res.redirect(req.get("Referrer") || "/");
+    return res.redirect(security.safeRedirectTarget(req, "/"));
   } catch (err) {
     // Specific logging for deletion failure.
     console.error("FATAL ERROR in deleteSequenceFile handler:", err);
@@ -348,23 +440,43 @@ uploadController.uploadImagePost = async (req, res) => {
     return res.status(400).json({ error: "No file uploaded." });
   }
 
-  const newPath = path.join(config.uploadRoot, userFile.name);
-
   try {
+    // multer file objects expose originalname/filename, never `name`. Reading
+    // `.name` made path.join throw on every call — outside the try block, in an
+    // async handler, so the request hung and the process died.
+    const originalName =
+      userFile.originalname || userFile.filename || userFile.name;
+
+    if (!originalName) {
+      return res.status(400).json({ error: "Uploaded file has no name." });
+    }
+
+    const storedName = safeStoredName(originalName);
+    if (!storedName) {
+      return res.status(415).json({
+        error: `Unsupported image type. Allowed: ${config.imageTypesAllowed.join(", ")}.`,
+      });
+    }
+
+    const newPath = path.join(config.uploadRoot, storedName);
     await fsPromises.mkdir(path.dirname(newPath), { recursive: true });
     await fsPromises.rename(userFile.path, newPath);
 
-    const savedFile = await new File({
+    await new File({
       path: newPath,
-      name: userFile.name,
-      originalName: userFile.originalname,
+      name: storedName,
+      originalName,
     }).save();
 
-    // Path.join replaced backticks for Node v12 compatibility.
-    res.json({ location: path.join(config.uploadRootURL, userFile.name) });
+    return res.json({
+      location: `${config.uploadRootURL}/${storedName}`,
+    });
   } catch (err) {
-    handleError(err, res, "Failed to upload user image.");
-    res.status(500).json({ error: "File upload failed." });
+    // A single response: the old code called handleError (which renders) and
+    // then res.json, producing ERR_HTTP_HEADERS_SENT.
+    Log.error("Failed to upload user image: " + err.message, err);
+    if (res.headersSent) return;
+    return res.status(500).json({ error: "File upload failed." });
   }
 };
 

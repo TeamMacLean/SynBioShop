@@ -20,13 +20,16 @@
 
                 <% if(category.disabled){ %>
                     <form action="/premade/category/<%- category.id %>/enable" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                         <button type="submit" class="button success areyousure">Enable Category</button>
                     </form>
                     <form action="/premade/category/<%- category.id %>/delete" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                         <button type="submit" class="button danger areyousure">Delete Category</button>
                     </form>
                 <% } else { %>
                     <form action="/premade/category/<%- category.id %>/disable" method="POST" style="display:inline;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                         <button type="submit" class="button danger areyousure">Disable Category</button>
                     </form>
                 <% } %>

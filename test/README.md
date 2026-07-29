@@ -1,308 +1,100 @@
-# SynBioShop Test Suite
+# Test suite
 
-This directory contains the test suite for SynBioShop, designed to work across Node.js versions from 12.20.0 to 20+ LTS.
-
-## Prerequisites
-
-Before running tests, you need to:
-
-1. **Create config.json**: Copy the example configuration
-   ```bash
-   cp config-example.json config.json
-   ```
-
-2. **Install dependencies**: Install all test dependencies
-   ```bash
-   npm install --legacy-peer-deps
-   ```
-
-## Current Test Status
-
-**✅ 48 passing tests** (all unit and security tests)
-
-**Known Limitations:**
-- Integration tests may fail without `config.json` (see Prerequisites above)
-- Some integration tests require RethinkDB to be running
-- LDAP authentication tests require LDAP connection
-- Express 4.14.0 doesn't support built-in body parsing (will work after upgrading to Express 4.16+)
-
-## Test Structure
-
-```
-test/
-├── helpers/
-│   └── setup.js           # Test configuration and global helpers
-├── integration/
-│   └── app.test.js        # Integration tests for routes and middleware
-└── unit/
-    ├── utils.test.js      # Unit tests for utility functions
-    └── security.test.js   # Unit tests for security functions
-```
-
-## Running Tests
-
-### Install Test Dependencies
-
-```bash
-npm install
-```
-
-### Run All Tests
+## Running
 
 ```bash
 npm test
 ```
 
-### Run Tests in Watch Mode
-
 ```bash
-npm run test:watch
+npm run test:coverage
 ```
 
-### Run Only Unit Tests
+`npm run test:unit` and `npm run test:integration` run one half. All of them read
+`.mocharc.json`, so the spec glob, timeout and root hooks stay consistent — pass
+extra mocha flags on the command line rather than editing the scripts.
 
-```bash
-npm run test:unit
+## Requirements
+
+A local RethinkDB on `localhost:28015`. Nothing else: the suite never opens an
+SMTP, LDAP or HTTP connection to anything external.
+
+## Database isolation
+
+**The suite never touches the live database.** `test/helpers/setup.js` pins
+`DB_NAME` to `synbioshop_test` before any application module loads, which
+matters because `lib/thinky.js` reads the database name once at require time.
+
+Two interlocks back that up, both in `setup.js` and `testDb.js`:
+
+- the run aborts if the database name is one of the known live names;
+- the run aborts if the database name does not contain `test`.
+
+This is load-bearing. The suite truncates every table between specs, and an
+earlier version of these tests ran against the production database — one spec
+deleted every order belonging to a real admin account, and each order-creating
+test permanently consumed a customer-facing janCode.
+
+## Helpers
+
+`test/helpers/testDb.js`
+
+- `reset()` — truncate every table and reseed. The usual `beforeEach`.
+- `seed()` / `truncate()` — the halves, when a spec needs them separately.
+- `IDS` — fixed fixture IDs (`type1`, `category`, `db`, `subject`, `document`),
+  so specs reference records directly instead of indexing into live data.
+- `r` — the raw rethinkdbdash handle, for asserting on stored rows.
+
+`test/helpers/agent.js`
+
+- `signedInAgent(username)` — a cookie-persisting supertest agent, already
+  signed in. Defaults to the admin `deeks`; pass `testuser` for a non-admin.
+- `anonymousAgent()` — same, without a session.
+- `req()` — a bare supertest request with no default headers, for specs that
+  need full control (for example, probing CSRF).
+- `csrfToken(agent)` — the token issued to that agent's session.
+
+Both agent helpers set an `Origin` header, because CSRF protection rejects
+state-changing requests that carry neither a trusted origin nor a token. That
+mirrors what a browser sends; a spec that omits it is testing a request no
+browser makes.
+
+## Side effects
+
+Email is captured, not sent. `MAIL_TRANSPORT=memory` swaps nodemailer for its
+in-memory JSON transport, and `lib/email.js` records each message in
+`email.outbox` (`clearOutbox()` to reset). Note that dev mode is *not* enough on
+its own — it logs "DEV MODE: Sending email to test address" and then genuinely
+delivers over SMTP.
+
+Generated CSVs and uploads go to `test/.tmp/`, not the Brady printer mount.
+
+## Conventions
+
+Assert one outcome. A status list broad enough to accept both success and
+rejection — `expect([200, 302, 401, 403]).to.include(res.status)` — passes on a
+total authorization bypass, which is how several routes stayed unprotected.
+
+Import the code under test. Several older specs re-implemented the function
+they were checking and asserted against the copy, so deleting the real
+implementation would not have failed anything.
+
+Use the fixtures. Names like `pTEST001` cannot match incidentally; asserting on
+whatever row happened to be first in the database can pass for the wrong reason.
+
+`forbidOnly` is set in `.mocharc.json`, so a stray `.only` fails the run rather
+than silently reducing the suite to one test.
+
+## Layout
+
+```
+test/
+  helpers/     setup.js (root hooks, env pinning), testDb.js, agent.js
+  unit/        security, pricingService, thinky, ldap, asyncHandler, utils
+  integration/ app, auth, authorization, csrf, cart, orders, content,
+               uploads, sockets, errorHandling, badge, premadeExport,
+               budgetHolder, orderPlacement, rearrange
 ```
 
-### Run Only Integration Tests
-
-```bash
-npm run test:integration
-```
-
-### Run with Verbose Output
-
-```bash
-npm test -- --reporter spec
-```
-
-## Test Coverage
-
-### Integration Tests (`test/integration/`)
-
-- **Home Page**: Tests that the root route (`/`) loads successfully
-- **Sign-In Page**: Tests that the sign-in page loads
-- **Static Assets**: Verifies static file serving works
-- **Protected Routes**: Checks authentication redirects
-- **Error Handling**: Tests 404 responses and invalid requests
-- **API Health**: Basic middleware health checks
-
-### Unit Tests (`test/unit/`)
-
-#### Utils Tests (`utils.test.js`)
-- `toSafeName()`: Converts strings to URL-safe format
-- `isAdmin()`: Checks admin user status
-- `generateSafeName()`: Generates unique safe names with deduplication
-
-#### Security Tests (`security.test.js`)
-- **HTML Escaping**: Tests the native `escapeHtml()` function (replaced `validator.escape`)
-  - XSS attack prevention
-  - Special character escaping
-  - Edge case handling
-- **Gravatar URL Generation**: Tests the native `getGravatarUrl()` function (replaced `gravatar` package)
-  - MD5 hash generation
-  - Case insensitivity
-  - Whitespace trimming
-- **Image Extension Detection**: Tests the native `isImage()` function (replaced `is-image` package)
-  - Supported formats: .jpg, .jpeg, .png, .gif, .bmp, .svg, .webp, .ico, .tiff, .tif
-  - Case insensitivity
-  - Path handling
-
-## Test Dependencies
-
-All test dependencies are chosen for maximum compatibility across Node.js versions:
-
-- **mocha** (^8.4.0): Test framework - supports Node 12+ through Node 20+
-- **chai** (^4.3.4): Assertion library - extremely stable across versions
-- **supertest** (^6.1.3): HTTP integration testing - works on Node 12+ through latest
-- **sinon** (^11.1.0): Mocking and stubbing - if needed for future tests
-
-These versions are:
-- ✅ Compatible with Node 12.20.0 (current version)
-- ✅ Compatible with Node 18 LTS
-- ✅ Compatible with Node 20 LTS
-- ✅ Will upgrade smoothly when Node version is upgraded
-
-## Configuration
-
-Test configuration is in `.mocharc.json`:
-
-```json
-{
-  "require": ["test/helpers/setup.js"],
-  "timeout": 5000,
-  "exit": true,
-  "color": true,
-  "spec": "test/**/*.test.js"
-}
-```
-
-## Writing New Tests
-
-### Integration Test Template
-
-```javascript
-const chai = require('chai');
-const request = require('supertest');
-const expect = chai.expect;
-
-describe('Feature Name', function() {
-  let app;
-
-  before(function() {
-    app = require('../../app.js');
-  });
-
-  it('should do something', function(done) {
-    request(app)
-      .get('/route')
-      .expect(200)
-      .end(function(err, res) {
-        if (err) return done(err);
-        expect(res.body).to.have.property('key');
-        done();
-      });
-  });
-});
-```
-
-### Unit Test Template
-
-```javascript
-const chai = require('chai');
-const expect = chai.expect;
-
-describe('Module Name', function() {
-  let module;
-
-  before(function() {
-    module = require('../../lib/module.js');
-  });
-
-  it('should do something', function() {
-    const result = module.functionName('input');
-    expect(result).to.equal('expected');
-  });
-});
-```
-
-## Important Notes
-
-### Database Dependency
-
-Some integration tests may fail if:
-- RethinkDB is not running
-- Database connection fails
-- Test data is not seeded
-
-This is expected behavior. The tests will still verify that the app structure is correct.
-
-### LDAP Dependency
-
-Authentication tests may fail without LDAP connection. This is normal in development/testing environments.
-
-### Session Store
-
-Tests run with the configured session store (RethinkDB). If the connection fails, some tests may timeout.
-
-## Continuous Integration
-
-These tests are designed to be run in CI/CD pipelines:
-
-```yaml
-# Example GitHub Actions workflow
-- name: Install dependencies
-  run: npm ci
-- name: Run tests
-  run: npm test
-```
-
-## Upgrading Node Version
-
-When upgrading Node.js, follow this checklist:
-
-1. **Before upgrade**: Run `npm test` to ensure all tests pass
-2. **After upgrade**: Run `npm test` to verify compatibility
-3. **Update test dependencies** if needed:
-   ```bash
-   npm update mocha chai supertest sinon --save-dev
-   ```
-4. **Check for deprecation warnings** in test output
-5. **Update this README** if test behavior changes
-
-## Node Version Compatibility
-
-| Node Version | Status | Notes |
-|--------------|--------|-------|
-| 12.20.0      | ✅ Current | All tests pass |
-| 14.x LTS     | ✅ Compatible | Should work without changes |
-| 16.x LTS     | ✅ Compatible | Should work without changes |
-| 18.x LTS     | ✅ Compatible | Recommended upgrade target |
-| 20.x LTS     | ✅ Compatible | Latest LTS, best long-term choice |
-
-## Test Philosophy
-
-These tests follow these principles:
-
-1. **Stability**: Use mature, well-maintained packages
-2. **Compatibility**: Work across multiple Node versions
-3. **Simplicity**: Easy to understand and maintain
-4. **Coverage**: Test critical paths and edge cases
-5. **Speed**: Fast enough to run frequently
-6. **Isolation**: Tests don't depend on external services where possible
-
-## Troubleshooting
-
-### Tests Timeout
-
-- Increase timeout in `.mocharc.json` or use `--timeout` flag:
-  ```bash
-  npm test -- --timeout 10000
-  ```
-
-### Database Connection Errors
-
-- Ensure RethinkDB is running
-- Check database configuration in `config.json`
-- Some tests are expected to fail without DB
-
-### Module Not Found Errors
-
-- Run `npm install` to install all dependencies
-- Check that file paths in tests are correct
-
-### Tests Pass Locally But Fail in CI
-
-- Check Node version matches between local and CI
-- Ensure all dependencies are listed in `package.json`
-- Check for environment-specific configuration
-
-## Future Improvements
-
-Potential enhancements for the test suite:
-
-- [ ] Add database mocking for integration tests
-- [ ] Add code coverage reporting (nyc/istanbul)
-- [ ] Add E2E tests with browser automation
-- [ ] Add performance/load testing
-- [ ] Add API contract testing
-- [ ] Mock LDAP for authentication tests
-- [ ] Add tests for file upload functionality
-- [ ] Add tests for real-time Socket.io features
-
-## Related Documentation
-
-- [Mocha Documentation](https://mochajs.org/)
-- [Chai Assertion Library](https://www.chaijs.com/)
-- [SuperTest Documentation](https://github.com/visionmedia/supertest)
-- [Node.js Version Support](https://nodejs.org/en/about/releases/)
-
-## Questions or Issues?
-
-If you encounter issues with the test suite:
-
-1. Check this README for troubleshooting steps
-2. Ensure your Node version matches `.nvmrc`
-3. Run `npm install` to update dependencies
-4. Check test output for specific error messages
+`authorization.test.js` walks the route table and asserts what anonymous users,
+non-admins and admins can each reach. Add a route, add it there.

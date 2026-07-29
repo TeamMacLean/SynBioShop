@@ -1,4 +1,5 @@
 const Document = require("../models/document");
+const { sanitizeHtml } = require("../lib/sanitize");
 const renderError = require("../lib/renderError");
 const Flash = require("../lib/flash");
 const Log = require("../lib/log");
@@ -69,60 +70,80 @@ docs.rearrange = (req, res) => {
     .catch((err) => renderError(err, res));
 };
 
-docs.rearrangeSave = (req, res) => {
-  const newOrder = JSON.parse(req.body.newOrder);
-
-  const toDo = [];
-
-  function process(obj) {
-    function update(objType, item) {
-      return new Promise((good, bad) => {
-        objType
-          .get(item.id)
-          .then((doc) => {
-            doc.position = item.position;
-            doc
-              .save()
-              .then(good)
-              .catch((err) => bad);
-          })
-          .catch((err) => bad);
-      });
-    }
-
-    if (!("documents" in obj) && !("subjects" in obj)) {
-      toDo.push(update(Document, obj));
-    } else {
-      if (obj.subjects) {
-        obj.subjects.map((o) => {
-          process(o);
-        });
-        toDo.push(update(Subject, obj));
-      }
-      if (obj.documents) {
-        obj.documents.map((o) => {
-          process(o);
-        });
-        toDo.push(update(Subject, obj));
-      }
-    }
+docs.rearrangeSave = async (req, res) => {
+  let newOrder;
+  try {
+    newOrder = JSON.parse(req.body.newOrder);
+  } catch (err) {
+    // The parse was outside any try/catch, so a malformed body threw
+    // synchronously and the client received a raw stack trace.
+    return res.status(400).json({ error: "Malformed layout data." });
   }
 
-  newOrder.map((no) => {
-    process(no);
-  });
+  if (!Array.isArray(newOrder)) {
+    return res.status(400).json({ error: "Layout data must be a list." });
+  }
 
-  Promise.all(toDo)
-    .then(() => {
-      Flash.success(req, "Document layout saved successfully.");
-      Log.error("Rearrange saved");
-      return res.sendStatus(200);
-    })
-    .catch((err) => {
-      Flash.error(req, "We couldn't save the new layout. Please try again.");
-      Log.error(err);
-      return res.sendStatus(400).json({ error: err });
-    });
+  // Collect the intended positions first, de-duplicated by id. The previous
+  // version queued the same subject twice whenever it had both `subjects` and
+  // `documents`, so two concurrent saves raced on one row.
+  const subjectPositions = new Map();
+  const documentPositions = new Map();
+
+  function collect(obj) {
+    if (!obj || typeof obj !== "object" || typeof obj.id !== "string") return;
+
+    const isLeaf = !("documents" in obj) && !("subjects" in obj);
+    if (isLeaf) {
+      documentPositions.set(obj.id, obj.position);
+      return;
+    }
+
+    subjectPositions.set(obj.id, obj.position);
+    for (const child of obj.subjects || []) collect(child);
+    for (const child of obj.documents || []) collect(child);
+  }
+
+  newOrder.forEach(collect);
+
+  /**
+   * Applies one position update.
+   *
+   * The old implementation wrote `.catch((err) => bad)`, which *returns* the
+   * reject function instead of calling it — so a failure left the promise
+   * unsettled, Promise.all never resolved, and the request hung forever with
+   * the layout half-saved.
+   */
+  async function applyPosition(Model, id, position) {
+    const doc = await Model.get(id);
+    if (!doc) {
+      // Deleted in another tab. Skip it rather than failing the whole save.
+      Log.warn(`Rearrange skipped missing record ${id}`);
+      return;
+    }
+    doc.position = position;
+    await doc.save();
+  }
+
+  try {
+    await Promise.all([
+      ...[...subjectPositions].map(([id, pos]) =>
+        applyPosition(Subject, id, pos),
+      ),
+      ...[...documentPositions].map(([id, pos]) =>
+        applyPosition(Document, id, pos),
+      ),
+    ]);
+
+    Flash.success(req, "Document layout saved successfully.");
+    return res.sendStatus(200);
+  } catch (err) {
+    Flash.error(req, "We couldn't save the new layout. Please try again.");
+    Log.error("Rearrange failed: " + (err && err.message));
+    // sendStatus() already ends the response; chaining .json() onto it threw
+    // ERR_HTTP_HEADERS_SENT.
+    return res.status(500).json({ error: "Could not save the new layout." });
+  }
 };
 
 //NEW LAYOUT
@@ -140,6 +161,10 @@ docs.subject.rename = (req, res) => {
 
   Subject.get(parentSubjectID)
     .then((subject) => {
+      if (!subject) {
+        return res.status(404).render("404");
+      }
+
       getTopLevelSubjects()
         .then((subjects) => {
           return res.render("documents/subject/rename", { subject, subjects });
@@ -156,7 +181,7 @@ docs.subject.show = (req, res) => {
     .then((subject) => {
       if (!subject) {
         Flash.error(req, "The requested subject could not be found.");
-        return res.redirect("/documents");
+        return res.redirect("/docs");
       }
       getTopLevelSubjects()
         .then((subjects) => {
@@ -170,7 +195,7 @@ docs.subject.show = (req, res) => {
         err.message.includes("not found")
       ) {
         Flash.error(req, "The requested subject could not be found.");
-        return res.redirect("/documents");
+        return res.redirect("/docs");
       }
       renderError(err, res);
     });
@@ -180,6 +205,12 @@ docs.subject.disable = (req, res) => {
   const id = req.params.subjectID;
   Subject.get(id)
     .then((subject) => {
+      // Model.get resolves null for a missing record; without this the next
+      // line threw and the request 500'd instead of answering 404.
+      if (!subject) {
+        return res.status(404).render("404");
+      }
+
       subject.disabled = true;
       subject
         .save()
@@ -195,6 +226,12 @@ docs.subject.enable = (req, res) => {
   const id = req.params.subjectID;
   Subject.get(id)
     .then((subject) => {
+      // Model.get resolves null for a missing record; without this the next
+      // line threw and the request 500'd instead of answering 404.
+      if (!subject) {
+        return res.status(404).render("404");
+      }
+
       subject.disabled = false;
       subject
         .save()
@@ -206,18 +243,21 @@ docs.subject.enable = (req, res) => {
     .catch((err) => renderError(err, res));
 };
 
-docs.subject.delete = (req, res) => {
+docs.subject.delete = async (req, res) => {
   const id = req.params.subjectID;
-  Subject.get(id)
-    .then((subject) => {
-      subject
-        .deleteAll({ documents: true, subjects: true })
-        .then(() => {
-          return res.redirect("/docs/");
-        })
-        .catch((err) => renderError(err, res));
-    })
-    .catch((err) => renderError(err, res));
+  try {
+    const subject = await Subject.get(id);
+    if (!subject) {
+      return res.status(404).render("404");
+    }
+
+    const removed = await subject.deleteCascade();
+    Log.info(`Deleted subject ${id} and ${removed - 1} nested record(s).`);
+    Flash.success(req, `"${subject.name}" and its contents were deleted.`);
+    return res.redirect("/docs");
+  } catch (err) {
+    return renderError(err, res);
+  }
 };
 
 docs.subject.save = (req, res) => {
@@ -225,9 +265,20 @@ docs.subject.save = (req, res) => {
   const parentSubjectID = req.body.parentSubjectID;
   const subjectID = req.params.subjectID;
 
+  if (!name || String(name).trim() === "") {
+    Flash.error(req, "A name is required.");
+    return res.redirect(subjectID ? `/docs/${subjectID}/rename` : "/docs/new");
+  }
+
   if (subjectID) {
     Subject.get(subjectID)
       .then((subject) => {
+        // Model.get resolves null for a missing record, so this used to throw
+        // on `subject.name` and surface as a 500 rather than a 404.
+        if (!subject) {
+          return res.status(404).render("404");
+        }
+
         subject.name = name;
 
         subject
@@ -257,6 +308,12 @@ docs.document.show = (req, res) => {
   Document.get(itemID)
     .getJoin({ subject: true })
     .then((document) => {
+      // A missing document used to be handed to the template as `null`, which
+      // threw while rendering and turned a mistyped URL into a 500.
+      if (!document) {
+        return res.status(404).render("404");
+      }
+
       getTopLevelSubjects()
         .then((subjects) => {
           return res.render("documents/item/show", { document, subjects });
@@ -270,6 +327,12 @@ docs.document.disable = (req, res) => {
   const id = req.params.itemID;
   Document.get(id)
     .then((document) => {
+      // Model.get resolves null for a missing record; without this the next
+      // line threw and the request 500'd instead of answering 404.
+      if (!document) {
+        return res.status(404).render("404");
+      }
+
       document.disabled = true;
       document
         .save()
@@ -285,6 +348,12 @@ docs.document.enable = (req, res) => {
   const id = req.params.itemID;
   Document.get(id)
     .then((document) => {
+      // Model.get resolves null for a missing record; without this the next
+      // line threw and the request 500'd instead of answering 404.
+      if (!document) {
+        return res.status(404).render("404");
+      }
+
       document.disabled = false;
       document
         .save()
@@ -320,7 +389,9 @@ docs.document.save = (req, res) => {
   const subjectID = req.body.subjectID;
   const title = req.body.title;
   const id = req.body.id;
-  const content = req.body.content;
+  // Sanitised once here so both the create and update branches store safe
+  // markup. views/documents/item/show.ejs renders it with <%- %>.
+  const content = sanitizeHtml(req.body.content);
 
   Subject.get(subjectID)
     .getJoin({ documents: true })
@@ -329,7 +400,8 @@ docs.document.save = (req, res) => {
         Document.get(id)
           .then((document) => {
             document.title = req.body.title;
-            document.content = req.body.content;
+            // Rendered with <%- %> in views/documents/item/show.ejs.
+            document.content = sanitizeHtml(req.body.content);
             document
               .save()
               .then(() => {
