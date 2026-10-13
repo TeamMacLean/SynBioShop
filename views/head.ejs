@@ -105,6 +105,14 @@
 
 <% /* Custom styles for user menu */ %>
 <style>
+    .nav-top-right {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        height: 100%;
+        padding-right: 15px;
+    }
+
     /* Make user div extend to right edge of viewport */
     .user {
         border: 1px solid #ddd;
@@ -114,30 +122,35 @@
         box-sizing: border-box;
         transition: border-color 0.2s ease, background-color 0.2s ease;
         margin-right: 0 !important;
-        position: absolute;
-        right: 0;
-        top: 4px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
     }
 
     .user .image {
         margin-right: 8px !important;
+        display: flex;
+        align-items: center;
     }
 
     .user .image img {
         height: 26px !important;
         width: 26px !important;
-        margin-top: 5px !important;
+        margin-top: 0 !important;
     }
 
     .user .badge {
-        top: 0px !important;
+        top: -5px !important;
         right: -4px !important;
         padding: 2px 5px !important;
         font-size: 10px !important;
     }
 
     .user .name {
-        line-height: 36px !important;
+        line-height: normal !important;
+        display: flex;
+        align-items: center;
     }
 
     .user:hover {
@@ -147,11 +160,13 @@
 
     /* Position shopping cart */
     .nav-cart {
-        position: absolute !important;
-        right: 200px;
-        top: 0;
+        position: relative !important;
+        right: auto;
+        top: auto;
         margin-right: 20px !important;
         transition: opacity 0.2s ease, transform 0.2s ease;
+        display: flex;
+        align-items: center;
     }
 
     .nav-cart:hover {
@@ -161,10 +176,12 @@
 
     /* Position search bar */
     .search {
-        position: absolute !important;
-        right: 320px;
-        top: 0;
+        position: relative !important;
+        right: auto;
+        top: auto;
         margin-right: 20px !important;
+        display: flex;
+        align-items: center;
     }
 
     /* Make dropdown menu align to right edge and keep visible on hover */
@@ -174,8 +191,10 @@
         margin-right: 0 !important;
         right: 0 !important;
         left: auto !important;
-        margin-top: -4px !important;
+        margin-top: 4px !important;
         padding-top: 4px !important;
+        position: absolute;
+        top: 100%;
     }
 
     .user-menu a:hover {
