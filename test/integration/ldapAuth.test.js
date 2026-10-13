@@ -16,7 +16,7 @@ const { expect } = require("chai");
 const ldapjs = require("ldapjs");
 const config = require("../../config");
 const util = require("../../lib/util");
-const { req, anonymousAgent } = require("../helpers/agent");
+const { req, anonymousAgent, SAME_ORIGIN } = require("../helpers/agent");
 const testDb = require("../helpers/testDb");
 
 const SERVICE_DN = "cn=service,dc=example,dc=test";
@@ -146,7 +146,7 @@ describe("LDAP authentication", function () {
     it("authenticates a directory user with the right password", async function () {
       const res = await req()
         .post("/signin")
-        .set("Origin", config.baseURL)
+        .set("Origin", SAME_ORIGIN)
         .type("form")
         .send({ username: "deeks", password: "correct-horse" });
 
@@ -198,7 +198,7 @@ describe("LDAP authentication", function () {
       // uncaughtException and terminated the process.
       const res = await req()
         .post("/signin")
-        .set("Origin", config.baseURL)
+        .set("Origin", SAME_ORIGIN)
         .type("form")
         .send({ username: "loner", password: "lonely" });
 
@@ -225,7 +225,7 @@ describe("LDAP authentication", function () {
     it("rejects a wrong password", async function () {
       const res = await req()
         .post("/signin")
-        .set("Origin", config.baseURL)
+        .set("Origin", SAME_ORIGIN)
         .type("form")
         .send({ username: "deeks", password: "wrong" });
 
@@ -236,7 +236,7 @@ describe("LDAP authentication", function () {
     it("rejects a username that is not in the directory", async function () {
       const res = await req()
         .post("/signin")
-        .set("Origin", config.baseURL)
+        .set("Origin", SAME_ORIGIN)
         .type("form")
         .send({ username: "ghost", password: "whatever" });
 
@@ -273,7 +273,7 @@ describe("LDAP authentication", function () {
       // be widened into matching every entry.
       const res = await req()
         .post("/signin")
-        .set("Origin", config.baseURL)
+        .set("Origin", SAME_ORIGIN)
         .type("form")
         .send({ username: "*", password: "correct-horse" });
 
@@ -284,7 +284,7 @@ describe("LDAP authentication", function () {
     it("does not let an injected filter fragment authenticate", async function () {
       const res = await req()
         .post("/signin")
-        .set("Origin", config.baseURL)
+        .set("Origin", SAME_ORIGIN)
         .type("form")
         .send({ username: "deeks)(objectClass=*", password: "correct-horse" });
 
@@ -311,21 +311,23 @@ describe("LDAP authentication", function () {
     it("reports the outage instead of crashing the process", async function () {
       const res = await req()
         .post("/signin")
-        .set("Origin", config.baseURL)
+        .set("Origin", SAME_ORIGIN)
         .type("form")
         .send({ username: "deeks", password: "correct-horse" });
 
-      // Either the connection-error page or a plain rejection — what matters
-      // is that the request is answered and the process survives.
-      expect(res.status).to.be.oneOf([200, 302, 500, 503]);
+      expect(res.status).to.equal(500);
+      expect(res.text).to.include("Cannot connect to LDAP server");
     });
 
     it("keeps serving other requests afterwards", async function () {
-      await req()
+      const login = await req()
         .post("/signin")
-        .set("Origin", config.baseURL)
+        .set("Origin", SAME_ORIGIN)
         .type("form")
         .send({ username: "deeks", password: "correct-horse" });
+
+      expect(login.status).to.equal(500);
+      expect(login.text).to.include("Cannot connect to LDAP server");
 
       const res = await req().get("/");
       expect(res.status).to.equal(200);
@@ -346,7 +348,7 @@ describe("LDAP authentication", function () {
     it("still authenticates through LDAP", async function () {
       const res = await req()
         .post("/signin")
-        .set("Origin", config.baseURL)
+        .set("Origin", SAME_ORIGIN)
         .type("form")
         .send({ username: "deeks", password: "correct-horse" });
 
@@ -398,11 +400,12 @@ describe("LDAP authentication", function () {
     it("still requires a session", async function () {
       const res = await req()
         .post("/check-ldap-user")
-        .set("Origin", config.baseURL)
+        .set("Origin", SAME_ORIGIN)
         .type("form")
         .send({ username: "deeks" });
 
-      expect(res.status).to.not.equal(200);
+      expect(res.status).to.equal(302);
+      expect(res.headers.location).to.equal("/signin");
     });
   });
 });

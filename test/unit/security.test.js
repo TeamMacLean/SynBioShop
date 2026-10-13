@@ -103,7 +103,10 @@ describe("lib/security", function () {
 
     it("accepts the configured baseURL origin", function () {
       const req = makeReq({
-        headers: { host: "other-host:9999", Referrer: `${config.baseURL}/cart` },
+        headers: {
+          host: "other-host:9999",
+          Referrer: new URL("/cart", config.baseURL).href,
+        },
       });
       expect(security.safeRedirectTarget(req)).to.equal("/cart");
     });
