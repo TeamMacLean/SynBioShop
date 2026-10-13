@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f0f0f0;
+    }
+    
+    .nav {
+      z-index: 100;
+      background-color: #fff;
+      height: 45px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .nav a {
+      text-decoration: none;
+      display: block;
+      color: #333;
+    }
+
+    .nav .brand {
+      float: left;
+      color: #fff;
+      height: 45px;
+      font-size: 1.5rem;
+      font-weight: 600;
+      background: #3197FF;
+      width: 180px;
+      line-height: 42px;
+      text-align: center;
+    }
+
+    .nav .brand a {
+      color: #fff;
+      font-weight: 300;
+    }
+    
+    .pull-left { float: left; }
+    .pull-right { float: right; }
+
+    /* The updated CSS from the fix */
+    .nav-top-right {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        height: 100%;
+        padding-right: 15px;
+    }
+
+    .user {
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        padding: 0 8px;
+        height: 38px;
+        box-sizing: border-box;
+        transition: border-color 0.2s ease, background-color 0.2s ease;
+        margin-right: 0 !important;
+        position: relative;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .user .image {
+        margin-right: 8px !important;
+        display: flex;
+        align-items: center;
+    }
+
+    .user .image img {
+        height: 26px !important;
+        width: 26px !important;
+        margin-top: 0 !important;
+        border-radius: 50%;
+    }
+
+    .user .badge {
+        top: -5px !important;
+        right: -4px !important;
+        padding: 2px 5px !important;
+        font-size: 10px !important;
+        position: absolute;
+        background: red;
+        color: white;
+        border-radius: 10px;
+    }
+
+    .user .name {
+        line-height: normal !important;
+        display: flex;
+        align-items: center;
+    }
+
+    .user:hover {
+        border-color: #999;
+        background-color: #f8f8f8;
+    }
+
+    .nav-cart {
+        position: relative !important;
+        right: auto;
+        top: auto;
+        margin-right: 20px !important;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+    }
+
+    .search {
+        position: relative !important;
+        right: auto;
+        top: auto;
+        margin-right: 20px !important;
+        display: flex;
+        align-items: center;
+    }
+    
+    .search input {
+      padding: 4px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+    .search button {
+      padding: 4px 8px;
+    }
+    
+    /* Make dropdown menu align to right edge and keep visible on hover */
+    .user-menu {
+        width: auto !important;
+        min-width: 200px !important;
+        margin-right: 0 !important;
+        right: 0 !important;
+        left: auto !important;
+        margin-top: 0 !important;
+        padding-top: 8px !important;
+        position: absolute;
+        top: 100%;
+        display: none;
+    }
+
+    .user:hover .user-menu {
+        display: block;
+    }
+    
+    /* Simulate original .pillow style which provides the background */
+    .user-menu {
+        background-color: white;
+        border: 1px solid #ddd;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+    }
+
+    .user-menu ul {
+      list-style: none; margin: 0; padding: 0;
+    }
+    
+    .user-menu li {
+      padding: 4px 8px;
+    }
+
+    .user-menu a:hover {
+        background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+    <div class="brand">
+        <a href="/">
+            <span>SynBio</span>
+        </a>
+    </div>
+
+    <div class="pull-right nav-top-right">
+        <div class="search">
+            <form method="get" action="/search">
+                <input name="queryString" id="search-input" type="text" placeholder="Enter text here...">
+                <button>Search</button>
+            </form>
+        </div>
+
+        <a href="/cart" class="nav-cart">
+            <span class="icon" data-icon="&#xe015;">🛒</span>
+            <span class="count">3</span>
+        </a>
+
+        <div class="user">
+            <div class="image">
+                <img src="https://i.pravatar.cc/150?img=11" />
+                <span class="badge">1</span>
+            </div>
+            <div class="name">
+                <span>Alexander McClelland (TSL)</span>
+            </div>
+            <div class="user-menu">
+                <ul>
+                    <li><a href="/orders">My Orders</a></li>
+                    <li><a href="/signout">Sign out</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div style="padding-top: 100px; text-align: center;">
+  <h2>Page Content Here</h2>
+</div>
+
+</body>
+</html>
