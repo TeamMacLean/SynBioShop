@@ -185,20 +185,25 @@
     }
 
     /* Make dropdown menu align to right edge and keep visible on hover */
-    .user-menu {
+    .nav .user-menu {
         width: auto !important;
         min-width: 200px !important;
         margin-right: 0 !important;
         right: 0 !important;
         left: auto !important;
-        margin-top: -4px !important;
+        margin-top: 0 !important;
         padding-top: 4px !important;
-        position: absolute;
-        top: 100%;
+        position: absolute !important;
+        top: 100% !important;
     }
 
-    .user-menu a:hover {
+    .nav .user-menu a:hover {
         background-color: #f0f0f0;
+    }
+
+    /* Pure CSS fallback to keep menu open on hover, preventing JS gap issues */
+    .nav .user:hover .user-menu {
+        display: block !important;
     }
 </style>
 
