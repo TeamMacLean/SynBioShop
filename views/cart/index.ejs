@@ -1,7 +1,5 @@
 <%- include('../head.ejs') %>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     // ============================================================================
@@ -113,9 +111,14 @@
     /**
      * Handle item removal from cart
      */
-    $('body').on('click', 'a[name="removeItem"].areyousure', function(e) {
+    // Use native DOM APIs: the site's CSP blocks external scripts and the
+    // main bundle's jQuery is private to that bundle.
+    document.body.addEventListener('click', function(e) {
+      const removeLink = e.target.closest('a[name="removeItem"].areyousure');
+      if (!removeLink) return;
+
       e.preventDefault();
-      const itemId = $(this).data('id');
+      const itemId = removeLink.dataset.id;
 
       if (typeof socket !== 'undefined') {
         socket.emit('removeFromCart', { id: itemId });
@@ -136,35 +139,37 @@
       socket.on('removedFromCart', function (data) {
         const row = document.querySelector('tr[data-id="' + data.id + '"]');
         if (row) {
-          $(row).fadeOut(500, function () {
-            this.remove();
+          row.remove();
 
-            // Update nav cart count
-            const currentCount = parseInt(elements.navCartCount.textContent, 10) || 0;
-            elements.navCartCount.textContent = Math.max(0, currentCount - 1);
+          // Update nav cart count
+          const currentCount = parseInt(elements.navCartCount.textContent, 10) || 0;
+          elements.navCartCount.textContent = Math.max(0, currentCount - 1);
 
-            // Check if cart is now empty
-            const remainingItems = document.querySelectorAll('.item-quantity');
-            if (remainingItems.length === 0) {
-              location.reload();
-            } else {
-              updateTotals();
-            }
-          });
+          // Check if cart is now empty
+          const remainingItems = document.querySelectorAll('.item-quantity');
+          if (remainingItems.length === 0) {
+            location.reload();
+          } else {
+            updateTotals();
+          }
         }
       });
 
       /**
        * Handle quantity changes via socket
        */
-      $('input.item-quantity[name="itemQuantity"]').on('change keyup paste', function (e) {
-        let val = parseInt($(this).val(), 10) || 1;
-        val = Math.min(Math.max(val, 1), 25);
-        $(this).val(val);
+      document.querySelectorAll('input.item-quantity[name="itemQuantity"]').forEach((inputElement) => {
+        ['change', 'keyup', 'paste'].forEach((eventName) => {
+          inputElement.addEventListener(eventName, function () {
+            let val = parseInt(inputElement.value, 10) || 1;
+            val = Math.min(Math.max(val, 1), 25);
+            inputElement.value = val;
 
-        socket.emit('changeQuantity', {
-          id: $(this).data('id'),
-          quantity: val
+            socket.emit('changeQuantity', {
+              id: inputElement.dataset.id,
+              quantity: val
+            });
+          });
         });
       });
 

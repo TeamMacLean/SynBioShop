@@ -121,6 +121,30 @@ describe("Socket.IO", function () {
       expect(carts[0].items).to.have.lengthOf(1);
     });
 
+    it("removes an item from the session user's own cart", async function () {
+      await new Promise((resolve, reject) => {
+        socket.once("addedToCart", resolve);
+        socket.once("error", reject);
+        socket.emit("addToCart", { typeID: ids.type1 });
+      });
+
+      const carts = await Cart.filter({ username: "deeks" })
+        .getJoin({ items: true })
+        .run();
+      const itemId = carts[0].items[0].id;
+
+      const removed = await new Promise((resolve, reject) => {
+        socket.once("removedFromCart", resolve);
+        socket.once("error", reject);
+        socket.emit("removeFromCart", { id: itemId });
+      });
+
+      expect(removed.id).to.equal(itemId);
+      const after = await Cart.get(carts[0].id).getJoin({ items: true }).run();
+      expect(after.items).to.have.lengthOf(0);
+      expect(await testDb.r.table("CartItem").get(itemId).run()).to.equal(null);
+    });
+
     it("ignores a username supplied by the client", async function () {
       // The handler used to trust data.username, so an attacker could name any
       // account and have items added to that person's cart.
