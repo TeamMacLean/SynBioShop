@@ -1,4 +1,6 @@
 const path = require('path');
+const fs = require('fs');
+const webpack = require('webpack');
 
 module.exports = {
     entry: {
@@ -7,6 +9,13 @@ module.exports = {
         rearrangeDocs: path.resolve(__dirname, 'public', 'js', 'src', 'rearrangeDocs.jsx'),
         // goldengate: path.resolve(__dirname, 'public', 'js', 'src', 'goldengate.jsx'),
     },
+    plugins: [
+        // Dropzone's distribution has no license banner for Terser to retain.
+        new webpack.BannerPlugin({
+            banner: fs.readFileSync(require.resolve('dropzone/LICENSE'), 'utf8'),
+            include: /^main\.js$/,
+        }),
+    ],
     module: {
         rules: [
             {

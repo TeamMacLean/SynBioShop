@@ -28,6 +28,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Install test browser
+        run: yarn playwright install --with-deps chromium
+
       - name: Provide a config file
         # config.json is gitignored because it holds credentials. The example
         # is enough for the suite: the database name, session secret and mail
@@ -36,6 +39,9 @@ jobs:
 
       - name: Lint
         run: yarn lint
+
+      - name: Build browser assets
+        run: yarn build
 
       - name: Test with coverage
         run: yarn test:coverage

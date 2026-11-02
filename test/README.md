@@ -10,14 +10,25 @@ npm test
 npm run test:coverage
 ```
 
-`npm run test:unit` and `npm run test:integration` run one half. All of them read
+`npm run test:unit`, `npm run test:integration`, and `npm run test:browser` select
+the relevant tests. All of them read
 `.mocharc.json`, so the spec glob, timeout and root hooks stay consistent — pass
 extra mocha flags on the command line rather than editing the scripts.
 
 ## Requirements
 
-A local RethinkDB on `localhost:28015`. Nothing else: the suite never opens an
-SMTP, LDAP or HTTP connection to anything external.
+A local RethinkDB on `localhost:28015` and Playwright's Chromium:
+
+```bash
+yarn playwright install chromium
+```
+
+For an existing Chrome installation, set `PLAYWRIGHT_CHANNEL=chrome` instead.
+Run `yarn build` before browser tests after changing client-side JavaScript or
+its dependencies. CI builds the assets before running the suite.
+The suite never opens an SMTP, LDAP or HTTP connection to anything external.
+Browser tests exercise the local application under its real Content Security
+Policy, with off-origin requests blocked.
 
 ## Database isolation
 
@@ -94,6 +105,7 @@ test/
   integration/ app, auth, authorization, csrf, cart, orders, content,
                uploads, sockets, errorHandling, badge, premadeExport,
                budgetHolder, orderPlacement, rearrange
+  browser/     sequence-file selection, drag/drop, and downloads
 ```
 
 `authorization.test.js` walks the route table and asserts what anonymous users,

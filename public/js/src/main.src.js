@@ -8,6 +8,11 @@ import $ from "jquery";
 import Inputmask from "inputmask";
 
 import MicroModal from "micromodal"; // es6 module
+import Dropzone from "dropzone";
+import "dropzone/dist/dropzone.css";
+
+// Initialise explicitly below so the upload form is attached exactly once.
+Dropzone.autoDiscover = false;
 
 $(function () {
   initUserMenu();
@@ -16,6 +21,7 @@ $(function () {
   initCart();
   initTinyMCE();
   initSearch();
+  initSequenceFileUpload();
   initMicroModal();
   initInputmask();
 });
@@ -231,6 +237,18 @@ function initSearch() {
 
   function sendSearch(text) {
     socket.emit("search", text);
+  }
+}
+
+function initSequenceFileUpload() {
+  const form = document.getElementById("my-awesome-dropzone");
+  if (form) {
+    new Dropzone(form, {
+      paramName: "file",
+      // The endpoint accepts one file per request, including when several
+      // files are selected or dropped together.
+      uploadMultiple: false,
+    });
   }
 }
 
