@@ -17,3 +17,8 @@ tmp
 coverage/
 .nyc_output/
 test/.tmp/
+
+# Encrypted runtime credentials and accidentally placed private identities
+/secrets/
+*.agekey
+budget-holders.key

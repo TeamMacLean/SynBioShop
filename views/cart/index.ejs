@@ -22,10 +22,51 @@
       totalCost: document.getElementById('totalCost'),
       totalCostInput: document.getElementById('totalCost-input'),
       orderForm: document.getElementById('orderForm'),
+      instituteSelect: document.getElementById('budgetInstitute'),
       signatorySelect: document.getElementById('signatory'),
+      holderOptions: document.getElementById('budget-holder-options'),
+      placeOrderButton: document.getElementById('placeOrderButton'),
       costConsentCheckbox: document.getElementById('cost-consent'),
       nonCommercialConsentCheckbox: document.getElementById('non-commerical-consent')
     };
+
+    function hasBudgetSelection() {
+      if (!elements.instituteSelect || !elements.signatorySelect) return false;
+      const selected = elements.signatorySelect.selectedOptions[0];
+      return Boolean(
+        elements.instituteSelect.value && selected && selected.value &&
+        selected.dataset.institute === elements.instituteSelect.value
+      );
+    }
+
+    function updateOrderButton() {
+      if (elements.placeOrderButton && CONFIG.displayPricing) {
+        elements.placeOrderButton.disabled = !hasBudgetSelection();
+      }
+    }
+
+    function updateBudgetHolders() {
+      const select = elements.signatorySelect;
+      const institute = elements.instituteSelect.value;
+      select.replaceChildren(new Option('Select budget holder', ''));
+      elements.holderOptions.content.querySelectorAll('option').forEach(function (option) {
+        if (option.dataset.institute === institute) {
+          select.appendChild(option.cloneNode(true));
+        }
+      });
+      select.disabled = !institute || select.options.length === 1;
+      updateOrderButton();
+    }
+
+    if (elements.instituteSelect && elements.signatorySelect && elements.holderOptions) {
+      // Restore a valid selection when the browser restores form values on Back.
+      const previousHolder = elements.signatorySelect.value;
+      updateBudgetHolders();
+      elements.signatorySelect.value = previousHolder;
+      updateOrderButton();
+      elements.instituteSelect.addEventListener('change', updateBudgetHolders);
+      elements.signatorySelect.addEventListener('change', updateOrderButton);
+    }
 
     // ============================================================================
     // CART CALCULATIONS
@@ -203,8 +244,8 @@
 
         // Validate budget holder selection if pricing is displayed
         if (CONFIG.displayPricing) {
-          if (!elements.signatorySelect || elements.signatorySelect.value === '') {
-            alert('Please select a budget holder.');
+          if (!hasBudgetSelection()) {
+            alert('Please select an institute and a budget holder from that institute.');
             return;
           }
         }
@@ -390,19 +431,36 @@
             maxlength="11"
             data-inputmask="'mask': '*****-***-*'"
             class="uppercase"
-            placeholder="12345-678-9"
+            placeholder="AB123-C45-D"
             required
           />
         </div>
 
         <div class="form-group">
-          <label for="signatory" class="form-label">Select Budget Holder:</label>
-          <select id="signatory" name="signatory" required>
-            <option value="" disabled selected>Select budget holder</option>
-            <% budgetHolders.forEach(function(holder) { %>
-              <option value="<%= holder.value %>"><%= holder.label %></option>
+          <label for="budgetInstitute" class="form-label">Select Institute:</label>
+          <select id="budgetInstitute" name="budgetInstitute" required>
+            <option value="" selected>Select institute</option>
+            <% budgetInstitutes.forEach(function(institute) { %>
+              <option value="<%= institute.name %>"><%= institute.name %></option>
             <% }); %>
           </select>
+          <% if (!budgetInstitutes.length) { %>
+            <p role="status">No budget holders are currently enabled. Please contact an administrator before placing your order.</p>
+          <% } %>
+        </div>
+
+        <div class="form-group">
+          <label for="signatory" class="form-label">Select Budget Holder:</label>
+          <select id="signatory" name="signatory" required disabled>
+            <option value="" selected>Select budget holder</option>
+          </select>
+          <template id="budget-holder-options">
+            <% budgetInstitutes.forEach(function(institute) { %>
+              <% institute.holders.forEach(function(holder) { %>
+                <option value="<%= holder.username %>" data-institute="<%= institute.name %>"><%= holder.description %></option>
+              <% }); %>
+            <% }); %>
+          </template>
         </div>
 
         <div class="form-group">
@@ -443,7 +501,7 @@
       <div class="row">
         <div class="col12">
           <div class="pull-right">
-            <button class="button success areyousure" id="placeOrderButton" type="submit">
+            <button class="button success areyousure" id="placeOrderButton" type="submit" <%= displayPricing ? 'disabled' : '' %>>
               Place Order
             </button>
           </div>

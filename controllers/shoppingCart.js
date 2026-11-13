@@ -360,14 +360,13 @@ ShoppingCartController.index = async (req, res) => {
       adminForceShowPricing,
     );
 
-    // Get budget holders for dropdown
-    const budgetHoldersList = await budgetHolders.getBudgetHoldersForSelect();
+    const budgetInstitutes = await budgetHolders.getBudgetHolderGroupsForSelect();
 
     // Render cart page
     return res.render("cart/index", {
       cart,
       ...pricingContext,
-      budgetHolders: budgetHoldersList,
+      budgetInstitutes,
       orderId,
       orderJanCode,
     });
@@ -412,22 +411,28 @@ async function validateOrderData(user, cart, formData) {
       // straight into the finance export. Checked explicitly here instead.
       errors.push("Cost centre must be between 3 and 20 characters");
     }
+  }
 
-    if (!formData.signatory || formData.signatory.trim() === "") {
-      errors.push("Budget holder selection is required");
-    } else {
+  // Check the current directory, including the institute, even when an admin
+  // has opted to supply payment details for an otherwise free order.
+  if (needsPayment || formData.signatory || formData.budgetInstitute) {
+    const hasInstitute =
+      typeof formData.budgetInstitute === 'string' &&
+      formData.budgetInstitute.trim() !== '';
+    const hasHolder =
+      typeof formData.signatory === 'string' &&
+      formData.signatory.trim() !== '';
+
+    if (!hasInstitute) errors.push('Institute selection is required');
+    if (!hasHolder) errors.push('Budget holder selection is required');
+    if (hasInstitute && hasHolder) {
       const isValid = await budgetHolders.isValidBudgetHolder(
         formData.signatory,
+        formData.budgetInstitute
       );
       if (!isValid) {
-        errors.push("Invalid budget holder selected");
+        errors.push('Select an enabled budget holder from the selected institute');
       }
-    }
-  } else if (formData.signatory) {
-    // If signatory is provided (e.g., adminForcePricing), validate it
-    const isValid = await budgetHolders.isValidBudgetHolder(formData.signatory);
-    if (!isValid) {
-      errors.push("Invalid budget holder selected");
     }
   }
 
@@ -554,6 +559,7 @@ ShoppingCartController.placeOrder = async (req, res) => {
   const { username } = user;
   const formData = {
     costCode: req.body.costCode,
+    budgetInstitute: req.body.budgetInstitute,
     signatory: req.body.signatory,
     totalQuantity: req.body.totalQuantity,
     totalCost: req.body.totalCost,

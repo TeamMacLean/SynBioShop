@@ -115,10 +115,12 @@
         });
     }
 
-    // Show initial dev mode notification
+    <% if (locals.consumeDevModeNotice && consumeDevModeNotice()) { %>
+    // Show once per session, including navigation in other tabs.
     window.addEventListener('DOMContentLoaded', function() {
         showDevToast('🔧 Dev Mode Active - Using local authentication', 'warning', 3000);
     });
+    <% } %>
 </script>
 <% } %>
 

@@ -1,0 +1,281 @@
+.budget-page {
+  padding-top: 65px;
+  padding-bottom: 120px;
+  max-width: 1200px;
+}
+.budget-page [hidden] {
+  display: none !important;
+}
+.budget-page h1 {
+  margin-bottom: 12px;
+}
+.budget-page h2 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+.budget-page .button {
+  height: auto;
+  min-height: 40px;
+  line-height: 1.4;
+  padding: 9px 14px;
+}
+.budget-page button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.budget-page input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #32735a;
+  flex: 0 0 auto;
+}
+.budget-page button:focus-visible,
+.budget-page input:focus-visible {
+  outline: 3px solid #2574b4;
+  outline-offset: 3px;
+}
+.budget-status {
+  background: #f5f8f7;
+  border: 1px solid #d9e4df;
+  border-radius: 8px;
+  padding: 22px;
+  margin: 24px 0 32px;
+}
+.budget-status-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.budget-status-heading form,
+.budget-status-heading button {
+  margin: 0;
+}
+.budget-status-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 40px;
+  margin: 20px 0;
+}
+.budget-status-details dt {
+  color: #58635e;
+  font-size: 0.9rem;
+}
+.budget-status-details dd {
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+.budget-muted {
+  color: #58635e;
+  font-size: 0.92rem;
+}
+.budget-failures {
+  margin: 16px 0;
+}
+.budget-failures summary {
+  cursor: pointer;
+  color: #873222;
+  font-weight: 600;
+  padding: 8px 0;
+}
+.budget-table-scroll {
+  overflow-x: auto;
+  max-height: 320px;
+}
+.budget-table-scroll table {
+  width: 100%;
+  text-align: left;
+}
+.budget-table-scroll th,
+.budget-table-scroll td {
+  padding: 10px;
+  border-bottom: 1px solid #d9e4df;
+  vertical-align: top;
+}
+.budget-institute {
+  border: 1px solid #d8dedb;
+  border-radius: 8px;
+  margin: 14px 0;
+  overflow: hidden;
+}
+.budget-institute-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px;
+  background: #fafcfb;
+}
+.budget-display-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 138px;
+  color: #8d2d1a;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.budget-display-status.is-displayed {
+  color: #236442;
+}
+.budget-display-icon {
+  font-size: 1.1rem;
+}
+.budget-disclosure {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 200px;
+  height: auto;
+  min-height: 40px;
+  border: 0;
+  background: transparent;
+  padding: 6px 0;
+  color: #253a30;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+.budget-disclosure:hover {
+  background: transparent;
+  color: #1e6448;
+}
+.budget-chevron {
+  font-size: 26px;
+  transition: transform 0.15s;
+}
+.budget-disclosure[aria-expanded='true'] .budget-chevron {
+  transform: rotate(90deg);
+}
+.budget-count {
+  color: #58635e;
+  font-size: 0.9rem;
+  font-weight: normal;
+}
+.budget-bulk-actions {
+  display: flex;
+  gap: 8px;
+}
+.budget-bulk-actions .button {
+  margin: 0;
+  padding: 7px 12px;
+  font-size: 0.85rem;
+}
+.budget-default-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  margin: 0 0 0 8px;
+}
+.budget-members {
+  padding: 4px 16px;
+  border-top: 1px solid #d8dedb;
+}
+.budget-holder {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 4px;
+  border-bottom: 1px solid #eef1ef;
+  margin: 0;
+  cursor: pointer;
+}
+.budget-holder:last-child {
+  border-bottom: 0;
+}
+.budget-holder:hover {
+  background: #f7faf8;
+}
+.budget-holder code {
+  color: #58635e;
+  font-size: 0.85rem;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+.budget-save-footer {
+  position: fixed;
+  z-index: 9000;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #3da2ff; // Matches the SynBio brand block in style.less.
+  color: #153451;
+  border-top: 2px solid #1783e6;
+  box-shadow: 0 -3px 14px #0001;
+  padding: 16px max(20px, calc((100% - 1150px) / 2));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.budget-save-footer .button {
+  margin: 0 0 0 8px;
+  background: #fff;
+  color: #153451;
+  border: 1px solid #fff;
+}
+#budget-change-count {
+  color: #1a4938;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.budget-save-footer .button:hover {
+  background: #e8f3ff;
+  border-color: #e8f3ff;
+}
+.budget-save-footer .button.success {
+  background: #153451;
+  border-color: #153451;
+  color: #fff;
+}
+.budget-save-footer .button.success:hover {
+  background: #0c253c;
+  border-color: #0c253c;
+}
+.budget-save-footer .button:focus-visible {
+  outline-color: #fff;
+}
+.budget-error {
+  background: #fff2ef;
+  color: #8d2d1a;
+  border: 1px solid #f0c0b5;
+  border-radius: 5px;
+  padding: 14px;
+}
+.budget-toast {
+  position: fixed;
+  top: 75px;
+  right: 20px;
+  z-index: 10002;
+  max-width: calc(100% - 40px);
+  background: #235c45;
+  color: #fff;
+  padding: 16px 22px;
+  border-radius: 6px;
+  box-shadow: 0 3px 14px #0002;
+}
+@media (max-width: 700px) {
+  .budget-default-label {
+    margin-left: 0;
+    width: 100%;
+  }
+  .budget-institute-header {
+    gap: 8px;
+  }
+  .budget-bulk-actions {
+    margin-left: 30px;
+  }
+  .budget-save-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 12px;
+    gap: 8px;
+  }
+  .budget-page {
+    padding-bottom: 150px;
+  }
+}

@@ -311,42 +311,9 @@ router.post("/cart/order", isAuthenticated, shoppingCart.placeOrder);
 router.post("/cart/add", isAuthenticated, shoppingCart.addViaPostRoute); // Use a new method name
 
 // --- Budget Holder Management Routes (Admin Only) ---
-router.get(
-  "/budget",
-  isAuthenticated,
-  budgetHolder.ensureAdmin,
-  budgetHolder.index,
-);
-router.get(
-  "/budget/new",
-  isAuthenticated,
-  budgetHolder.ensureAdmin,
-  budgetHolder.new,
-);
-router.post(
-  "/budget",
-  isAuthenticated,
-  budgetHolder.ensureAdmin,
-  budgetHolder.create,
-);
-router.get(
-  "/budget/:id/edit",
-  isAuthenticated,
-  budgetHolder.ensureAdmin,
-  budgetHolder.edit,
-);
-router.post(
-  "/budget/:id",
-  isAuthenticated,
-  budgetHolder.ensureAdmin,
-  budgetHolder.update,
-);
-router.post(
-  "/budget/:id/delete",
-  isAuthenticated,
-  budgetHolder.ensureAdmin,
-  budgetHolder.delete,
-);
+router.get('/budget', isAuthenticated, budgetHolder.ensureAdmin, budgetHolder.index);
+router.post('/budget/selections', isAuthenticated, budgetHolder.ensureAdmin, budgetHolder.save);
+router.post('/budget/refresh', isAuthenticated, budgetHolder.ensureAdmin, budgetHolder.refresh);
 
 // --- File Upload & Management Routes (General) ---
 // Changed from .route('/upload') to separate GET/POST for clarity

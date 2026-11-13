@@ -12,7 +12,6 @@ const { signedInAgent, anonymousAgent } = require("../helpers/agent");
 const testDb = require("../helpers/testDb");
 const Subject = require("../../models/subject");
 const Document = require("../../models/document");
-const BudgetHolder = require("../../models/budgetHolder");
 
 describe("Content management", function () {
   this.timeout(30000);
@@ -234,49 +233,10 @@ describe("Content management", function () {
       expect(res.text).to.include("TEST Budget Holder");
     });
 
-    it("creates one", async function () {
-      const res = await agent
-        .post("/budget")
-        .type("form")
-        .send({ username: "newholder", description: "NEW Holder [Dept]" });
-
-      expect(res.status).to.be.oneOf([200, 302]);
-
-      const holders = await BudgetHolder.filter({ username: "newholder" }).run();
-      expect(holders).to.have.lengthOf(1);
-      expect(holders[0].description).to.equal("NEW Holder [Dept]");
-    });
-
-    it("updates one", async function () {
-      const [holder] = await BudgetHolder.filter({ username: "testbudget" }).run();
-
-      await agent
-        .post(`/budget/${holder.id}`)
-        .type("form")
-        .send({ username: "testbudget", description: "RENAMED Holder [Dept]" });
-
-      const updated = await BudgetHolder.get(holder.id);
-      expect(updated.description).to.equal("RENAMED Holder [Dept]");
-    });
-
-    it("deletes one", async function () {
-      const [holder] = await BudgetHolder.filter({ username: "testbudget" }).run();
-
-      await agent.post(`/budget/${holder.id}/delete`).type("form").send({});
-      expect(await BudgetHolder.get(holder.id)).to.equal(null);
-    });
-
-    it("is admin-only", async function () {
+    it("requires admin access to change availability", async function () {
       const nonAdmin = await signedInAgent("testuser");
-      const res = await nonAdmin
-        .post("/budget")
-        .type("form")
-        .send({ username: "sneaky", description: "x" });
-
-      expect(res.status).to.be.oneOf([302, 403]);
-      expect(await BudgetHolder.filter({ username: "sneaky" }).run()).to.have.lengthOf(
-        0,
-      );
+      const res = await nonAdmin.post("/budget/selections").type("form").send({});
+      expect(res.status).to.equal(403);
     });
 
     it("supplies the dropdown options the cart page renders", async function () {

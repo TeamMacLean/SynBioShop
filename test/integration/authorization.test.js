@@ -38,7 +38,6 @@ const ADMIN_ROUTES = [
   ["GET", "/order/summary-data"],
   ["GET", "/dupes"],
   ["GET", "/budget"],
-  ["GET", "/budget/new"],
 ];
 
 // State-changing admin routes. Checked for anonymous rejection only; driving
@@ -51,7 +50,8 @@ const ADMIN_POST_ROUTES = [
   "/premade/rearrange",
   "/upload",
   "/imageupload",
-  "/budget",
+  "/budget/selections",
+  "/budget/refresh",
 ];
 
 /** True when the response is a redirect to the sign-in page. */

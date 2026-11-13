@@ -1,82 +1,58 @@
-/**
- * Budget Holders Configuration
- *
- * This module now reads budget holders from the database instead of
- * using hardcoded values. The database allows administrators to manage
- * budget holders through the /budget admin interface.
- *
- * Legacy hardcoded data has been moved to the database via seedBudgetHolders.js
- */
+/** Budget-holder lookup helpers used by checkout. */
+const store = require('../lib/budgetHolderStore');
+const { groupHolders } = require('../lib/budgetHolderRules');
 
-const BudgetHolder = require("../models/budgetHolder");
-
-/**
- * Get all budget holders as an array of {value, label} objects
- * suitable for rendering in select dropdowns
- *
- * @returns {Promise<Array<{value: string, label: string}>>}
- */
-async function getBudgetHoldersForSelect() {
-  try {
-    const holders = await BudgetHolder.orderBy({ index: "username" }).run();
-
-    // Sort by description (display name) for better UX
-    return holders
-      .map((holder) => ({
-        value: holder.username,
-        label: holder.description,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-  } catch (err) {
-    console.error("Error fetching budget holders for select:", err);
-    return [];
-  }
-}
-
-/**
- * Get the display name for a specific budget holder
- *
- * @param {string} username - The budget holder's username
- * @returns {Promise<string|null>} The display name or null if not found
- */
-async function getBudgetHolderName(username) {
-  try {
-    const holders = await BudgetHolder.filter({ username }).run();
-    return holders.length > 0 ? holders[0].description : null;
-  } catch (err) {
-    console.error(`Error fetching budget holder name for ${username}:`, err);
-    return null;
-  }
-}
-
-/**
- * Check if a username is a valid budget holder
- *
- * @param {string} username - The username to check
- * @returns {Promise<boolean>}
- */
-async function isValidBudgetHolder(username) {
-  try {
-    const holders = await BudgetHolder.filter({ username }).run();
-    return holders.length > 0;
-  } catch (err) {
-    console.error(`Error validating budget holder ${username}:`, err);
-    return false;
-  }
-}
-
-/**
- * Get all budget holders
- *
- * @returns {Promise<Array<Object>>} Array of budget holder objects
- */
 async function getAllBudgetHolders() {
-  try {
-    return await BudgetHolder.orderBy({ index: "username" }).run();
-  } catch (err) {
-    console.error("Error fetching all budget holders:", err);
-    return [];
-  }
+  const state = await store.read();
+  return state.holders;
+}
+
+async function getBudgetHoldersForSelect() {
+  const holders = await getAllBudgetHolders();
+  return holders
+    .filter(function (holder) {
+      return holder.enabled;
+    })
+    .map(function (holder) {
+      return { value: holder.username, label: holder.description };
+    })
+    .sort(function (a, b) {
+      return a.label.localeCompare(b.label);
+    });
+}
+
+async function getBudgetHolderName(username) {
+  const holders = await getAllBudgetHolders();
+  const holder = holders.find(function (item) {
+    return item.username === username;
+  });
+  return holder ? holder.description : null;
+}
+
+async function getBudgetHolderGroupsForSelect() {
+  return groupHolders(await store.read())
+    .map(function (institute) {
+      return {
+        name: institute.name,
+        holders: institute.holders.filter(function (holder) {
+          return holder.enabled;
+        }),
+      };
+    })
+    .filter(function (institute) {
+      return institute.holders.length > 0;
+    });
+}
+
+async function isValidBudgetHolder(username, institute) {
+  const holders = await getAllBudgetHolders();
+  return holders.some(function (holder) {
+    return (
+      holder.username === username &&
+      holder.enabled &&
+      (institute === undefined || holder.institute === institute)
+    );
+  });
 }
 
 /**
@@ -299,6 +275,7 @@ const BUDGET_HOLDERS = {
 module.exports = {
   BUDGET_HOLDERS, // Legacy - kept for seed script
   getBudgetHoldersForSelect,
+  getBudgetHolderGroupsForSelect,
   getBudgetHolderName,
   isValidBudgetHolder,
   getAllBudgetHolders,

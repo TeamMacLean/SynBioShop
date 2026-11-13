@@ -234,6 +234,13 @@ app.use(async (req, res, next) => {
   res.locals.isPricingAvailable = config.isPricingAvailable;
   res.locals.pricePerUnit = config.pricePerUnit;
   res.locals.devMode = config.devMode; // Pass dev mode flag to views
+  // Consume only when a page renders the footer, so API requests and redirects
+  // cannot swallow the notice. The flag is shared by all tabs in this session.
+  res.locals.consumeDevModeNotice = function () {
+    if (!config.devMode || req.session.devModeNoticeShown) return false;
+    req.session.devModeNoticeShown = true;
+    return true;
+  };
 
   // Make user data available to all EJS templates as `locals.signedInUser`
   if (req.user) {

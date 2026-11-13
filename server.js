@@ -2,6 +2,7 @@ const app = require("./app");
 const log = require("./lib/log");
 const config = require("./config");
 const thinky = require("./lib/thinky");
+const budgetHolderService = require('./lib/budgetHolderService');
 
 const port = process.env.PORT || config.port;
 
@@ -31,6 +32,7 @@ process.on("uncaughtException", (err) => {
 // --- Startup ---------------------------------------------------------------
 
 let server;
+let stopBudgetHolderScheduler = function () {};
 
 async function start() {
   // Wait for the database, tables and indexes to exist before accepting
@@ -63,6 +65,7 @@ async function start() {
   // Bound how long a slow client can hold a connection open.
   server.headersTimeout = 65000;
   server.requestTimeout = 300000;
+  stopBudgetHolderScheduler = budgetHolderService.startScheduler();
 }
 
 // --- Graceful shutdown ------------------------------------------------------
@@ -79,6 +82,7 @@ let shuttingDown = false;
 function shutdown(signal, exitCode = 0) {
   if (shuttingDown) return;
   shuttingDown = true;
+  stopBudgetHolderScheduler();
 
   log.info(`Received ${signal}, shutting down gracefully...`);
 

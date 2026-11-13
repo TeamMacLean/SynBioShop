@@ -30,6 +30,34 @@ The suite never opens an SMTP, LDAP or HTTP connection to anything external.
 Browser tests exercise the local application under its real Content Security
 Policy, with off-origin requests blocked.
 
+### Budget-holder UI tests only
+
+```sh
+npm run test:budget:browser:install  # Once per Playwright version
+npm run test:budget:browser
+```
+
+This uses Playwright's headless shell under the ignored `test/.tmp/playwright/`
+directory and runs the budget-holder browser tests, including checkout's dependent
+institute/holder selectors and preservation of hidden institute defaults. It starts its own
+temporary web server, uses in-memory email, and pins the database host to 127.0.0.1
+and database name to `synbioshop_budget_browser_test`. Local RethinkDB must already
+be running at the configured port; set `DB_PORT` if necessary. No VPN is required.
+
+On 13 November 2026 the headless shell installed successfully on the Mac mini,
+but the restricted agent session could not launch it: macOS rejected
+`bootstrap_check_in org.chromium.Chromium.MachPortRendezvousServer` with
+`Permission denied (1100)`. Installed Google Chrome separately crashed during
+macOS application registration.
+Run the command above from a normal user Terminal; browser flags cannot grant
+permissions denied by the outer macOS sandbox. No sandbox policy was changed.
+
+George ran the command from his normal Terminal on 13 November 2026: all seven
+tests passed in 11 seconds using RethinkDB at 127.0.0.1:28015. This verifies the
+drawer controls, mixed-selection confirmation/discard, institute defaults,
+individual and bulk saves/toast counts, stale-save protection, and refresh warnings.
+Node emitted a `util.isArray` deprecation warning; it did not fail the run.
+
 ## Database isolation
 
 **The suite never touches the live database.** `test/helpers/setup.js` pins

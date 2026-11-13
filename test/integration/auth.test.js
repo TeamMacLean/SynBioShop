@@ -91,6 +91,22 @@ describe("Authentication", function () {
   });
 
   describe("session handling", function () {
+    it('shows the dev-mode toast once per signed-in session', async function () {
+      const agent = await signedInAgent();
+      const notice = 'Dev Mode Active - Using local authentication';
+      const first = await agent.get('/');
+      const next = await agent.get('/cart');
+      const again = await agent.get('/');
+      expect(first.status).to.equal(200);
+      expect(first.text).to.include(notice);
+      expect(next.text).to.not.include(notice);
+      expect(again.text).to.not.include(notice);
+      expect(next.text).to.include('id="dev-mode-banner"');
+
+      const newSession = await signedInAgent();
+      expect((await newSession.get('/')).text).to.include(notice);
+    });
+
     it("issues a session cookie with the hardening flags set", async function () {
       const res = await req()
         .post("/signin")

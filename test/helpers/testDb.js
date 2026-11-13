@@ -17,6 +17,7 @@ const r = thinky.r;
 const TABLES = [
   "Billboard",
   "BudgetHolder",
+  "BudgetHolderDirectory",
   "Cart",
   "CartItem",
   "Category",

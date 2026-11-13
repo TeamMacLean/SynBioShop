@@ -1,131 +1,111 @@
 <%- include('../head.ejs') %>
-
-<div class="container">
-  <div class="row">
-    <div class="col12">
-      <h1>Budget Holders Management</h1>
-      <p class="muted-text">Manage budget holders for the ordering system. Only administrators can access this page.</p>
-    </div>
-  </div>
-
-  <div class="row" style="margin-bottom: 2rem;">
-    <div class="col12">
-      <a href="/budget/new" class="button success">
-        <span data-icon="&#xe109;"></span> Add New Budget Holder
-      </a>
-    </div>
-  </div>
-
-  <% if (budgetHolders && budgetHolders.length > 0) { %>
-    <div class="row">
-      <div class="col12">
-        <table class="striped">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Description</th>
-              <th class="center" style="width: 150px;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% budgetHolders.forEach(function(holder) { %>
-              <tr>
-                <td><code><%= holder.username %></code></td>
-                <td><%= holder.description %></td>
-                <td class="center action-buttons">
-                  <a href="/budget/<%= holder.id %>/edit" class="button outline">
-                    Edit
-                  </a>
-                  <form action="/budget/<%= holder.id %>/delete"
-                        method="post"
-                        style="display: inline;"
-                        onsubmit="return confirm('Are you sure you want to delete budget holder \'<%= holder.username %>\'? This action cannot be undone.');">
-<input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
-                    <button type="submit" class="button danger outline areyousure">
-                      Delete
-                    </button>
-                  </form>
-                </td>
-              </tr>
-            <% }); %>
-          </tbody>
-        </table>
-
-        <div style="margin-top: 2rem;">
-          <p class="muted-text">
-            <strong>Total Budget Holders:</strong> <%= budgetHolders.length %>
-          </p>
-        </div>
-      </div>
-    </div>
-  <% } else { %>
-    <div class="row">
-      <div class="col12">
-        <div class="alert alert-info">
-          <p><strong>No budget holders found.</strong></p>
-          <p>Click "Add New Budget Holder" above to create your first budget holder.</p>
-        </div>
-      </div>
-    </div>
+<link rel="stylesheet" href="/style/budget-holders.css">
+<main class="container budget-page">
+  <% if (locals.messages && locals.messages.budgetSuccess && locals.messages.budgetSuccess.length) { %>
+    <div class="budget-toast" role="status"><%= locals.messages.budgetSuccess[locals.messages.budgetSuccess.length - 1] %></div>
   <% } %>
+  <h1>Budget Holders Management</h1>
+  <% if (locals.sourceFixture) { %>
+    <p class="budget-error" role="status">Local test data: <strong><%= locals.sourceFixture %></strong> snapshot. Refresh uses fictional holders and makes no intranet request.</p>
+  <% } %>
+  <p>Choose which budget holders can be selected when placing an order. Names and institute membership are refreshed from the intranet.</p>
 
-  <div class="row" style="margin-top: 2rem;">
-    <div class="col12">
-      <a href="/" class="button outline">← Back to Home</a>
+  <section class="budget-status" aria-labelledby="refresh-heading">
+    <div class="budget-status-heading">
+      <h2 id="refresh-heading">Intranet refresh</h2>
+      <form id="budget-refresh" action="/budget/refresh" method="post">
+        <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
+        <button class="button" type="submit" <%= directory.lease && directory.lease.expiresAt > Date.now() ? 'disabled' : '' %>>Refresh now</button>
+      </form>
     </div>
-  </div>
-</div>
+    <dl class="budget-status-details">
+      <div><dt>Last successful refresh</dt><dd><%= formatTime(directory.lastSuccess ? directory.lastSuccess.at : null) %></dd></div>
+      <div><dt>Next automatic refresh</dt><dd><%= automaticRefresh ? formatTime(directory.nextRefreshAt) : 'Automatic refresh is off in this environment' %></dd></div>
+      <% if (directory.lastSuccess) { %>
+      <div><dt>Last refresh changes</dt><dd><%= directory.lastSuccess.counts.added %> added · <%= directory.lastSuccess.counts.removed %> removed · <%= directory.lastSuccess.counts.updated %> updated</dd></div>
+      <% } %>
+      <% if (directory.lastAlertAt) { %>
+      <div><dt>Last overdue email</dt><dd><%= formatTime(directory.lastAlertAt) %> — deeks@nbi.ac.uk</dd></div>
+      <% } %>
+    </dl>
+    <% if (directory.lease) { %>
+    <p role="status"><%= directory.lease.expiresAt > Date.now() ? 'Refresh maintenance is running. Reload this page shortly for the result.' : 'The previous refresh was interrupted. The next refresh will recover it and retain the previous list.' %></p>
+    <% } %>
+    <% if (directory.alertError) { %><p class="budget-error" role="alert"><%= directory.alertError %></p><% } %>
+    <% if (directory.failures.length) { %>
+    <% const recentFailures = directory.failures.slice(-10).reverse(); %>
+    <details class="budget-failures" open>
+      <summary><%= directory.failures.length %> failed attempt<%= directory.failures.length === 1 ? '' : 's' %> since the last successful refresh</summary>
+      <div class="budget-table-scroll">
+        <table>
+          <thead><tr><th>Time</th><th>Triggered by</th><th>Reason</th></tr></thead>
+          <tbody><% recentFailures.slice(0, 3).forEach(function (attempt) { %>
+            <tr><td><%= formatTime(attempt.at) %></td><td><%= attempt.trigger === 'manual' ? 'Manual — ' + attempt.actor : 'Automatic' %></td><td><%= attempt.error %></td></tr>
+          <% }); %></tbody>
+          <% if (recentFailures.length > 3) { %>
+          <tbody id="budget-older-failures" hidden><% recentFailures.slice(3).forEach(function (attempt) { %>
+            <tr><td><%= formatTime(attempt.at) %></td><td><%= attempt.trigger === 'manual' ? 'Manual — ' + attempt.actor : 'Automatic' %></td><td><%= attempt.error %></td></tr>
+          <% }); %></tbody>
+          <% } %>
+        </table>
+      </div>
+      <% if (recentFailures.length > 3) { %>
+      <button type="button" id="budget-toggle-failures" class="button outline" aria-expanded="false" aria-controls="budget-older-failures">Show more (<%= recentFailures.length - 3 %>)</button>
+      <% } %>
+      <% if (directory.failures.length > 10) { %>
+      <p class="budget-muted">History displayed here is limited to the 10 most recent attempts.</p>
+      <% } %>
+    </details>
+    <% } else { %>
+      <p class="budget-muted">No failed attempts<%= directory.lastSuccess ? ' since the last successful refresh' : ' recorded' %>.</p>
+    <% } %>
+    <p class="budget-muted">List only updated on successful fetch from NBI Intranet. After 12 weeks without success, webmaster notified.</p>
+  </section>
 
-<style>
-  /* Fix for budget page - ensure h1 doesn't overlap nav */
-  h1 {
-    margin-top: 60px;
-  }
-
-  table.striped tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-
-  table.striped tbody tr:hover {
-    background-color: #f0f0f0;
-  }
-
-  code {
-    background-color: #e8e8e8;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: monospace;
-    font-size: 0.9em;
-  }
-
-  .alert {
-    padding: 1.5rem;
-    border-radius: 4px;
-    border-left: 4px solid #3498db;
-    background-color: #ecf8ff;
-  }
-
-  .alert-info {
-    border-left-color: #3498db;
-    background-color: #ecf8ff;
-  }
-
-  /* Action buttons styling */
-  td.action-buttons {
-    white-space: nowrap;
-  }
-
-  td.action-buttons .button {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    min-height: 36px;
-    margin: 0 0.25rem;
-  }
-
-  td.action-buttons form {
-    display: inline;
-    margin: 0;
-  }
-</style>
-
+  <form id="budget-selections" action="/budget/selections" method="post" data-revision="<%= directory.catalogRevision %>">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
+    <input type="hidden" name="selection" id="budget-selection-payload">
+    <h2>Availability by institute</h2>
+    <p class="budget-muted">New holders inherit their institute’s default. Enable all and Disable all also set that default; individual choices remain exceptions until changed.</p>
+    <p id="budget-save-error" class="budget-error" role="alert" hidden></p>
+    <% institutes.forEach(function (institute, index) { %>
+    <section class="budget-institute" data-institute="<%= institute.name %>" <%= !institute.holders.length ? 'hidden' : '' %>>
+      <div class="budget-institute-header">
+        <span class="budget-display-status <%= institute.enabledCount > 0 ? 'is-displayed' : '' %>" role="status">
+          <span class="budget-display-icon" aria-hidden="true"><%= institute.enabledCount > 0 ? '✓' : '✕' %></span>
+          <span class="budget-display-label"><%= institute.enabledCount > 0 ? 'Displays' : 'Does not display' %></span>
+        </span>
+        <button type="button" class="budget-disclosure" aria-expanded="false" aria-controls="budget-members-<%= index %>">
+          <span class="budget-chevron" aria-hidden="true">›</span>
+          <strong><%= institute.name %></strong>
+          <span class="budget-count"><%= institute.enabledCount %> of <%= institute.holders.length %> enabled</span>
+        </button>
+        <div class="budget-bulk-actions">
+          <button type="button" class="button outline budget-enable-all" <%= institute.enabledCount === institute.holders.length ? 'disabled' : '' %>>Enable all</button>
+          <button type="button" class="button outline budget-disable-all" <%= !institute.enabledCount ? 'disabled' : '' %>>Disable all</button>
+        </div>
+        <label class="budget-default-label">
+          <input type="checkbox" class="budget-default" <%= institute.defaultEnabled ? 'checked' : '' %>> New budget holders enabled by default
+        </label>
+      </div>
+      <div id="budget-members-<%= index %>" class="budget-members" hidden>
+        <% if (!institute.holders.length) { %><p>No current holders. The default will apply if holders are discovered later.</p><% } %>
+        <% institute.holders.forEach(function (holder) { %>
+        <label class="budget-holder">
+          <input type="checkbox" class="budget-holder-checkbox" data-id="<%= holder.id %>" <%= holder.enabled ? 'checked' : '' %>>
+          <span><%= holder.description %> <code><%= holder.username %></code></span>
+        </label>
+        <% }); %>
+      </div>
+    </section>
+    <% }); %>
+    <% if (!directory.holders.length) { %><p>No budget holders yet. Use Refresh now to fetch the intranet list.</p><% } %>
+    <div id="budget-save-footer" class="budget-save-footer" hidden>
+      <span id="budget-change-count" role="status">Unsaved changes</span>
+      <div><button type="button" id="budget-discard" class="button outline">Discard changes</button>
+      <button type="submit" id="budget-save" class="button success">Save changes</button></div>
+    </div>
+  </form>
+</main>
+<script src="/js/budget-holders.js" defer></script>
 <%- include('../foot.ejs') %>

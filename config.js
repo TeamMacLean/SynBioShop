@@ -137,4 +137,49 @@ if (isProduction && config.secret === "cats") {
   );
 }
 
+config.lookupBudget =
+  require('./lib/budgetHolderSettings').resolveBudgetHolderSettings(
+    configData.lookupBudget
+  );
+if (
+  config.lookupBudget.fixture &&
+  (isProduction ||
+    (!config.devMode && !isTest) ||
+    !['before', 'after'].includes(config.lookupBudget.fixture))
+) {
+  throw new Error(
+    'BUDGET_HOLDER_FIXTURE must be before or after, and is only allowed in development/test mode.'
+  );
+}
+if (!['auto', 'direct'].includes(config.lookupBudget.proxyMode)) {
+  throw new Error('BUDGET_HOLDER_PROXY_MODE must be auto or direct.');
+}
+
+// Automatic refreshes run only on the deployed service by default. Manual
+// refreshes remain available in development for explicit intranet testing.
+config.budgetHolderRefresh = {
+  enabled: pick(
+    envBool('BUDGET_HOLDER_REFRESH_ENABLED'),
+    configData.budgetHolderRefresh && configData.budgetHolderRefresh.enabled,
+    !config.devMode && !vpnMode && !isTest
+  ),
+  maxRemovalFraction: Number(
+    pick(
+      env('BUDGET_HOLDER_MAX_REMOVAL_FRACTION'),
+      configData.budgetHolderRefresh &&
+        configData.budgetHolderRefresh.maxRemovalFraction,
+      0.5
+    )
+  ),
+};
+if (
+  !Number.isFinite(config.budgetHolderRefresh.maxRemovalFraction) ||
+  config.budgetHolderRefresh.maxRemovalFraction < 0 ||
+  config.budgetHolderRefresh.maxRemovalFraction > 1
+) {
+  throw new Error(
+    'BUDGET_HOLDER_MAX_REMOVAL_FRACTION must be between 0 and 1.'
+  );
+}
+
 module.exports = config;

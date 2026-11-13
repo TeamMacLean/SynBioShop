@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Fictional cost-centres fixture — before</title></head>
+<body>
+  <!-- Same dropdown structure as the supplied intranet HTML; fictional people. -->
+  <label>Budget holder
+    <select name="BH" onchange="BudgetHolder(this.options[this.selectedIndex].value)" class="form-control form-inline">
+      <option selected="">SELECT BUDGET HOLDER</option>
+      <option value="tsl_keep">EXAMPLE Avery Example [Sainsbury Laboratory (AB) (TSL)]</option>
+      <option value="tsl_block">EXAMPLE Bailey Example [Sainsbury Laboratory (TSL)]</option>
+      <option value="jic_move">EXAMPLE Casey Example [Cell &amp; Developmental Biology (JIC)]</option>
+      <option value="jic_keep">EXAMPLE Devon Example [Crop Genetics (JIC)]</option>
+      <option value="jic_depart">EXAMPLE Ellis Example [Biochemistry and Metabolism (JIC)]</option>
+      <option value="qib_keep">O'EXAMPLE Fran O'Example [Food, Microbiome and Health (QIB)]</option>
+      <option value="ei_keep">EXAMPLE Gaël Example [Research Faculty (EI)]</option>
+      <option value="nbip_keep">EXAMPLE Harper Example [Finance &amp; Accounts (NBIP)]</option>
+    </select>
+  </label>
+  <label>Authorised signatory
+    <select name="AS"><option>SELECT AUTHORISED SIGNATORY</option><option value="wrong_list">Not a budget holder (TSL)</option></select>
+  </label>
+</body>
+</html>

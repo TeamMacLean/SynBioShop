@@ -1,3 +1,4 @@
+// Legacy migration source. Runtime availability is stored in BudgetHolderDirectory.
 const thinky = require('../lib/thinky');
 const type = thinky.type;
 

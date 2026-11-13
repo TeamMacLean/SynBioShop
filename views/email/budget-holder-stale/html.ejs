@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+<body style="font-family: Arial, sans-serif; line-height: 1.6;">
+  <h2>Budget-holder refresh overdue</h2>
+  <p>SynBioShop has gone at least three calendar months without a successful budget-holder refresh. The last valid list and saved selections are still in use.</p>
+  <p>Last successful refresh: <strong><%= lastSuccess %></strong><br>
+  Monitoring started: <%= activatedAt %><br>
+  Failed attempts since the last success: <%= failureCount %></p>
+  <p>Latest failure: <%= latestError %></p>
+  <p><a href="<%= budgetURL %>">Review the refresh log and retry</a>. Check intranet connectivity and the configured authentication headers.</p>
+  <p>A reminder will follow monthly until a refresh succeeds.</p>
+</body>
+</html>

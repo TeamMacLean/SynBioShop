@@ -21,6 +21,7 @@ describe("Order Placement Integration Tests", function () {
 
   // Setup test data before all tests
   before(async function () {
+    await require("../helpers/testDb").reset();
     try {
       // Clean up any existing test data
       const existingCarts = await Cart.filter({ username: testUsername }).run();
