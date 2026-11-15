@@ -7,6 +7,7 @@ const rules = require('../../lib/budgetHolderRules');
 
 function fixture() {
   const axios = { get: sinon.stub() };
+  const getProxyForUrl = sinon.stub().returns('');
   const config = {
     devMode: true,
     isTest: false,
@@ -23,6 +24,7 @@ function fixture() {
   const filename = path.resolve(__dirname, '../../lib/budgetHolderSource.js');
   const dependencies = {
     axios,
+    'proxy-from-env': { getProxyForUrl },
     '../config': config,
     './budgetHolderRules': rules,
     './budgetHolderCredentials': require('../../lib/budgetHolderCredentials'),
@@ -37,7 +39,7 @@ function fixture() {
     },
   };
   vm.runInNewContext(fs.readFileSync(filename, 'utf8'), sandbox, { filename });
-  return { source: sandbox.module.exports, axios, config };
+  return { source: sandbox.module.exports, axios, config, getProxyForUrl };
 }
 
 describe('Budget-holder intranet request', function () {
@@ -76,14 +78,143 @@ describe('Budget-holder intranet request', function () {
     }).to.throw('embedded');
   });
 
-  it('can explicitly bypass the environment proxy', function () {
-    const { source, config } = fixture();
-    expect(
-      source.buildRequest({ ...config.lookupBudget, proxyMode: 'direct' }).proxy
-    ).to.equal(false);
-    expect(source.buildRequest(config.lookupBudget)).to.not.have.property(
-      'proxy'
-    );
+  it('can explicitly bypass the environment proxy without consulting it', function () {
+    const { source, config, getProxyForUrl } = fixture();
+    const options = source.buildRequest({
+      ...config.lookupBudget,
+      proxyMode: 'direct',
+    });
+    expect(options.proxy).to.equal(false);
+    expect(options.httpsAgent.options.proxyEnv).to.deep.equal({});
+    expect(getProxyForUrl.called).to.equal(false);
+    options.httpsAgent.destroy();
+  });
+
+  it('uses a dedicated CONNECT agent with the existing environment proxy selection', function () {
+    const { source, config, getProxyForUrl } = fixture();
+    for (const proxy of ['', 'http://proxy.example:8080', 'https://proxy.example:8443']) {
+      getProxyForUrl.returns(proxy);
+      const options = source.buildRequest(config.lookupBudget);
+      expect(options.proxy).to.equal(false);
+      expect(options.httpsAgent.options.proxyEnv).to.deep.equal(
+        proxy ? { https_proxy: proxy } : {}
+      );
+      expect(options.httpsAgent.options.timeout).to.equal(20000);
+      expect(options.httpsAgent.options).to.not.have.property('rejectUnauthorized');
+      expect(getProxyForUrl.lastCall.args).to.deep.equal([config.lookupBudget.url]);
+      options.httpsAgent.destroy();
+    }
+  });
+
+  it('rejects malformed or unsupported proxies without leaking proxy credentials', function () {
+    const { source, config, getProxyForUrl } = fixture();
+    for (const proxy of ['http://user:hidden-secret@host:invalid', 'socks5://user:hidden-secret@host:1080']) {
+      getProxyForUrl.returns(proxy);
+      expect(() => source.buildRequest(config.lookupBudget)).to.throw(
+        'Intranet request proxy configuration is invalid. Use an HTTP(S) proxy URL.'
+      );
+    }
+  });
+
+  it('destroys its request agent on both success and failure', async function () {
+    const { source, axios } = fixture();
+    const destroys = [];
+    axios.get.callsFake(async function (url, options) {
+      destroys.push(sinon.spy(options.httpsAgent, 'destroy'));
+      if (destroys.length === 2) throw { code: 'ERR_PROXY_TUNNEL' };
+      return { data: '<select name="BH"><option value="testuser">Test User (TSL)</option></select>' };
+    });
+    await source.fetchHolders();
+    let failure;
+    try { await source.fetchHolders(); } catch (error) { failure = error; }
+    expect(failure.code).to.equal('ERR_PROXY_TUNNEL');
+    expect(destroys.every(spy => spy.calledOnce)).to.equal(true);
+  });
+
+  describe('real loopback-only proxy transport', function () {
+    let server;
+    let sockets;
+    let context;
+    let requests;
+
+    beforeEach(async function () {
+      context = fixture();
+      sockets = new Set();
+      requests = [];
+      server = require('http').createServer(function (request, response) {
+        requests.push(request);
+        response.writeHead(400).end();
+      });
+      server.on('connection', function (socket) {
+        sockets.add(socket);
+        socket.on('error', () => {});
+        socket.on('close', () => sockets.delete(socket));
+      });
+      await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+      context.getProxyForUrl.returns(`http://127.0.0.1:${server.address().port}`);
+      // Only synthetic credentials; no production config or remote requests.
+      context.config.lookupBudget.username = 'test-user';
+      context.config.lookupBudget.password = 'test-password';
+      context.axios.get.callsFake(function (url, options) {
+        options.timeout = 200;
+        options.httpsAgent.options.timeout = 200;
+        return require('axios').get(url, options);
+      });
+    });
+
+    afterEach(async function () {
+      for (const socket of sockets) socket.destroy();
+      await new Promise(resolve => server.close(resolve));
+    });
+
+    async function failure() {
+      try { await context.source.fetchHolders(); } catch (error) { return error; }
+      throw new Error('Expected the local proxy test to fail');
+    }
+
+    it('sends CONNECT without origin credentials and sanitises a tunnel rejection', async function () {
+      server.on('connect', function (request, socket) {
+        requests.push(request);
+        socket.end('HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\n\r\n');
+      });
+      const error = await failure();
+      expect(error.code).to.equal('ERR_PROXY_TUNNEL');
+      expect(requests).to.have.lengthOf(1);
+      expect(requests[0].method).to.equal('CONNECT');
+      expect(requests[0].url).to.equal('intranet.example:443');
+      expect(requests[0].headers).to.not.have.property('authorization');
+      expect(requests[0].headers).to.not.have.property('cookie');
+      expect(error.message).to.not.include('test-password');
+    });
+
+    it('starts TLS, not a credential-bearing HTTP GET, after CONNECT succeeds', async function () {
+      let firstRecord;
+      server.on('connect', function (request, socket) {
+        requests.push(request);
+        socket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+        socket.once('data', function (data) {
+          firstRecord = data;
+          socket.destroy();
+        });
+      });
+      await failure();
+      expect(requests[0].method).to.equal('CONNECT');
+      expect(firstRecord[0]).to.equal(22); // TLS handshake record.
+      expect(firstRecord.includes(Buffer.from('Authorization:'))).to.equal(false);
+      expect(firstRecord.includes(Buffer.from('test-password'))).to.equal(false);
+    });
+
+    it('bounds a stalled CONNECT before an HTTPS socket exists', async function () {
+      server.on('connect', function (request, socket) {
+        requests.push(request);
+        socket.resume();
+      });
+      const start = Date.now();
+      const error = await failure();
+      expect(error.code).to.equal('ECONNABORTED');
+      expect(requests[0].method).to.equal('CONNECT');
+      expect(Date.now() - start).to.be.lessThan(2000);
+    });
   });
 
   it('distinguishes DNS, TLS, timeout and sandbox failures without exposing request contents', function () {

@@ -190,6 +190,28 @@ Failures distinguish rejected authentication, DNS, connection, timeout and TLS
 problems without logging request headers. Redirects are not followed with credentials.
 Do not disable certificate verification to resolve a trust error.
 
+HTTPS proxy requests require Node >=24.5.0. The budget-holder client uses a
+request-local native HTTPS agent to CONNECT through the selected HTTP(S) proxy,
+then sends Basic authentication inside verified TLS. Axios's own absolute-URL
+proxy rewriting is disabled for these requests; other application clients and
+host-wide proxy settings are unchanged. Both CONNECT and the HTTPS request have
+20-second inactivity timeouts. The agent is destroyed after each fetch.
+
+`auto` retains `proxy-from-env` selection, including lowercase/uppercase
+`https_proxy`/`HTTPS_PROXY`, `all_proxy`/`ALL_PROXY` fallback and
+`no_proxy`/`NO_PROXY`. Unlike curl, a bare `nbi.ac.uk` bypass entry matches only
+that exact hostname; `.nbi.ac.uk` also matches subdomains. `direct` bypasses all
+proxy environment settings for this client. Do not change host-wide exclusions
+to diagnose this one application. An HTTP 400 from an absolute-form proxy GET,
+a refused CONNECT, and an HTTP 403 received inside a verified tunnel represent
+different failure stages; none alone proves a bad password.
+
+Before `--prompt --save`, back up `config.json` to an owner-only location outside
+the repository: it may still contain legacy secrets. Save occurs only after a
+successful parsed fetch. Before deploying via PM2, note that a restart can start
+an automatic refresh immediately; obtain approval and explicitly disable
+scheduled refreshes if imports must remain paused.
+
 | Environment variable | Configuration equivalent | Purpose |
 | --- | --- | --- |
 | `BUDGET_HOLDER_URL` | `lookupBudget.url` | Page containing the BH dropdown |
