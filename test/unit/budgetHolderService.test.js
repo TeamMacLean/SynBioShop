@@ -55,7 +55,11 @@ function fixture() {
   const config = {
     baseURL: 'https://synbio.example',
     isTest: false,
-    budgetHolderRefresh: { enabled: true, maxRemovalFraction: 0.5 },
+    budgetHolderRefresh: {
+      enabled: true,
+      notificationsEnabled: true,
+      maxRemovalFraction: 0.5,
+    },
   };
   const interval = sinon.stub().returns({ unref: function () {} });
   const clear = sinon.spy();
@@ -66,6 +70,7 @@ function fixture() {
     './budgetHolderSource': source,
     './email': email,
     './budgetHolderRules': rules,
+    './budgetHolderSnapshot': require('../../lib/budgetHolderSnapshot'),
   };
   const sandbox = {
     module: { exports: {} },
@@ -372,6 +377,98 @@ describe('Budget-holder service without network dependencies', function () {
     expect((await store.read()).failures[0].error).to.include('interrupted');
   });
 
+  it('runs reminders without any automatic fetching, including zero failed attempts', async function () {
+    const { service, config, source, email, store } = fixture();
+    config.budgetHolderRefresh.enabled = false;
+    await service.run({
+      clock: function () {
+        return Date.UTC(2026, 3, 1);
+      },
+    });
+    expect(source.fetchHolders.called).to.equal(false);
+    expect(email.sendEmail.calledOnce).to.equal(true);
+    expect(email.sendEmail.firstCall.args[1].failureCount).to.equal(0);
+    expect((await store.read()).holders[0].enabled).to.equal(false);
+    config.budgetHolderRefresh.notificationsEnabled = false;
+    await service.run({
+      clock: function () {
+        return Date.UTC(2026, 5, 1);
+      },
+    });
+    expect(email.sendEmail.calledOnce).to.equal(true);
+  });
+
+  it('imports atomically without fetching or emailing and does not reset dates on replay', async function () {
+    const { service, store, source, email, start } = fixture();
+    const { createSnapshot } = require('../../lib/budgetHolderSnapshot');
+    const snapshot = createSnapshot(
+      [
+        { username: 'user1', description: 'Renamed (TSL)', institute: 'TSL' },
+        { username: 'new1', description: 'New (TSL)', institute: 'TSL' },
+      ],
+      start,
+      start
+    );
+    const result = await service.importSnapshot(snapshot, {
+      actor: 'deeks',
+      expectedRevision: 0,
+      clock: function () {
+        return start + 1000;
+      },
+    });
+    expect(result.success).to.equal(true);
+    const state = await store.read();
+    expect(
+      state.holders.map(function (h) {
+        return h.enabled;
+      })
+    ).to.deep.equal([true, false]);
+    expect(state.lastSuccess).to.include({
+      fetchedAt: start,
+      at: start + 1000,
+      actor: 'deeks',
+      source: 'snapshot',
+    });
+    expect(
+      (
+        await service.importSnapshot(snapshot, {
+          clock: function () {
+            return start + 2000;
+          },
+        })
+      ).skipped
+    ).to.equal(true);
+    expect(await store.read()).to.deep.equal(state);
+    expect(source.fetchHolders.called).to.equal(false);
+    expect(email.sendEmail.called).to.equal(false);
+  });
+
+  it('rejects a snapshot if the saved version changed after its backup/preview', async function () {
+    const { service, store, start } = fixture();
+    const snapshot = require('../../lib/budgetHolderSnapshot').createSnapshot(
+      [{ username: 'user1', description: 'Person (TSL)', institute: 'TSL' }],
+      start,
+      start
+    );
+    const choices = selection(await store.read());
+    choices.holders[0].enabled = true;
+    await service.saveSelections(choices);
+    let error;
+    try {
+      await service.importSnapshot(snapshot, {
+        expectedRevision: 0,
+        clock: function () {
+          return start;
+        },
+      });
+    } catch (caught) {
+      error = caught;
+    }
+    expect(error.status).to.equal(409);
+    expect((await store.read()).holders[0].enabled).to.equal(true);
+    expect((await store.read()).lastSuccess).to.equal(null);
+  });
+
   it('starts an hourly check and cancels it at shutdown; disabled/test modes schedule nothing', function () {
     const { service, interval, clear, config } = fixture();
     const stop = service.startScheduler();
@@ -382,6 +479,7 @@ describe('Budget-holder service without network dependencies', function () {
     service.startScheduler()();
     config.isTest = false;
     config.budgetHolderRefresh.enabled = false;
+    config.budgetHolderRefresh.notificationsEnabled = false;
     service.startScheduler()();
     expect(interval.calledOnce).to.equal(true);
   });

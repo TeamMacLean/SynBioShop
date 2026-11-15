@@ -26,6 +26,8 @@
     "dev": "nodemon server.js",
     "dev:vpn": "VPN_MODE=true nodemon server.js",
     "budget-holders:check": "node scripts/checkBudgetHolderSource.js",
+    "budget-holders:export": "node scripts/budgetHolderSnapshot.js export",
+    "budget-holders:import": "node scripts/budgetHolderSnapshot.js import",
     "dev:budget:before": "NODE_ENV=development DEV_MODE=true VPN_MODE=false MAIL_TRANSPORT=memory DB_NAME=synbioshop_budget_demo BUDGET_HOLDER_REFRESH_ENABLED=false BUDGET_HOLDER_FIXTURE=before nodemon server.js",
     "dev:budget:after": "NODE_ENV=development DEV_MODE=true VPN_MODE=false MAIL_TRANSPORT=memory DB_NAME=synbioshop_budget_demo BUDGET_HOLDER_REFRESH_ENABLED=false BUDGET_HOLDER_FIXTURE=after nodemon server.js",
     "start-watch": "nodemon server.js",

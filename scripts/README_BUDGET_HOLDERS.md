@@ -3,6 +3,10 @@
 Budget holders come from the intranet cost-centres page. Administrators manage
 availability at `/budget`; manual add, rename and delete routes have been removed.
 
+Automatic fetching is now opt-in (`budgetHolderRefresh.enabled: false` by default).
+For the portable export/import workflow and independent reminders, see
+[Portable budget-holder snapshots](README_BUDGET_SNAPSHOTS.md).
+
 ## Admin page
 
 - Institute drawers are ordered TSL, JIC, then alphabetically, with Unknown last.
@@ -41,7 +45,8 @@ must reload before saving.
 
 ## Refreshes and reconciliation
 
-The server checks for work immediately after startup, then hourly. A new directory
+When automatic fetching is enabled, the server checks for work immediately after
+startup, then hourly. A new directory
 is due for its first fetch immediately. Subsequent scheduled attempts are on the
 first of each month at 03:00 UTC (03:00 UK winter / 04:00 UK summer), within an hour
 of the due time. Due work is caught up after restarts. No administrator needs to
@@ -249,21 +254,27 @@ NODE_ENV=test BUDGET_HOLDER_FIXTURE=after npm run budget-holders:check
 
 ## Overdue emails
 
-After three calendar months without a successful refresh, and at least one failed
-attempt, the hourly check emails `deeks@nbi.ac.uk`. Before the first success, the
+When reminders are enabled, after three calendar months without fresh source data
+the hourly check emails `deeks@nbi.ac.uk`, even if no fetch attempts were made.
+Before the first success, the
 clock starts when the directory is first initialised. Reminders follow once per
-calendar month while the failure continues. A success resets this cycle.
+calendar month while the source remains overdue. A fresh fetch/import resets this
+cycle; a replayed snapshot does not. Snapshot age is measured from its source fetch
+date, not its import date.
 Failed email delivery is shown on the page and retried after 24 hours.
 The existing email transport is reused. Tests capture email in memory.
 
 ## Deployment and storage
 
-- Automatic refresh is enabled by default when dev mode, VPN mode and test mode
-  are all off. `BUDGET_HOLDER_REFRESH_ENABLED=true|false` overrides it; the test
+- Automatic refresh defaults to off and must be enabled explicitly.
+  `BUDGET_HOLDER_REFRESH_ENABLED=true|false` overrides the config file; the test
   environment always prevents starting the scheduler. Confirm this setting on the
   production PM2 process. The server must be running for checks and emails to occur.
-- Optional `config.json` settings: `budgetHolderRefresh.enabled` and
+- Optional `config.json` settings: `budgetHolderRefresh.enabled`,
+  `budgetHolderRefresh.notificationsEnabled` and
   `budgetHolderRefresh.maxRemovalFraction`. Environment variables take precedence.
+  `BUDGET_HOLDER_NOTIFICATIONS_ENABLED` controls reminders independently; when
+  unspecified, reminders follow the automatic-fetch setting.
 - Cheerio is declared directly, using the version already in `yarn.lock`.
 - On first access, the existing `BudgetHolder` table is copied to one `current`
   document in `BudgetHolderDirectory`. Existing holders start enabled; existing

@@ -18,6 +18,8 @@ async function index(req, res) {
     institutes: groupHolders(directory),
     sourceFixture: config.lookupBudget.fixture,
     automaticRefresh: config.budgetHolderRefresh.enabled && !config.isTest,
+    refreshNotifications:
+      config.budgetHolderRefresh.notificationsEnabled && !config.isTest,
     title: 'Budget Holders Management',
     formatTime: function (timestamp) {
       return timestamp

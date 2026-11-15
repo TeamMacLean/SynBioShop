@@ -155,13 +155,13 @@ if (!['auto', 'direct'].includes(config.lookupBudget.proxyMode)) {
   throw new Error('BUDGET_HOLDER_PROXY_MODE must be auto or direct.');
 }
 
-// Automatic refreshes run only on the deployed service by default. Manual
-// refreshes remain available in development for explicit intranet testing.
+// Fetching is opt-in so an initial deployment cannot import at startup.
+// Notifications can run independently when using manually imported snapshots.
 config.budgetHolderRefresh = {
   enabled: pick(
     envBool('BUDGET_HOLDER_REFRESH_ENABLED'),
     configData.budgetHolderRefresh && configData.budgetHolderRefresh.enabled,
-    !config.devMode && !vpnMode && !isTest
+    false
   ),
   maxRemovalFraction: Number(
     pick(
@@ -172,6 +172,12 @@ config.budgetHolderRefresh = {
     )
   ),
 };
+config.budgetHolderRefresh.notificationsEnabled = pick(
+  envBool('BUDGET_HOLDER_NOTIFICATIONS_ENABLED'),
+  configData.budgetHolderRefresh &&
+    configData.budgetHolderRefresh.notificationsEnabled,
+  config.budgetHolderRefresh.enabled
+);
 if (
   !Number.isFinite(config.budgetHolderRefresh.maxRemovalFraction) ||
   config.budgetHolderRefresh.maxRemovalFraction < 0 ||

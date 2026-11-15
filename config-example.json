@@ -25,6 +25,10 @@
     "credentialsFile": "secrets/budget-holders.age",
     "proxyMode": "auto"
   },
+  "budgetHolderRefresh": {
+    "enabled": false,
+    "notificationsEnabled": false
+  },
   "email": {
     "host": "mail.example.org",
     "port": "25",

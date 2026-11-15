@@ -35,6 +35,8 @@ describe('Budget-holder directory and refresh integration', function () {
   beforeEach(async function () {
     await testDb.reset();
     email.clearOutbox();
+    sinon.stub(config.budgetHolderRefresh, 'enabled').value(true);
+    sinon.stub(config.budgetHolderRefresh, 'notificationsEnabled').value(true);
   });
   afterEach(function () {
     sinon.restore();
@@ -480,7 +482,6 @@ describe('Budget-holder directory and refresh integration', function () {
 
   it('never starts an automatic scheduler in tests', function () {
     const interval = sinon.spy(global, 'setInterval');
-    sinon.stub(config.budgetHolderRefresh, 'enabled').value(true);
     service.startScheduler()();
     expect(interval.called).to.equal(false);
   });

@@ -153,6 +153,6 @@ describe('Budget-holder source and reconciliation rules', function () {
     expect(rules.alertDue(state, Date.UTC(2026, 3, 30))).to.equal(false);
     expect(rules.alertDue(state, Date.UTC(2026, 4, 1))).to.equal(true);
     state.failures = [];
-    expect(rules.alertDue(state, Date.UTC(2027, 4, 1))).to.equal(false);
+    expect(rules.alertDue(state, Date.UTC(2027, 4, 1))).to.equal(true);
   });
 });

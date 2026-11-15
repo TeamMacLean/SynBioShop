@@ -3,8 +3,59 @@ const {
   resolveBudgetHolderSettings,
 } = require('../../lib/budgetHolderSettings');
 const { usernameHint, main } = require('../../scripts/checkBudgetHolderSource');
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
+function refreshSettings(file = {}, environment = {}) {
+  const sandbox = {
+    module: { exports: {} },
+    process: {
+      env: { NODE_ENV: 'production', DEV_MODE: 'false', ...environment },
+    },
+    console: { log: function () {}, warn: function () {} },
+    require: function (name) {
+      if (name === './config.json') return file;
+      if (name === './lib/budgetHolderSettings')
+        return { resolveBudgetHolderSettings };
+      throw new Error('Unexpected dependency');
+    },
+  };
+  vm.runInNewContext(
+    fs.readFileSync(path.resolve(__dirname, '../../config.js'), 'utf8'),
+    sandbox
+  );
+  return sandbox.module.exports.budgetHolderRefresh;
+}
 
 describe('Budget-holder credentials and diagnostic settings', function () {
+  it('defaults production startup to no fetching and allows reminders independently', function () {
+    expect(refreshSettings()).to.include({
+      enabled: false,
+      notificationsEnabled: false,
+    });
+    expect(
+      refreshSettings({
+        budgetHolderRefresh: { enabled: false, notificationsEnabled: true },
+      })
+    ).to.include({ enabled: false, notificationsEnabled: true });
+  });
+
+  it('honours explicit refresh enablement and environment overrides for both switches', function () {
+    expect(
+      refreshSettings({ budgetHolderRefresh: { enabled: true } })
+    ).to.include({ enabled: true, notificationsEnabled: true });
+    expect(
+      refreshSettings(
+        { budgetHolderRefresh: { enabled: true, notificationsEnabled: true } },
+        {
+          BUDGET_HOLDER_REFRESH_ENABLED: 'false',
+          BUDGET_HOLDER_NOTIFICATIONS_ENABLED: 'false',
+        }
+      )
+    ).to.include({ enabled: false, notificationsEnabled: false });
+  });
+
   it('keeps existing header configuration compatible', function () {
     const settings = resolveBudgetHolderSettings(
       {

@@ -22,8 +22,13 @@
       <div><dt>Last successful refresh</dt><dd><%= formatTime(directory.lastSuccess ? directory.lastSuccess.at : null) %></dd></div>
       <div><dt>Next automatic refresh</dt><dd><%= automaticRefresh ? formatTime(directory.nextRefreshAt) : 'Automatic refresh is off in this environment' %></dd></div>
       <% if (directory.lastSuccess) { %>
+      <% if (directory.lastSuccess.source === 'snapshot') { %>
+      <div><dt>Refresh source</dt><dd>Imported snapshot<%= directory.lastSuccess.actor ? ' — ' + directory.lastSuccess.actor : '' %></dd></div>
+      <div><dt>Source fetched from intranet</dt><dd><%= formatTime(directory.lastSuccess.fetchedAt) %></dd></div>
+      <% } %>
       <div><dt>Last refresh changes</dt><dd><%= directory.lastSuccess.counts.added %> added · <%= directory.lastSuccess.counts.removed %> removed · <%= directory.lastSuccess.counts.updated %> updated</dd></div>
       <% } %>
+      <div><dt>Overdue email reminders</dt><dd><%= locals.refreshNotifications ? 'Enabled' : 'Off in this environment' %></dd></div>
       <% if (directory.lastAlertAt) { %>
       <div><dt>Last overdue email</dt><dd><%= formatTime(directory.lastAlertAt) %> — deeks@nbi.ac.uk</dd></div>
       <% } %>
@@ -40,11 +45,11 @@
         <table>
           <thead><tr><th>Time</th><th>Triggered by</th><th>Reason</th></tr></thead>
           <tbody><% recentFailures.slice(0, 3).forEach(function (attempt) { %>
-            <tr><td><%= formatTime(attempt.at) %></td><td><%= attempt.trigger === 'manual' ? 'Manual — ' + attempt.actor : 'Automatic' %></td><td><%= attempt.error %></td></tr>
+            <tr><td><%= formatTime(attempt.at) %></td><td><%= attempt.trigger === 'snapshot' ? 'Snapshot import — ' + attempt.actor : attempt.trigger === 'manual' ? 'Manual — ' + attempt.actor : 'Automatic' %></td><td><%= attempt.error %></td></tr>
           <% }); %></tbody>
           <% if (recentFailures.length > 3) { %>
           <tbody id="budget-older-failures" hidden><% recentFailures.slice(3).forEach(function (attempt) { %>
-            <tr><td><%= formatTime(attempt.at) %></td><td><%= attempt.trigger === 'manual' ? 'Manual — ' + attempt.actor : 'Automatic' %></td><td><%= attempt.error %></td></tr>
+            <tr><td><%= formatTime(attempt.at) %></td><td><%= attempt.trigger === 'snapshot' ? 'Snapshot import — ' + attempt.actor : attempt.trigger === 'manual' ? 'Manual — ' + attempt.actor : 'Automatic' %></td><td><%= attempt.error %></td></tr>
           <% }); %></tbody>
           <% } %>
         </table>
@@ -59,7 +64,7 @@
     <% } else { %>
       <p class="budget-muted">No failed attempts<%= directory.lastSuccess ? ' since the last successful refresh' : ' recorded' %>.</p>
     <% } %>
-    <p class="budget-muted">List only updated on successful fetch from NBI Intranet. After 12 weeks without success, webmaster notified.</p>
+    <p class="budget-muted">List updated from a successful NBI Intranet fetch or a validated snapshot. Overdue reminders follow the source fetch date.</p>
   </section>
 
   <form id="budget-selections" action="/budget/selections" method="post" data-revision="<%= directory.catalogRevision %>">
